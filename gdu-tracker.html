@@ -4,22 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GDU Tracker</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Linking to a separate CSS file for styles -->
-    <script src="script.js" defer></script><!-- Linking to a separate JavaScript file for functionality -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
+    <header>
         <h1>GDU Tracker</h1>
-        <div>
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate">
-        </div>
-        <div>
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate">
-        </div>
-        <button id="calculate">Calculate GDU</button>
-        <div id="result"></div>
-    </div>
+    </header>
+    <main>
+        <section id="tracker">
+            <h2>Track Your GDUs</h2>
+            <form id="gdu-form">
+                <label for="gdu-input">GDUs:</label>
+                <input type="number" id="gdu-input" required>
+                <button type="submit">Track</button>
+            </form>
+            <div id="results"></div>
+        </section>
+    </main>
+    <script src="script.js"></script>
 </body>
 </html>
