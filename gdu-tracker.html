@@ -1,26 +1,578 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDU Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDU Tracker — Corn Growth Stages</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --soil:#1a1208; --earth:#2c1f0a; --stalk:#4a7c2f; --leaf:#6aab40;
+    --tassel:#c8a84b; --silk:#e8d080; --kernel:#f5c842; --sky:#d4e8b8;
+    --ash:#8a9478; --light:#f0ecd8; --card:#231a08; --border:#3d2e10;
+    --chart-actual:#6aab40; --chart-forecast:#c8a84b;
+  }
+  .theme-midnight {
+    --soil:#0d1117; --earth:#161b22; --stalk:#1f6feb; --leaf:#58a6ff;
+    --tassel:#79c0ff; --silk:#cae8ff; --kernel:#79c0ff; --sky:#b3d4f5;
+    --ash:#6e7681; --light:#c9d1d9; --card:#161b22; --border:#30363d;
+    --chart-actual:#58a6ff; --chart-forecast:#79c0ff;
+  }
+  .theme-prairie {
+    --soil:#1c1408; --earth:#2a1f0d; --stalk:#8b5e3c; --leaf:#c4894d;
+    --tassel:#e8b87a; --silk:#f5ddb8; --kernel:#f0c87a; --sky:#f5e8d0;
+    --ash:#9a8068; --light:#f8f0e0; --card:#231a0a; --border:#4a3520;
+    --chart-actual:#c4894d; --chart-forecast:#e8b87a;
+  }
+  .theme-storm {
+    --soil:#0a0e14; --earth:#111520; --stalk:#5865f2; --leaf:#7289da;
+    --tassel:#a0b0e8; --silk:#dce4ff; --kernel:#b8c8ff; --sky:#c8d8ff;
+    --ash:#6272a4; --light:#d0dcff; --card:#111520; --border:#2a3050;
+    --chart-actual:#7289da; --chart-forecast:#a0b0e8;
+  }
+  .theme-harvest {
+    --soil:#180c02; --earth:#241208; --stalk:#c0392b; --leaf:#e74c3c;
+    --tassel:#f39c12; --silk:#f9e4b7; --kernel:#f39c12; --sky:#fdebd0;
+    --ash:#a04000; --light:#fdf2e9; --card:#1e1004; --border:#5c2000;
+    --chart-actual:#e74c3c; --chart-forecast:#f39c12;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background-color:var(--soil); color:var(--light); font-family:'IBM Plex Mono',monospace; min-height:100vh; overflow-x:hidden; transition:background-color 0.35s,color 0.35s; }
+  body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(106,171,64,0.03) 60px,rgba(106,171,64,0.03) 62px),radial-gradient(ellipse at 50% 100%,rgba(74,124,47,0.1) 0%,transparent 70%); pointer-events:none; z-index:0; }
+
+  .container { max-width:920px; margin:0 auto; padding:36px 24px 80px; position:relative; z-index:1; }
+
+  .header { text-align:center; margin-bottom:36px; animation:fadeDown 0.6s ease both; }
+  .header-eyebrow { font-size:11px; letter-spacing:0.3em; color:var(--tassel); text-transform:uppercase; margin-bottom:10px; }
+  .header h1 { font-family:'Playfair Display',serif; font-size:clamp(34px,6vw,60px); font-weight:900; line-height:1; color:var(--silk); letter-spacing:-1px; }
+  .header h1 span { color:var(--leaf); }
+  .header-sub { margin-top:12px; font-size:12px; color:var(--ash); letter-spacing:0.08em; }
+
+  .theme-bar { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:28px; flex-wrap:wrap; }
+  .theme-bar-label { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ash); margin-right:4px; }
+  .theme-btn { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; color:var(--ash); cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:7px; }
+  .theme-btn:hover { border-color:var(--leaf); color:var(--light); }
+  .theme-btn.active { background:var(--stalk); border-color:var(--stalk); color:var(--light); }
+  .theme-swatch { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+  .input-panel { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:28px 30px; margin-bottom:26px; animation:fadeUp 0.6s 0.1s ease both; position:relative; overflow:hidden; transition:background 0.35s,border-color 0.35s; }
+  .input-panel::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:linear-gradient(90deg,var(--stalk),var(--tassel),var(--stalk)); }
+  .input-grid { display:grid; grid-template-columns:1fr 1fr auto; gap:18px; align-items:end; }
+  @media(max-width:600px){ .input-grid{grid-template-columns:1fr;} }
+  .field-group { display:flex; flex-direction:column; gap:7px; }
+  .field-label { font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:var(--tassel); }
+  .field-input { background:var(--soil); border:1px solid var(--border); border-radius:2px; color:var(--light); font-family:'IBM Plex Mono',monospace; font-size:15px; padding:11px 14px; width:100%; transition:border-color 0.2s,box-shadow 0.2s; -webkit-appearance:none; }
+  .field-input:focus { outline:none; border-color:var(--leaf); box-shadow:0 0 0 2px rgba(106,171,64,0.12); }
+  .field-input::placeholder { color:var(--ash); opacity:0.5; }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.6) sepia(1) hue-rotate(60deg); cursor:pointer; }
+  .btn-calc { background:var(--stalk); border:none; border-radius:2px; color:var(--light); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; padding:12px 26px; cursor:pointer; transition:background 0.2s,transform 0.1s; white-space:nowrap; }
+  .btn-calc:hover { background:var(--leaf); }
+  .btn-calc:active { transform:scale(0.98); }
+  .status-msg { font-size:12px; margin-top:12px; padding:10px 14px; border-radius:2px; display:none; }
+  .status-msg.error { background:rgba(180,50,30,0.18); color:#e07060; border:1px solid rgba(180,50,30,0.3); display:block; }
+  .status-msg.loading { background:rgba(74,124,47,0.07); color:var(--ash); border:1px solid var(--border); display:block; }
+
+  .results { animation:fadeUp 0.5s ease both; }
+
+  .gdu-hero { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:30px 30px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; position:relative; overflow:hidden; transition:background 0.35s,border-color 0.35s; }
+  .gdu-hero::after { content:'🌽'; position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:56px; opacity:0.07; }
+  .gdu-main { flex:1; }
+  .gdu-label { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--tassel); margin-bottom:5px; }
+  .gdu-number { font-family:'Playfair Display',serif; font-size:clamp(48px,8vw,80px); font-weight:900; color:var(--kernel); line-height:1; letter-spacing:-2px; }
+  .gdu-unit { font-family:'IBM Plex Mono',monospace; font-size:16px; color:var(--tassel); font-weight:400; margin-left:6px; }
+  .gdu-meta { font-size:11px; color:var(--ash); margin-top:8px; letter-spacing:0.05em; line-height:1.9; }
+  .gdu-meta strong { color:var(--sky); }
+  .stage-badge { text-align:right; }
+  .stage-code { font-family:'Playfair Display',serif; font-size:44px; font-weight:700; color:var(--leaf); line-height:1; }
+  .stage-name { font-size:12px; color:var(--sky); margin-top:3px; letter-spacing:0.1em; }
+
+  .progress-section { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:20px 28px; margin-bottom:20px; transition:background 0.35s,border-color 0.35s; }
+  .progress-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .progress-title { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--tassel); }
+  .progress-pct { font-size:13px; color:var(--kernel); font-weight:600; }
+  .progress-track { height:7px; background:var(--soil); border-radius:4px; overflow:hidden; border:1px solid var(--border); }
+  .progress-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--stalk),var(--kernel)); transition:width 1s cubic-bezier(0.34,1.56,0.64,1); }
+
+  .chart-panel { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:22px 28px; margin-bottom:20px; transition:background 0.35s,border-color 0.35s; }
+  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .chart-title { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--tassel); }
+  .chart-legend { display:flex; gap:14px; font-size:11px; color:var(--ash); align-items:center; flex-wrap:wrap; }
+  .legend-pip { display:inline-block; width:24px; height:3px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+  .legend-pip.dashed { background:repeating-linear-gradient(90deg,var(--chart-forecast) 0,var(--chart-forecast) 5px,transparent 5px,transparent 9px); }
+  .chart-wrap { position:relative; width:100%; height:270px; }
+
+  .stages-grid { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:20px 28px; margin-bottom:20px; transition:background 0.35s,border-color 0.35s; }
+  .stages-title { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--tassel); margin-bottom:16px; }
+  .stage-row { display:grid; grid-template-columns:52px 1fr 88px 90px; gap:10px; padding:10px 0; border-bottom:1px solid rgba(61,46,16,0.4); align-items:center; }
+  .stage-row:last-child { border-bottom:none; }
+  .stage-row.current { background:rgba(106,171,64,0.09); border-radius:2px; border-color:transparent; margin:0 -6px; padding:10px 6px; }
+  .sr-code { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--leaf); }
+  .stage-row.past .sr-code { color:var(--ash); }
+  .stage-row.future .sr-code { color:rgba(138,148,120,0.3); }
+  .stage-row.current .sr-code { color:var(--kernel); }
+  .sr-name { font-size:12px; color:var(--light); }
+  .sr-name small { display:block; font-size:10px; color:var(--ash); margin-top:1px; }
+  .sr-gdu { font-size:12px; color:var(--ash); text-align:right; }
+  .sr-date { font-size:11px; color:var(--sky); text-align:right; }
+  .sr-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  .dot-past { background:var(--ash); }
+  .dot-current { background:var(--kernel); }
+  .dot-future { background:var(--border); }
+
+  .weather-panel { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:20px 28px; transition:background 0.35s,border-color 0.35s; }
+  .weather-title { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--tassel); margin-bottom:12px; }
+  .weather-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead tr { border-bottom:1px solid var(--border); }
+  th { text-align:left; padding:6px 9px; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--tassel); font-weight:500; }
+  td { padding:8px 9px; color:var(--ash); border-bottom:1px solid rgba(61,46,16,0.3); }
+  tr:last-child td { border-bottom:none; }
+  td.date-col { color:var(--light); }
+  td.gdu-col { color:var(--kernel); font-weight:600; }
+  td.cum-col { color:var(--leaf); }
+  .footer-note { margin-top:26px; font-size:10px; color:var(--ash); text-align:center; letter-spacing:0.08em; line-height:1.8; opacity:0.6; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .hidden { display:none !important; }
+</style>
 </head>
 <body>
-    <header>
-        <h1>GDU Tracker</h1>
-    </header>
-    <main>
-        <section id="tracker">
-            <h2>Track Your GDUs</h2>
-            <form id="gdu-form">
-                <label for="gdu-input">GDUs:</label>
-                <input type="number" id="gdu-input" required>
-                <button type="submit">Track</button>
-            </form>
-            <div id="results"></div>
-        </section>
-    </main>
-    <script src="script.js"></script>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">University Extension Formula</div>
+    <h1>GDU <span>Tracker</span></h1>
+    <div class="header-sub">Growing Degree Units for Corn · Base 50°F / Cap 86°F</div>
+  </div>
+
+  <div class="theme-bar">
+    <span class="theme-bar-label">Theme:</span>
+    <button class="theme-btn active" onclick="setTheme('')" id="t-default"><span class="theme-swatch" style="background:#6aab40"></span>Field</button>
+    <button class="theme-btn" onclick="setTheme('midnight')" id="t-midnight"><span class="theme-swatch" style="background:#58a6ff"></span>Midnight</button>
+    <button class="theme-btn" onclick="setTheme('prairie')" id="t-prairie"><span class="theme-swatch" style="background:#c4894d"></span>Prairie</button>
+    <button class="theme-btn" onclick="setTheme('storm')" id="t-storm"><span class="theme-swatch" style="background:#7289da"></span>Storm</button>
+    <button class="theme-btn" onclick="setTheme('harvest')" id="t-harvest"><span class="theme-swatch" style="background:#e74c3c"></span>Harvest</button>
+  </div>
+
+  <div class="input-panel">
+    <div class="input-grid">
+      <div class="field-group">
+        <label class="field-label" for="zipInput">ZIP Code</label>
+        <input class="field-input" type="text" id="zipInput" placeholder="61414" maxlength="5" inputmode="numeric">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="plantDate">Planting Date</label>
+        <input class="field-input" type="date" id="plantDate">
+      </div>
+      <button class="btn-calc" onclick="calculate()">Calculate →</button>
+    </div>
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
+
+  <div id="results" class="results hidden"></div>
+
+  <div class="footer-note">
+    GDU = [(Max Temp + Min Temp) / 2] − 50°F &nbsp;·&nbsp; Daily max capped at 86°F, min floored at 50°F<br>
+    Temperature data via Open-Meteo archive + forecast. Location resolved via Zippopotam.us.
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const STAGES = [
+  {code:"VE", name:"Emergence",            desc:"Coleoptile breaks soil surface",      gdu:120},
+  {code:"V1", name:"First Leaf",           desc:"1st leaf collar visible",              gdu:175},
+  {code:"V2", name:"Second Leaf",          desc:"2nd leaf collar visible",              gdu:230},
+  {code:"V3", name:"Third Leaf",           desc:"3rd leaf collar visible",              gdu:285},
+  {code:"V4", name:"Fourth Leaf",          desc:"Growing point near soil surface",      gdu:350},
+  {code:"V5", name:"Fifth Leaf",           desc:"Brace roots beginning",                gdu:420},
+  {code:"V6", name:"Sixth Leaf",           desc:"Growing point above soil",             gdu:475},
+  {code:"V7", name:"Seventh Leaf",         desc:"Ear shoots initiated",                 gdu:530},
+  {code:"V8", name:"Eighth Leaf",          desc:"Kernel row number determined",         gdu:585},
+  {code:"V9", name:"Ninth Leaf",           desc:"Ear shoot rapid development",          gdu:650},
+  {code:"V10",name:"Tenth Leaf",           desc:"Tassel rapid growth",                  gdu:720},
+  {code:"V12",name:"Twelfth Leaf",         desc:"Ears elongating",                      gdu:835},
+  {code:"V14",name:"Fourteenth Leaf",      desc:"Lower ear size nearly fixed",          gdu:950},
+  {code:"VT", name:"Tasseling",            desc:"Last branch of tassel visible",        gdu:1135},
+  {code:"R1", name:"Silking",              desc:"Silks visible at husk tip",            gdu:1400},
+  {code:"R2", name:"Blister",             desc:"Kernels white, blister-like",          gdu:1600},
+  {code:"R3", name:"Milk",                desc:"Kernels yellow, milky fluid",          gdu:1800},
+  {code:"R4", name:"Dough",               desc:"Kernel contents doughy",               gdu:1970},
+  {code:"R5", name:"Dent",               desc:"Most kernels dented",                  gdu:2190},
+  {code:"R6", name:"Black Layer / Maturity",desc:"Physiological maturity reached",    gdu:2700},
+];
+const FULL_GDU = 2700;
+let gduChart = null;
+let lastData = null;
+
+function cssVar(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+
+function setTheme(name){
+  document.body.className = name ? 'theme-'+name : '';
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('t-'+(name||'default')).classList.add('active');
+  if(lastData) setTimeout(()=>buildChart(lastData), 50);
+}
+
+function setStatus(msg,type){
+  const el=document.getElementById('statusMsg');
+  el.className='status-msg '+(type||''); el.textContent=msg;
+}
+function clearStatus(){ document.getElementById('statusMsg').className='status-msg'; }
+
+function fmtDate(s){
+  return new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function addDays(s,n){
+  const d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10);
+}
+function calcGDU(tmin,tmax){
+  return Math.max(0,(Math.min(tmax,86)+Math.max(tmin,50))/2-50);
+}
+function currentStage(gdu){
+  let idx=null;
+  for(let i=0;i<STAGES.length;i++){ if(gdu>=STAGES[i].gdu) idx=i; else break; }
+  return idx;
+}
+function projDate(plant,target,dailyArr){
+  let c=0;
+  for(let i=0;i<dailyArr.length;i++){
+    c+=dailyArr[i];
+    if(c>=target) return addDays(plant,i);
+  }
+  return null;
+}
+
+async function getLatLon(zip){
+  const r=await fetch(`https://api.zippopotam.us/us/${zip}`);
+  if(!r.ok) throw new Error('ZIP code not found.');
+  const d=await r.json(), p=d.places[0];
+  return {lat:+p.latitude, lon:+p.longitude, city:p['place name'], state:p['state abbreviation']};
+}
+async function getHist(lat,lon,s,e){
+  const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${s}&end_date=${e}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FChicago`);
+  if(!r.ok) throw new Error('Weather data unavailable.');
+  return (await r.json()).daily;
+}
+async function getFcst(lat,lon,s,e){
+  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&start_date=${s}&end_date=${e}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FChicago`);
+  if(!r.ok) throw new Error('Forecast data unavailable.');
+  return (await r.json()).daily;
+}
+
+async function calculate(){
+  const zip=document.getElementById('zipInput').value.trim();
+  const plant=document.getElementById('plantDate').value;
+  if(!/^\d{5}$/.test(zip)){ setStatus('Please enter a valid 5-digit ZIP code.','error'); return; }
+  if(!plant){ setStatus('Please enter a planting date.','error'); return; }
+  const today=new Date().toISOString().slice(0,10);
+  if(plant>today){ setStatus('Planting date cannot be in the future.','error'); return; }
+
+  setStatus('⟳ Locating ZIP code…','loading');
+  document.getElementById('results').classList.add('hidden');
+
+  try {
+    const {lat,lon,city,state}=await getLatLon(zip);
+    setStatus('⟳ Fetching historical weather…','loading');
+
+    const yest=addDays(today,-1);
+    let daily={time:[],temperature_2m_max:[],temperature_2m_min:[]};
+    if(plant<=yest){
+      const h=await getHist(lat,lon,plant,yest);
+      daily.time.push(...h.time);
+      daily.temperature_2m_max.push(...h.temperature_2m_max);
+      daily.temperature_2m_min.push(...h.temperature_2m_min);
+    }
+
+    setStatus('⟳ Fetching 14-day forecast…','loading');
+    const fcEnd=addDays(today,14);
+    const fc=await getFcst(lat,lon,today,fcEnd);
+    daily.time.push(...fc.time);
+    daily.temperature_2m_max.push(...fc.temperature_2m_max);
+    daily.temperature_2m_min.push(...fc.temperature_2m_min);
+
+    const histCutoff=daily.time.indexOf(today);
+    let dailyGDUs=[],cumulative=[],cum=0;
+    for(let i=0;i<daily.time.length;i++){
+      const hi=daily.temperature_2m_max[i], lo=daily.temperature_2m_min[i];
+      const dg=(hi==null||lo==null)?0:Math.round(calcGDU(lo,hi)*10)/10;
+      dailyGDUs.push(dg); cum+=dg; cumulative.push(Math.round(cum*10)/10);
+    }
+
+    const todayIdx=daily.time.indexOf(today);
+    const gdusToday=todayIdx>=0?cumulative[todayIdx]:cumulative[cumulative.length-1];
+    const stageIdx=currentStage(gdusToday);
+
+    clearStatus();
+    lastData={city,state,zip,plant,today,gdusToday,stageIdx,daily,dailyGDUs,cumulative,histCutoff};
+    renderResults(lastData);
+  } catch(err){
+    setStatus('Error: '+err.message,'error');
+  }
+}
+
+function buildChart(d){
+  const {daily,cumulative,dailyGDUs,histCutoff,plant} = d;
+  const maxShow=Math.min(daily.time.length, histCutoff>=0 ? histCutoff+15 : daily.time.length);
+
+  const labels=daily.time.slice(0,maxShow).map(dt=>{
+    const dd=new Date(dt+'T00:00:00');
+    return dd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  const actualPts=cumulative.slice(0,maxShow).map((v,i)=>i<=histCutoff?v:null);
+  const fcstPts  =cumulative.slice(0,maxShow).map((v,i)=>i>=histCutoff?v:null);
+
+  // Key stage lines
+  const KEY=['VE','V5','VT','R1','R3','R5','R6'];
+  const stageLines=STAGES.filter(s=>KEY.includes(s.code)).map(s=>{
+    const idx=cumulative.findIndex(c=>c>=s.gdu);
+    return {code:s.code,idx};
+  }).filter(a=>a.idx>=0&&a.idx<maxShow);
+
+  const acC=cssVar('--chart-actual')||'#6aab40';
+  const fcC=cssVar('--chart-forecast')||'#c8a84b';
+  const soilC=cssVar('--soil')||'#1a1208';
+  const borderC=cssVar('--border')||'#3d2e10';
+  const lightC=cssVar('--light')||'#f0ecd8';
+  const ashC=cssVar('--ash')||'#8a9478';
+  const tasselC=cssVar('--tassel')||'#c8a84b';
+  const todayIdx=histCutoff;
+
+  if(gduChart){ gduChart.destroy(); gduChart=null; }
+  const ctx=document.getElementById('gduChart');
+  if(!ctx) return;
+
+  gduChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Actual',
+          data:actualPts,
+          borderColor:acC,
+          backgroundColor:acC+'20',
+          borderWidth:2.5,
+          pointRadius:0,
+          pointHoverRadius:5,
+          fill:true,
+          tension:0.38,
+          spanGaps:false,
+        },
+        {
+          label:'Forecast',
+          data:fcstPts,
+          borderColor:fcC,
+          backgroundColor:fcC+'12',
+          borderWidth:2,
+          borderDash:[6,4],
+          pointRadius:0,
+          pointHoverRadius:5,
+          fill:true,
+          tension:0.38,
+          spanGaps:false,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:soilC,
+          borderColor:borderC,
+          borderWidth:1,
+          titleColor:lightC,
+          bodyColor:ashC,
+          padding:10,
+          callbacks:{
+            title:ctx=>ctx[0].label,
+            label:ctx=>{
+              if(ctx.raw==null) return null;
+              const gv=Math.round(ctx.raw);
+              const st=STAGES.slice().reverse().find(s=>ctx.raw>=s.gdu);
+              return `${ctx.dataset.label}: ${gv} GDU${st?' · '+st.code:''}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:ashC,font:{family:"'IBM Plex Mono',monospace",size:10},maxTicksLimit:12,maxRotation:35},
+          grid:{color:borderC+'44'},
+          border:{color:borderC}
+        },
+        y:{
+          ticks:{color:ashC,font:{family:"'IBM Plex Mono',monospace",size:10},callback:v=>Math.round(v)},
+          grid:{color:borderC+'44'},
+          border:{color:borderC},
+          min:0,
+          max:FULL_GDU+150
+        }
+      }
+    },
+    plugins:[{
+      id:'overlays',
+      afterDraw(chart){
+        const {ctx:c,scales:{x,y},chartArea:ca}=chart;
+        // Stage vertical dashed lines
+        stageLines.forEach(a=>{
+          const xp=x.getPixelForValue(a.idx);
+          c.save();
+          c.setLineDash([3,3]);
+          c.strokeStyle=tasselC+'50';
+          c.lineWidth=1;
+          c.beginPath(); c.moveTo(xp,ca.top); c.lineTo(xp,ca.bottom); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle=tasselC+'cc';
+          c.font="9px 'IBM Plex Mono',monospace";
+          c.textAlign='center';
+          c.fillText(a.code,xp,ca.top+11);
+          c.restore();
+        });
+        // Today line
+        if(todayIdx>=0&&todayIdx<labels.length){
+          const xp=x.getPixelForValue(todayIdx);
+          c.save();
+          c.strokeStyle=acC+'90';
+          c.lineWidth=1.5;
+          c.beginPath(); c.moveTo(xp,ca.top); c.lineTo(xp,ca.bottom); c.stroke();
+          c.fillStyle=lightC+'99';
+          c.font="9px 'IBM Plex Mono',monospace";
+          c.textAlign='center';
+          c.fillText('TODAY',xp,ca.bottom+15);
+          c.restore();
+        }
+        // Stage horizontal reference lines for key thresholds
+        [1135,1400,2700].forEach((gduVal,ri)=>{
+          const yp=y.getPixelForValue(gduVal);
+          if(yp<ca.top||yp>ca.bottom) return;
+          const label=['VT','R1','R6'][ri];
+          c.save();
+          c.setLineDash([2,4]);
+          c.strokeStyle=tasselC+'25';
+          c.lineWidth=1;
+          c.beginPath(); c.moveTo(ca.left,yp); c.lineTo(ca.right,yp); c.stroke();
+          c.setLineDash([]);
+          c.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderResults(d){
+  const {city,state,zip,plant,today,gdusToday,stageIdx,daily,dailyGDUs,cumulative,histCutoff}=d;
+  const pct=Math.min(100,Math.round((gdusToday/FULL_GDU)*100));
+  const stage=stageIdx!==null?STAGES[stageIdx]:null;
+  const nextStage=stageIdx!==null?STAGES[stageIdx+1]:STAGES[0];
+  const daysIn=daily.time.indexOf(today)+1;
+  const stageDates=STAGES.map(s=>projDate(plant,s.gdu,dailyGDUs));
+  const acC=cssVar('--chart-actual')||'#6aab40';
+  const fcC=cssVar('--chart-forecast')||'#c8a84b';
+
+  let html='';
+
+  // Hero
+  html+=`<div class="gdu-hero">
+    <div class="gdu-main">
+      <div class="gdu-label">Cumulative GDUs · ${city}, ${state} ${zip}</div>
+      <div class="gdu-number">${Math.round(gdusToday)}<span class="gdu-unit">GDU</span></div>
+      <div class="gdu-meta">
+        Planted <strong>${fmtDate(plant)}</strong> &nbsp;·&nbsp;
+        Day <strong>${daysIn}</strong> of season &nbsp;·&nbsp;
+        ${pct}% to black layer
+        ${nextStage?`&nbsp;·&nbsp; <strong>${nextStage.gdu-Math.round(gdusToday)} GDU</strong> to ${nextStage.code}`:''}
+      </div>
+    </div>
+    <div class="stage-badge">
+      <div class="stage-code">${stage?stage.code:'—'}</div>
+      <div class="stage-name">${stage?stage.name:'Pre-emergence'}</div>
+    </div>
+  </div>`;
+
+  // Progress
+  html+=`<div class="progress-section">
+    <div class="progress-header">
+      <div class="progress-title">Season Progress — Planting to Black Layer (R6)</div>
+      <div class="progress-pct">${pct}%</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
+  </div>`;
+
+  // Chart
+  html+=`<div class="chart-panel">
+    <div class="chart-header">
+      <div class="chart-title">Cumulative GDU Accumulation</div>
+      <div class="chart-legend">
+        <span><span class="legend-pip" style="background:${acC};display:inline-block;width:24px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle"></span>Actual</span>
+        <span><span style="display:inline-block;width:24px;height:3px;background:repeating-linear-gradient(90deg,${fcC} 0,${fcC} 5px,transparent 5px,transparent 9px);margin-right:5px;vertical-align:middle"></span>Forecast</span>
+        <span style="font-size:10px;opacity:0.6">Dashed verticals = key stages</span>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="gduChart"></canvas></div>
+  </div>`;
+
+  // Stage table
+  html+=`<div class="stages-grid"><div class="stages-title">Growth Stage Tracker</div>
+    <div class="stage-row" style="padding-bottom:4px">
+      <div></div>
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tassel)">Stage</div>
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tassel);text-align:right">GDU</div>
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tassel);text-align:right">Est. Date</div>
+    </div>`;
+  STAGES.forEach((s,i)=>{
+    const reached=gdusToday>=s.gdu, isCurr=i===stageIdx;
+    const cls=isCurr?'current':(reached?'past':'future');
+    const dotCls=isCurr?'dot-current':(reached?'dot-past':'dot-future');
+    const ds=stageDates[i]?fmtDate(stageDates[i]):(reached?fmtDate(plant):'—');
+    html+=`<div class="stage-row ${cls}">
+      <div class="sr-code"><span class="sr-dot ${dotCls}"></span>${s.code}</div>
+      <div class="sr-name">${s.name}<small>${s.desc}</small></div>
+      <div class="sr-gdu">${s.gdu.toLocaleString()}</div>
+      <div class="sr-date">${ds}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Weather detail table
+  const ws=Math.max(0,histCutoff-7);
+  const we=Math.min(daily.time.length-1,(histCutoff>=0?histCutoff:0)+7);
+  html+=`<div class="weather-panel"><div class="weather-title">Daily Temperature & GDU Detail (Recent + 7-Day Forecast)</div>
+    <div class="weather-scroll"><table>
+      <thead><tr><th>Date</th><th>Type</th><th>High °F</th><th>Low °F</th><th>Daily GDU</th><th>Cumulative</th></tr></thead>
+      <tbody>`;
+  for(let i=ws;i<=we;i++){
+    const isFc=histCutoff>=0?i>=histCutoff:false;
+    const hi=daily.temperature_2m_max[i]!=null?Math.round(daily.temperature_2m_max[i]):'—';
+    const lo=daily.temperature_2m_min[i]!=null?Math.round(daily.temperature_2m_min[i]):'—';
+    html+=`<tr>
+      <td class="date-col">${fmtDate(daily.time[i])}</td>
+      <td style="font-size:10px;color:${isFc?'var(--tassel)':'var(--ash)'}">${isFc?'Forecast':'Actual'}</td>
+      <td>${hi}°</td><td>${lo}°</td>
+      <td class="gdu-col">${dailyGDUs[i]}</td>
+      <td class="cum-col">${cumulative[i]}</td>
+    </tr>`;
+  }
+  html+=`</tbody></table></div></div>`;
+
+  const el=document.getElementById('results');
+  el.innerHTML=html;
+  el.classList.remove('hidden');
+
+  setTimeout(()=>{
+    const pf=document.getElementById('pfill');
+    if(pf) pf.style.width=pct+'%';
+    buildChart(d);
+  }, 80);
+}
+
+const y=new Date().getFullYear();
+document.getElementById('plantDate').value=`${y}-05-01`;
+</script>
 </body>
 </html>
