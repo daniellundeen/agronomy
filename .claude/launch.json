@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Landing Page",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080"],
+      "port": 8080
+    },
+    {
+      "name": "Corn GDU Tracker",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "corn-gdu-tracker", "-l", "8081"],
+      "port": 8081
+    }
+  ]
+}
