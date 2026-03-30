@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Emergence GDU Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   :root {
     --soil: #3d2b1f;
@@ -63,7 +63,7 @@
     );
   }
 
-  .header-logo { display: flex; align-items: flex-end; gap: 4px; margin-right: 4px; }
+  .header-logo { font-size: 2.2rem; margin-right: 4px; letter-spacing: -2px; }
 
   header h1 {
     font-family: 'Playfair Display', serif;
@@ -198,7 +198,7 @@
     padding: 10px 12px;
     border-radius: 6px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     line-height: 1.5;
   }
   .status-msg.info { background: rgba(212,168,83,0.15); color: var(--straw-light); border: 1px solid rgba(212,168,83,0.3); }
@@ -219,12 +219,12 @@
     height: 100%;
     color: var(--text-light);
     text-align: center;
-    gap: 12px;
+    gap: 18px;
+    padding: 32px;
   }
 
-  .placeholder-icon { font-size: 4rem; opacity: 0.3; }
-  .placeholder h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--earth); }
-  .placeholder p { font-size: 0.9rem; max-width: 320px; opacity: 0.7; }
+  .placeholder h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--earth); margin: 0; }
+  .placeholder p { font-size: 0.9rem; max-width: 320px; opacity: 0.7; margin: 0; }
 
   /* RESULTS */
   .results { display: flex; flex-direction: column; gap: 24px; }
@@ -304,9 +304,9 @@
   }
 
   .cal-month-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-light);
     margin-bottom: 5px;
@@ -318,8 +318,8 @@
   .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 5px;
+    margin-bottom: 5px;
   }
 
   .cal-dow-row {
@@ -330,8 +330,8 @@
   }
 
   .cal-dow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
     text-align: center;
     color: var(--text-light);
     opacity: 0.6;
@@ -339,13 +339,13 @@
 
   .cal-cell {
     aspect-ratio: 1;
-    border-radius: 5px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
     cursor: default;
     position: relative;
     transition: transform 0.12s;
@@ -355,6 +355,43 @@
 
   .cal-cell:hover { transform: scale(1.2); z-index: 10; }
 
+  .cal-tooltip {
+    position: absolute;
+    background: var(--soil);
+    color: var(--cream);
+    border: 1.5px solid var(--straw);
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    top: 0; left: 0;
+  }
+
+  .cal-tooltip-date {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--straw);
+    margin-bottom: 5px;
+    letter-spacing: 0.04em;
+  }
+
+  .cal-tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .cal-tooltip-label { color: var(--straw-light); }
+  .cal-tooltip-val   { font-weight: 600; text-align: right; }
+
   .cal-cell.empty { background: transparent; border: none; }
 
   .cal-cell.pre-plant {
@@ -363,16 +400,13 @@
     border-color: transparent;
   }
 
-  .cal-cell.gdu-0  { background: #f5f0e8; color: #bbb; border-color: #e8dfc8; }
-  .cal-cell.gdu-1  { background: #e8f4e0; color: #5a8c4a; border-color: #cce8b8; }
-  .cal-cell.gdu-2  { background: #cce8a8; color: #3d6e2a; border-color: #a8d878; }
-  .cal-cell.gdu-3  { background: #a8d870; color: #2a5a18; border-color: #88c048; }
-  .cal-cell.gdu-4  { background: #7cc840; color: #1a4008; border-color: #60a828; }
-  .cal-cell.gdu-5  { background: #58b020; color: #fff;    border-color: #3e8810; }
+  .cal-cell.gdu-0  { background: #e8d0cc; color: #a04040; border-color: #d4b0aa; }
+  .cal-cell.gdu-1  { background: #f5dfa0; color: #7a5000; border-color: #e0c878; }
+  .cal-cell.gdu-2  { background: #b8dfa0; color: #2a5018; border-color: #90c878; }
 
   .cal-cell.climate {
+    opacity: 0.7;
     border-style: dashed !important;
-    opacity: 0.75;
   }
 
   .cal-cell.emergence {
@@ -412,18 +446,198 @@
   }
 
   .gdu-stat-val {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Barlow Condensed', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     line-height: 1;
   }
 
   .gdu-stat-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
     color: var(--text-light);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+  }
+
+  .status-bar-wrap {
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+
+  .status-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .status-bar-gdu {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .status-bar-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 2px;
+  }
+
+  .status-bar-pct {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .status-bar-track {
+    height: 10px;
+    background: #e8dfc8;
+    border-radius: 5px;
+    overflow: visible;
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  .status-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 1s cubic-bezier(0.34,1.1,0.64,1);
+    width: 0%;
+    position: relative;
+  }
+
+  .status-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: -3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: inherit;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .days-in-soil {
+    text-align: right;
+    padding-left: 12px;
+    border-left: 1.5px solid var(--border);
+  }
+
+  .days-in-soil-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .days-in-soil-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 2px;
+  }
+
+  .status-bar-dates {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  .status-emerge-callout {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+  }
+
+  .status-emerge-callout.projected {
+    background: #e8f4e0;
+    border: 2px solid #4a7c3f;
+    color: #1a4010;
+  }
+
+  .status-emerge-callout.projected .callout-main {
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .status-emerge-callout.projected .callout-sub {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #3a6a28;
+    display: block;
+  }
+
+  .status-emerge-callout.emerged {
+    background: #2d6a20;
+    border: 2px solid #1a4010;
+    color: #fff;
+  }
+
+  .status-emerge-callout.emerged .callout-main {
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .status-emerge-callout.emerged .callout-sub {
+    font-size: 0.85rem;
+    font-weight: 400;
+    opacity: 0.85;
+    display: block;
+  }
+
+  .status-emerge-callout.pending {
+    background: #fdf3dc;
+    border: 2px solid #c49a2a;
+    color: #6a4800;
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+
+  .soil-temp-note {
+    margin-top: 8px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+
+  .soil-temp-note.full {
+    background: rgba(74,124,63,0.1);
+    border: 1px solid rgba(74,124,63,0.25);
+    color: #2a5a18;
+  }
+
+  .soil-temp-note.partial {
+    background: rgba(180,140,60,0.1);
+    border: 1px solid rgba(180,140,60,0.3);
+    color: #6a4800;
+  }
+
+  .soil-temp-note.air {
+    background: rgba(100,130,160,0.1);
+    border: 1px solid rgba(100,130,160,0.25);
+    color: #2a4060;
   }
 
   .cal-legend {
@@ -431,8 +645,8 @@
     align-items: center;
     gap: 4px;
     margin-top: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.76rem;
     color: var(--text-light);
   }
 
@@ -466,7 +680,7 @@
     color: white;
     padding: 4px 12px;
     border-radius: 20px;
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
     margin-top: 6px;
@@ -479,7 +693,7 @@
     border-radius: 0 6px 6px 0;
     font-size: 0.75rem;
     color: var(--text-light);
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Barlow Condensed', sans-serif;
     line-height: 1.5;
     margin-top: 10px;
   }
@@ -489,9 +703,9 @@
     border-left: 3px solid #5a9fc7;
     padding: 8px 10px;
     border-radius: 0 6px 6px 0;
-    font-size: 0.72rem;
+    font-size: 0.84rem;
     color: #2a5f80;
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Barlow Condensed', sans-serif;
     line-height: 1.5;
     margin-top: 8px;
   }
@@ -607,50 +821,7 @@
 <body>
 
 <header>
-  <div class="header-logo">
-    <!-- Corn stalk SVG -->
-    <svg width="38" height="52" viewBox="0 0 38 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- stalk -->
-      <line x1="19" y1="50" x2="19" y2="8" stroke="#d4a853" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- left leaf -->
-      <path d="M19 32 Q7 26 5 16 Q13 20 19 32Z" fill="#6aaa5e" opacity="0.9"/>
-      <!-- right leaf -->
-      <path d="M19 24 Q31 18 33 8 Q25 12 19 24Z" fill="#4a7c3f" opacity="0.9"/>
-      <!-- ear cob body -->
-      <rect x="13" y="8" width="12" height="20" rx="6" fill="#f5a623"/>
-      <!-- cob kernels rows -->
-      <line x1="16" y1="11" x2="16" y2="25" stroke="#c47a15" stroke-width="1" opacity="0.5"/>
-      <line x1="19" y1="10" x2="19" y2="26" stroke="#c47a15" stroke-width="1" opacity="0.5"/>
-      <line x1="22" y1="11" x2="22" y2="25" stroke="#c47a15" stroke-width="1" opacity="0.5"/>
-      <!-- husk -->
-      <path d="M13 14 Q8 18 10 26 Q13 22 13 14Z" fill="#6aaa5e" opacity="0.85"/>
-      <path d="M25 14 Q30 18 28 26 Q25 22 25 14Z" fill="#4a7c3f" opacity="0.85"/>
-      <!-- tassel -->
-      <line x1="19" y1="8" x2="15" y2="2" stroke="#d4a853" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="19" y1="8" x2="19" y2="1" stroke="#d4a853" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="19" y1="8" x2="23" y2="2" stroke="#d4a853" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <!-- Soybean plant SVG -->
-    <svg width="34" height="52" viewBox="0 0 34 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- stem -->
-      <line x1="17" y1="50" x2="17" y2="10" stroke="#6aaa5e" stroke-width="2.2" stroke-linecap="round"/>
-      <!-- left branch -->
-      <line x1="17" y1="36" x2="7" y2="28" stroke="#6aaa5e" stroke-width="1.8" stroke-linecap="round"/>
-      <!-- right branch -->
-      <line x1="17" y1="26" x2="27" y2="18" stroke="#6aaa5e" stroke-width="1.8" stroke-linecap="round"/>
-      <!-- left pod -->
-      <ellipse cx="5" cy="25" rx="5" ry="8" fill="#5b8f3a" transform="rotate(-20 5 25)"/>
-      <ellipse cx="5" cy="25" rx="2.5" ry="3" fill="#4a7c3f" transform="rotate(-20 5 25) translate(0 -3)"/>
-      <ellipse cx="5" cy="25" rx="2.5" ry="3" fill="#4a7c3f" transform="rotate(-20 5 25) translate(0 3)"/>
-      <!-- right pod -->
-      <ellipse cx="29" cy="15" rx="5" ry="8" fill="#5b8f3a" transform="rotate(20 29 15)"/>
-      <ellipse cx="29" cy="15" rx="2.5" ry="3" fill="#4a7c3f" transform="rotate(20 29 15) translate(0 -3)"/>
-      <ellipse cx="29" cy="15" rx="2.5" ry="3" fill="#4a7c3f" transform="rotate(20 29 15) translate(0 3)"/>
-      <!-- top leaves -->
-      <path d="M17 10 Q10 4 8 -2 Q16 2 17 10Z" fill="#6aaa5e" opacity="0.9"/>
-      <path d="M17 10 Q24 4 26 -2 Q18 2 17 10Z" fill="#4a7c3f" opacity="0.9"/>
-    </svg>
-  </div>
+  <div class="header-logo">🌽🌱</div>
   <div>
     <h1>Emergence GDU Calculator</h1>
     <p>Soil-adjusted growing degree unit accumulation tracker</p>
@@ -668,16 +839,7 @@
       <input type="text" id="locationInput" placeholder="e.g. Ames, IA or 50010" value=""/>
     </div>
 
-    <div class="section-label">🌽 Crop & Planting</div>
-
-    <div class="field-group">
-      <label>Crop</label>
-      <div class="radio-group">
-        <div class="radio-btn"><input type="radio" name="crop" id="cropBoth" value="both" checked/><label for="cropBoth">Both</label></div>
-        <div class="radio-btn"><input type="radio" name="crop" id="cropCorn" value="corn"/><label for="cropCorn">Corn</label></div>
-        <div class="radio-btn"><input type="radio" name="crop" id="cropSoy"  value="soy"/><label for="cropSoy">Soybeans</label></div>
-      </div>
-    </div>
+    <div class="section-label">🌽 Planting</div>
 
     <div class="field-group">
       <label>Planting Date</label>
@@ -710,7 +872,6 @@
         <option value="notill">No-Till / Strip-Till</option>
         <option value="vertical">Vertical Tillage</option>
         <option value="conventional" selected>Conventional Till</option>
-        <option value="deeprip">Deep Rip / Moldboard</option>
       </select>
     </div>
 
@@ -721,9 +882,116 @@
   </div>
 
   <!-- CONTENT -->
-  <div class="content" id="contentArea">
+  <div class="content" id="contentArea" style="position:relative">
     <div class="placeholder">
-      <div class="placeholder-icon">🌾</div>
+      <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" style="width:min(320px,90%);opacity:0.82">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#b8d4e8"/>
+            <stop offset="100%" stop-color="#dceef8"/>
+          </linearGradient>
+          <linearGradient id="soilGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5c3d2e"/>
+            <stop offset="100%" stop-color="#3d2b1f"/>
+          </linearGradient>
+          <linearGradient id="subsoilGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3d2b1f"/>
+            <stop offset="100%" stop-color="#2a1d14"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Sky background -->
+        <rect x="0" y="0" width="320" height="155" fill="url(#skyGrad)" rx="10"/>
+
+        <!-- Sun -->
+        <circle cx="260" cy="44" r="28" fill="#f5c842" opacity="0.95"/>
+        <!-- Sun rays -->
+        <g stroke="#f5c842" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
+          <line x1="260" y1="8"  x2="260" y2="2"/>
+          <line x1="260" y1="80" x2="260" y2="86"/>
+          <line x1="224" y1="44" x2="218" y2="44"/>
+          <line x1="296" y1="44" x2="302" y2="44"/>
+          <line x1="235" y1="19" x2="231" y2="15"/>
+          <line x1="285" y1="69" x2="289" y2="73"/>
+          <line x1="285" y1="19" x2="289" y2="15"/>
+          <line x1="235" y1="69" x2="231" y2="73"/>
+        </g>
+
+        <!-- Large cloud -->
+        <g opacity="0.93">
+          <ellipse cx="110" cy="68" rx="48" ry="28" fill="white"/>
+          <ellipse cx="80"  cy="76" rx="30" ry="22" fill="white"/>
+          <ellipse cx="148" cy="76" rx="28" ry="20" fill="white"/>
+          <ellipse cx="110" cy="82" rx="52" ry="18" fill="white"/>
+        </g>
+
+        <!-- Small cloud right -->
+        <g opacity="0.75">
+          <ellipse cx="210" cy="92" rx="28" ry="16" fill="white"/>
+          <ellipse cx="192" cy="98" rx="18" ry="13" fill="white"/>
+          <ellipse cx="228" cy="98" rx="16" ry="12" fill="white"/>
+          <ellipse cx="210" cy="103" rx="30" ry="11" fill="white"/>
+        </g>
+
+        <!-- Rain drops from large cloud -->
+        <g fill="#6aaed6" opacity="0.7">
+          <ellipse cx="82"  cy="106" rx="2" ry="5"/>
+          <ellipse cx="96"  cy="112" rx="2" ry="5"/>
+          <ellipse cx="110" cy="108" rx="2" ry="5"/>
+          <ellipse cx="124" cy="114" rx="2" ry="5"/>
+          <ellipse cx="138" cy="107" rx="2" ry="5"/>
+          <ellipse cx="88"  cy="120" rx="2" ry="5"/>
+          <ellipse cx="102" cy="125" rx="2" ry="5"/>
+          <ellipse cx="116" cy="121" rx="2" ry="5"/>
+          <ellipse cx="130" cy="127" rx="2" ry="5"/>
+        </g>
+
+        <!-- Rain from small cloud -->
+        <g fill="#6aaed6" opacity="0.55">
+          <ellipse cx="200" cy="118" rx="1.5" ry="4"/>
+          <ellipse cx="210" cy="123" rx="1.5" ry="4"/>
+          <ellipse cx="220" cy="116" rx="1.5" ry="4"/>
+        </g>
+
+        <!-- Soil layer top -->
+        <rect x="0" y="150" width="320" height="35" fill="url(#soilGrad)" rx="0"/>
+        <!-- Soil texture lines -->
+        <g stroke="#8b6347" stroke-width="0.8" opacity="0.3">
+          <path d="M10 158 Q40 154 70 160 Q100 156 130 161 Q160 157 190 162 Q220 158 250 163 Q280 159 310 162"/>
+          <path d="M20 168 Q55 164 85 170 Q115 166 145 171 Q175 167 205 172 Q235 168 265 173 Q290 169 310 172"/>
+        </g>
+
+        <!-- Sub-soil layer -->
+        <rect x="0" y="185" width="320" height="35" fill="url(#subsoilGrad)" rx="0"/>
+        <!-- Sub-soil texture -->
+        <g stroke="#5c3d2e" stroke-width="0.8" opacity="0.3">
+          <path d="M15 194 Q50 190 80 196 Q110 192 140 197 Q170 193 200 198 Q230 194 260 199 Q285 195 310 198"/>
+        </g>
+
+        <!-- Small pebbles in soil -->
+        <g fill="#8b6347" opacity="0.35">
+          <ellipse cx="42"  cy="164" rx="5" ry="3"/>
+          <ellipse cx="90"  cy="172" rx="4" ry="2.5"/>
+          <ellipse cx="155" cy="165" rx="6" ry="3"/>
+          <ellipse cx="210" cy="174" rx="4" ry="2.5"/>
+          <ellipse cx="270" cy="167" rx="5" ry="3"/>
+          <ellipse cx="60"  cy="196" rx="5" ry="3"/>
+          <ellipse cx="130" cy="200" rx="4" ry="2.5"/>
+          <ellipse cx="195" cy="194" rx="6" ry="3"/>
+          <ellipse cx="255" cy="200" rx="4" ry="2.5"/>
+        </g>
+
+        <!-- Seed in soil -->
+        <ellipse cx="160" cy="172" rx="9" ry="6" fill="#d4a853" opacity="0.9"/>
+        <ellipse cx="160" cy="172" rx="9" ry="6" fill="none" stroke="#8b6347" stroke-width="1" opacity="0.5"/>
+
+        <!-- Ground line -->
+        <line x1="0" y1="150" x2="320" y2="150" stroke="#3d2b1f" stroke-width="1.5" opacity="0.4"/>
+
+        <!-- Bottom fill -->
+        <rect x="0" y="218" width="320" height="4" fill="#2a1d14" rx="0"/>
+      </svg>
+
       <h2>Ready to Calculate</h2>
       <p>Enter your location, planting date, and field conditions, then click Calculate to see your emergence forecast.</p>
     </div>
@@ -753,11 +1021,10 @@ const TILLAGE_FACTOR = {
   notill:       0.82,  // full residue — 30-45 GDU documented penalty (UNL/Pioneer research)
   vertical:     0.92,  // partial residue incorporation, moderate delay
   conventional: 1.00,  // baseline — <30% residue, standard seedbed
-  deeprip:      1.06   // aggressive incorporation + soil fracturing = faster seed-zone warming
 };
 
 const SOIL_LABELS = { sandy: 'Sandy/Loamy Sand', siltloam: 'Silt Loam/Loam', clay: 'Heavy Clay' };
-const TILL_LABELS  = { notill: 'No-Till/Strip-Till', vertical: 'Vertical Tillage', conventional: 'Conventional Till', deeprip: 'Deep Rip/Moldboard' };
+const TILL_LABELS  = { notill: 'No-Till/Strip-Till', vertical: 'Vertical Tillage', conventional: 'Conventional Till' };
 
 // ─── GEOCODE ─────────────────────────────────────────────────────────────────
 
@@ -977,7 +1244,7 @@ function calcEmergence(dailyTemps, plantIdx, plantTimeFactor, soilF, tillF, crop
 async function calculate() {
   const locationVal = document.getElementById('locationInput').value.trim();
   const plantDateVal = document.getElementById('plantDate').value;
-  const crop = document.querySelector('input[name=crop]:checked').value;
+  const crop = 'both';
   const plantTime = document.querySelector('input[name=plantTime]:checked').value;
   const soilType = document.getElementById('soilType').value;
   const tillageType = document.getElementById('tillageType').value;
@@ -1007,7 +1274,7 @@ async function calculate() {
     const plantIdx = dailyTemps.findIndex(d => d.date === plantDateVal);
     if (plantIdx < 0) throw new Error('Planting date not found in weather data.');
 
-    const crops = crop === 'both' ? ['corn', 'soy'] : [crop];
+    const crops = ['corn', 'soy'];
     const results = {};
     let climateNormals = null; // lazy-loaded if needed
     let usedClimate = false;
@@ -1038,7 +1305,7 @@ async function calculate() {
     const soilPct = Math.round((weather.soilDays / weather.totalDays) * 100);
     const tempSrc = weather.soilDays > 0 ? `🌱 ${soilPct}% soil temp data` : '🌡 Air temp (soil unavailable)';
     showStatus(`✓ ${loc.name}, ${loc.admin1 || ''} — ${tempSrc}`, 'success');
-    renderResults(results, loc, plantDateVal, soilType, tillageType, crop, dailyTemps, plantIdx, soilF * tillF, tempSrc);
+    renderResults(results, loc, plantDateVal, soilType, tillageType, dailyTemps, plantIdx, soilF * tillF, tempSrc, weather.soilDays, weather.totalDays);
 
   } catch(e) {
     showStatus('Error: ' + e.message, 'error');
@@ -1055,14 +1322,15 @@ function showStatus(msg, type, raw = false) {
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 
-function renderResults(results, loc, plantDate, soilType, tillageType, cropSel, dailyTemps, plantIdx, adjF, tempSrc) {
+function renderResults(results, loc, plantDate, soilType, tillageType, dailyTemps, plantIdx, adjF, tempSrc, soilDays, totalDays) {
   const content = document.getElementById('contentArea');
   const crops = Object.keys(results);
   const plantDateFmt = new Date(plantDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
+  const today = new Date().toISOString().slice(0, 10);
   let cropPanelsHTML = '';
   for (const c of crops) {
-    cropPanelsHTML += buildCropPanel(c, results[c], adjF);
+    cropPanelsHTML += buildCropPanel(c, results[c], adjF, plantDate, today, soilDays, totalDays);
   }
 
   const chartData = buildChartData(results, dailyTemps, plantIdx);
@@ -1080,7 +1348,7 @@ function renderResults(results, loc, plantDate, soilType, tillageType, cropSel, 
         <div class="weather-badge">${tempSrc || "🌱 Soil Temp Data"}</div>
       </div>
 
-      <div class="crop-panels" style="${crops.length === 1 ? 'grid-template-columns:1fr 1fr' : ''}">
+      <div class="crop-panels">
         ${cropPanelsHTML}
       </div>
 
@@ -1098,8 +1366,10 @@ function renderResults(results, loc, plantDate, soilType, tillageType, cropSel, 
     </div>
   `;
 
-  // Animate stats
-  setTimeout(() => animateStats(results), 80);
+  // Animate stats + attach tooltips
+  const todayStr = new Date().toISOString().slice(0, 10);
+  setTimeout(() => animateStats(results, todayStr), 80);
+  setTimeout(() => attachCalTooltips(), 150);
 
   // Draw chart
   setTimeout(() => drawChart(chartData, crops), 100);
@@ -1107,42 +1377,22 @@ function renderResults(results, loc, plantDate, soilType, tillageType, cropSel, 
 
 // ─── GDU INTENSITY BAND (0-5) ─────────────────────────────────────────────
 function gduBand(adjGDU) {
-  if (adjGDU <= 0)  return 0;
-  if (adjGDU < 4)   return 1;
-  if (adjGDU < 8)   return 2;
-  if (adjGDU < 12)  return 3;
-  if (adjGDU < 18)  return 4;
-  return 5;
+  if (adjGDU <= 0) return 0;  // red — no accumulation
+  if (adjGDU < 10) return 1;  // amber — moderate
+  return 2;                   // green — good accumulation
 }
 
 // ─── BUILD CROP PANEL ─────────────────────────────────────────────────────
-function buildCropPanel(crop, result, adjF) {
+function buildCropPanel(crop, result, adjF, plantDate, today, soilDays, totalDays) {
   const isCorn   = crop === 'corn';
   const target   = GDU_TARGETS[crop];
   const label    = isCorn ? 'Corn' : 'Soybeans';
-  const emoji    = isCorn ? '🌽' : '🫘';
+  const emoji    = isCorn ? '🌽' : '🌱';
   const cls      = isCorn ? 'corn' : 'soy';
   const color    = isCorn ? '#c49a2a' : '#4a8c35';
   const pct      = Math.min(100, (result.finalGDU / target.base) * 100);
   const lastRow  = result.rows[result.rows.length - 1];
   const emergeDate = (result.emerged && lastRow) ? lastRow.date : null;
-
-  // ── Emergence date display ───────────────────────────────────────────────
-  let dateHTML = '';
-  if (result.emerged && emergeDate) {
-    const d = new Date(emergeDate + 'T12:00:00');
-    const fmt = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    const lowD = new Date(emergeDate + 'T12:00:00'); lowD.setDate(lowD.getDate() - 1);
-    const hiD  = new Date(emergeDate + 'T12:00:00'); hiD.setDate(hiD.getDate() + 2);
-    const fmtLow = lowD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    const fmtHi  = hiD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    dateHTML = `
-      <div class="emergence-date">
-        <div class="date-val" style="color:${color}">🌱 ${fmt}</div>
-        <div class="date-range">Range: ${fmtLow} – ${fmtHi}</div>
-        <span class="emerged-badge">EMERGED</span>
-      </div>`;
-  }
 
   // ── Climate callout ──────────────────────────────────────────────────────
   const climateNote = result.usedClimate
@@ -1152,6 +1402,92 @@ function buildCropPanel(crop, result, adjF) {
   // ── Adj note ─────────────────────────────────────────────────────────────
   const adjPct   = Math.round((adjF - 1) * 100);
   const adjLabel = adjPct >= 0 ? `+${adjPct}% soil/tillage warming` : `${adjPct}% soil/tillage cooling`;
+
+  // ── Status bar ───────────────────────────────────────────────────────────
+  // GDU as of today (only real forecast rows, not climate)
+  const todayRows = result.rows.filter(r => !r.isClimate && r.date <= today);
+  const gduToday  = todayRows.length > 0 ? parseFloat(todayRows[todayRows.length - 1].cumGDU) : 0;
+  const pctToday  = Math.min(100, (gduToday / target.base) * 100);
+  const pctFinal  = Math.min(100, (result.finalGDU / target.base) * 100);
+
+  const plantFmt  = new Date(plantDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const todayFmt  = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+  // Emergence callout
+  let emergeCallout = '';
+  if (result.emerged && emergeDate) {
+    const eFmt = new Date(emergeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const lowD = new Date(emergeDate + 'T12:00:00'); lowD.setDate(lowD.getDate() - 1);
+    const hiD  = new Date(emergeDate + 'T12:00:00'); hiD.setDate(hiD.getDate() + 2);
+    const fmtLow = lowD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const fmtHi  = hiD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const alreadyEmerged = emergeDate <= today;
+    if (alreadyEmerged) {
+      emergeCallout = `<div class="status-emerge-callout emerged"><span class="callout-main">✅ Emerged &nbsp;${eFmt}</span><span class="callout-sub">Range: ${fmtLow} – ${fmtHi}</span></div>`;
+    } else {
+      const daysOut = Math.round((new Date(emergeDate + 'T12:00:00') - new Date(today + 'T12:00:00')) / 86400000);
+      const daysLabel = daysOut === 1 ? '1 day away' : `${daysOut} days away`;
+      emergeCallout = `<div class="status-emerge-callout projected"><span class="callout-main">🌱 Projected emergence &nbsp;${eFmt}</span><span class="callout-sub">${daysLabel} &nbsp;·&nbsp; Range: ${fmtLow}–${fmtHi}${result.usedClimate ? ' · 15-yr avg' : ''}</span></div>`;
+    }
+  } else {
+    emergeCallout = `<div class="status-emerge-callout pending">⏳ Still accumulating GDUs — check back as temperatures warm</div>`;
+  }
+
+  // ── Soil temp source callout ─────────────────────────────────────────────
+  let soilTempNote = '';
+  if (soilDays && totalDays) {
+    const soilPct = Math.round((soilDays / totalDays) * 100);
+    if (soilPct >= 80) {
+      soilTempNote = `<div class="soil-temp-note full">🌡 Using 6cm soil temperature data</div>`;
+    } else if (soilPct > 0) {
+      soilTempNote = `<div class="soil-temp-note partial">🌡 ${soilPct}% soil temp · ${100 - soilPct}% air temp</div>`;
+    } else {
+      soilTempNote = `<div class="soil-temp-note air">🌬 Using air temperature (soil data unavailable)</div>`;
+    }
+  }
+
+  // ── Days in soil ─────────────────────────────────────────────────────────
+  // Total days planting → emergence (if emerged)
+  let totalDaysInSoil = null;
+  if (result.emerged && emergeDate) {
+    const p = new Date(plantDate + 'T12:00:00');
+    const e = new Date(emergeDate + 'T12:00:00');
+    totalDaysInSoil = Math.round((e - p) / 86400000);
+  }
+
+  // Days since planted (up to today)
+  const plantDt = new Date(plantDate + 'T12:00:00');
+  const todayDt = new Date(today  + 'T12:00:00');
+  const daysSincePlanted = Math.max(0, Math.round((todayDt - plantDt) / 86400000));
+
+  // Right column: total days in soil (projected/actual) | left side gets days-since counter
+  const rightColHTML = totalDaysInSoil !== null ? `
+    <div class="days-in-soil">
+      <div class="days-in-soil-val" style="color:${color}">${totalDaysInSoil}</div>
+      <div class="days-in-soil-label">total days in soil</div>
+    </div>` : '';
+
+  const statusBarHTML = `
+    <div class="status-bar-wrap">
+      <div class="status-bar-header">
+        <div>
+          <div class="status-bar-gdu" style="color:${color}" id="gdu-stat-${crop}">0</div>
+          <div class="status-bar-sub">GDU as of today &nbsp;/&nbsp; ${target.base} needed</div>
+        </div>
+        ${rightColHTML}
+      </div>
+      <div class="status-bar-track" style="margin-top:8px">
+        <div class="status-bar-fill" id="prog-${crop}" style="background:${color}"></div>
+      </div>
+      <div class="status-bar-dates">
+        <span>🌱 ${plantFmt} &nbsp;<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:600;color:${color}">(day ${daysSincePlanted})</span></span>
+        <span id="pct-stat-${crop}" style="color:${color};font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:600">0%</span>
+        <span>Today ${todayFmt}</span>
+      </div>
+      ${emergeCallout}
+      ${soilTempNote}
+    </div>
+    ${climateNote}`;
 
   // ── Calendar heatmap ─────────────────────────────────────────────────────
   // Group rows by month, build full calendar grids
@@ -1165,39 +1501,20 @@ function buildCropPanel(crop, result, adjF) {
       </div>
       <div class="crop-body">
 
-        <div class="gdu-stat-row">
-          <div>
-            <div class="gdu-stat-val" style="color:${color}" id="gdu-stat-${crop}">0</div>
-            <div class="gdu-stat-label">GDU accumulated / ${target.base} target</div>
-          </div>
-          <div style="text-align:right">
-            <div class="gdu-stat-val" style="color:${color};font-size:1.2rem" id="pct-stat-${crop}">0%</div>
-            <div class="gdu-stat-label">complete</div>
-          </div>
-        </div>
-
-        <div class="gdu-progress-bar">
-          <div class="gdu-progress-fill" id="prog-${crop}"
-               style="background:${color};width:0%"></div>
-        </div>
-
-        ${dateHTML}
-        ${climateNote}
+        ${statusBarHTML}
 
         <div class="cal-wrap" id="cal-${crop}">
           ${calHTML}
         </div>
 
         <div class="cal-legend">
-          <span>Low GDU</span>
-          <div class="cal-legend-cell" style="background:#f5f0e8"></div>
-          <div class="cal-legend-cell" style="background:#cce8a8"></div>
-          <div class="cal-legend-cell" style="background:#7cc840"></div>
-          <div class="cal-legend-cell" style="background:#58b020"></div>
-          <span>High GDU</span>
+          <div class="cal-legend-cell" style="background:#e8d0cc;border-color:#d4b0aa"></div><span>Cool</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#f5dfa0;border-color:#e0c878"></div><span>Moderate</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#b8dfa0;border-color:#90c878"></div><span>Warm</span>
           &nbsp;·&nbsp;
-          <div class="cal-legend-cell" style="background:#cce8a8;border:1.5px dashed #88c048"></div>
-          <span>Climate avg</span>
+          <span style="font-style:italic;opacity:0.7">Avg = 15-yr climate avg</span>
         </div>
 
         <div class="adj-note" style="margin-top:10px">Adj. factor: ${adjLabel}<br>Target: ${target.low}–${target.high} GDU range<br><span style='opacity:0.7;font-size:0.65rem'>Sources: UNL CropWatch, ISU ICM</span></div>
@@ -1237,12 +1554,7 @@ function buildCalendarHeatmap(rows, crop, color) {
   // Group into weeks (rows of 7, starting from planting day's DOW)
   const startDow = new Date(plantDate + 'T12:00:00').getDay();
   const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-
-  // Build header showing actual day-of-week labels offset to match start
-  const headerLabels = [];
-  for (let i = 0; i < 7; i++) {
-    headerLabels.push(DOW_LABELS[(startDow + i) % 7]);
-  }
+  const headerLabels = DOW_LABELS; // always fixed Sun–Sat
 
   // Pad start so planting day aligns to col 0
   const cells = [];
@@ -1250,16 +1562,15 @@ function buildCalendarHeatmap(rows, crop, color) {
     cells.push(windowDates[i]);
   }
 
-  // Chunk into weeks
+  // Pad from Sunday before planting day so weeks always start on Sunday
+  const sundayPad = startDow; // days of week offset from Sunday
+  const paddedCells = [...Array(sundayPad).fill(null), ...cells];
+
+  // Chunk into weeks of 7
   const weeks = [];
-  let week = [];
-  cells.forEach((ds, i) => {
-    week.push(ds);
-    if (week.length === 7 || i === cells.length - 1) {
-      weeks.push(week);
-      week = [];
-    }
-  });
+  for (let i = 0; i < paddedCells.length; i += 7) {
+    weeks.push(paddedCells.slice(i, i + 7));
+  }
 
   // ── Month label(s) spanning the window ───────────────────────────────────
   const months = [...new Set(windowDates.map(d => d.slice(0,7)))];
@@ -1275,38 +1586,27 @@ function buildCalendarHeatmap(rows, crop, color) {
   weeks.forEach(wk => {
     html += `<div class="cal-grid">`;
     wk.forEach(ds => {
+      if (ds === null) { html += `<div class="cal-cell empty"></div>`; return; }
       const row = byDate[ds];
       const d   = new Date(ds + 'T12:00:00');
       const dayNum = d.getDate();
 
-      // Month boundary label inside cell when month changes
-      const isMonthStart = d.getDate() === 1;
-      const moAbbr = isMonthStart
-        ? `<span style="position:absolute;top:1px;left:2px;font-size:0.45rem;opacity:0.7;line-height:1">${d.toLocaleDateString('en-US',{month:'short'})}</span>`
-        : '';
-
       if (!row) {
-        // Trailing day after emergence — show muted
-        html += `<div class="cal-cell pre-plant" style="position:relative">${moAbbr}${dayNum}</div>`;
+        html += `<div class="cal-cell pre-plant">${dayNum}</div>`;
       } else {
-        const band       = gduBand(parseFloat(row.adjGDU));
-        const isEmerg    = isEmerged && ds === emergeDate;
-        const climClass  = row.isClimate ? ' climate' : '';
-        const emergClass = isEmerg ? ' emergence' : '';
-        const isPlant    = ds === plantDate;
-        const plantStyle = isPlant ? ' outline: 2px solid #8b6347;' : '';
-        const title      = `${ds}: ${row.adjGDU} adj GDU | ${row.cumGDU} total${row.isClimate ? ' [15-yr avg]' : ''}`;
+        const band      = gduBand(parseFloat(row.adjGDU));
+        const isEmerg   = isEmerged && ds === emergeDate;
+        const climClass = row.isClimate ? ' climate' : '';
+        const isPlant   = ds === plantDate;
+        const plantStyle = isPlant ? 'box-shadow:0 0 0 2px #8b6347;' : '';
+        const title     = `${ds}: ${row.adjGDU} adj GDU | ${row.cumGDU} total${row.isClimate ? ' [15-yr avg]' : ''}`;
 
+        const avgTag = row.isClimate ? `<span style="display:block;font-size:0.6rem;line-height:1;opacity:0.75;letter-spacing:0.02em">avg</span>` : '';
+        const dataAttrs = `data-date="${ds}" data-tmax="${row.tmax}" data-tmin="${row.tmin}" data-gdu="${row.adjGDU}" data-cum="${row.cumGDU}" data-climate="${row.isClimate ? '1' : '0'}"`;
         if (isEmerg) {
-          // Emergence day: big bold treatment — number + sprout icon
-          html += `<div class="cal-cell gdu-${band}${climClass} emergence" title="${title}" style="position:relative;${plantStyle}">
-            ${moAbbr}
-            <span style="font-size:0.75rem;line-height:1">🌱</span>
-          </div>`;
+          html += `<div class="cal-cell gdu-${band}${climClass} emergence" ${dataAttrs} style="${plantStyle}">🌱</div>`;
         } else {
-          html += `<div class="cal-cell gdu-${band}${climClass}" title="${title}" style="position:relative;${plantStyle}">
-            ${moAbbr}${dayNum}
-          </div>`;
+          html += `<div class="cal-cell gdu-${band}${climClass}" ${dataAttrs} style="${plantStyle};flex-direction:column;gap:0">${dayNum}${avgTag}</div>`;
         }
       }
     });
@@ -1320,17 +1620,20 @@ function buildCalendarHeatmap(rows, crop, color) {
 }
 
 // ─── ANIMATE STATS ────────────────────────────────────────────────────────
-function animateStats(results) {
+function animateStats(results, today) {
   for (const [crop, result] of Object.entries(results)) {
     const target = GDU_TARGETS[crop];
-    const finalPct = Math.min(100, (result.finalGDU / target.base) * 100);
-    const finalGDU = Math.round(result.finalGDU);
 
-    // Progress bar
+    // Use GDU accumulated only up to today for the status bar
+    const todayRows = result.rows.filter(r => !r.isClimate && r.date <= today);
+    const gduToday  = todayRows.length > 0 ? parseFloat(todayRows[todayRows.length - 1].cumGDU) : 0;
+    const pctToday  = Math.min(100, (gduToday / target.base) * 100);
+
+    // Progress bar fills to today's GDU pct
     const progEl = document.getElementById('prog-' + crop);
-    if (progEl) setTimeout(() => { progEl.style.width = finalPct + '%'; }, 60);
+    if (progEl) setTimeout(() => { progEl.style.width = pctToday + '%'; }, 60);
 
-    // Counter
+    // Counter animates to today's GDU
     const statEl = document.getElementById('gdu-stat-' + crop);
     const pctEl  = document.getElementById('pct-stat-' + crop);
     if (statEl) {
@@ -1340,8 +1643,8 @@ function animateStats(results) {
         frame++;
         const t = Math.min(1, frame / frames);
         const ease = 1 - Math.pow(1 - t, 3);
-        statEl.textContent = Math.round(ease * finalGDU);
-        if (pctEl) pctEl.textContent = Math.round(ease * finalPct) + '%';
+        statEl.textContent = Math.round(ease * gduToday);
+        if (pctEl) pctEl.textContent = Math.round(ease * pctToday) + '%';
         if (frame >= frames) clearInterval(timer);
       }, 18);
     }
@@ -1394,7 +1697,7 @@ function drawChart(chartData, crops) {
     const y = pad.top + cH - (g / 5) * cH;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
     ctx.fillStyle = '#a09070';
-    ctx.font = '10px IBM Plex Mono';
+    ctx.font = '600 13px Barlow Condensed, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(Math.round((g / 5) * maxVal), pad.left - 6, y + 4);
   }
@@ -1457,7 +1760,7 @@ function drawChart(chartData, crops) {
 
   // X axis labels
   ctx.fillStyle = '#a09070';
-  ctx.font = '10px IBM Plex Mono';
+  ctx.font = '600 13px Barlow Condensed, sans-serif';
   ctx.textAlign = 'center';
   const maxLen = Math.max(...Object.values(chartData.datasets).map(d => d.length));
   const step = cW / (maxLen - 1 || 1);
@@ -1472,7 +1775,7 @@ function drawChart(chartData, crops) {
     ctx.fillStyle = colors[c];
     ctx.fillRect(lx, 2, 20, 4);
     ctx.fillStyle = '#5c3d2e';
-    ctx.font = '10px IBM Plex Mono';
+    ctx.font = '600 13px Barlow Condensed, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(c === 'corn' ? 'Corn' : 'Soybeans', lx + 24, 8);
     lx += 100;
@@ -1527,7 +1830,6 @@ function saveEntry() {
   const entry = {
     location:  document.getElementById('locationInput').value,
     plantDate: document.getElementById('plantDate').value,
-    crop:      document.querySelector('input[name=crop]:checked')?.value || 'both',
     plantTime: document.querySelector('input[name=plantTime]:checked')?.value || 'full',
     soilType:  document.getElementById('soilType').value,
     tillage:   document.getElementById('tillageType').value,
@@ -1542,10 +1844,6 @@ function restoreEntry() {
     const e = JSON.parse(raw);
     if (e.location)  document.getElementById('locationInput').value = e.location;
     if (e.plantDate) document.getElementById('plantDate').value = e.plantDate;
-    if (e.crop) {
-      const r = document.querySelector(`input[name=crop][value="${e.crop}"]`);
-      if (r) r.checked = true;
-    }
     if (e.plantTime) {
       const r = document.querySelector(`input[name=plantTime][value="${e.plantTime}"]`);
       if (r) r.checked = true;
@@ -1563,6 +1861,53 @@ window.calculate = async function() {
   await _origCalc();
 };
 
+// ─── CALENDAR TOOLTIP ────────────────────────────────────────────────────────
+function attachCalTooltips() {
+  const tip = document.getElementById('calTooltip');
+  if (!tip) return;
+
+  document.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('mouseenter', function() {
+      const ds     = this.dataset.date;
+      const tmax   = this.dataset.tmax;
+      const tmin   = this.dataset.tmin;
+      const gdu    = parseFloat(this.dataset.gdu).toFixed(1);
+      const cum    = parseFloat(this.dataset.cum).toFixed(1);
+      const isClim = this.dataset.climate === '1';
+      const d      = new Date(ds + 'T12:00:00');
+      const fmt    = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+
+      tip.innerHTML =
+        '<div class="cal-tooltip-date">' + fmt + (isClim ? ' <span style="font-weight:400;opacity:0.65;font-size:0.8rem">(15-yr avg)</span>' : '') + '</div>' +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">High</span><span class="cal-tooltip-val">' + tmax + '°F</span></div>' +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Low</span><span class="cal-tooltip-val">' + tmin + '°F</span></div>' +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Daily GDU</span><span class="cal-tooltip-val">' + gdu + '</span></div>' +
+        '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">Cumulative GDU</span><span class="cal-tooltip-val">' + cum + '</span></div>';
+
+      tip.style.display = 'block';
+
+      const r  = this.getBoundingClientRect();
+      const tr = tip.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+
+      let x = r.right  + scrollX + 8;
+      let y = r.top    + scrollY;
+
+      if (x + tr.width  > window.innerWidth  + scrollX - 8) x = r.left + scrollX - tr.width - 8;
+      if (y + tr.height > window.innerHeight + scrollY - 8) y = r.bottom + scrollY - tr.height;
+
+      tip.style.left = x + 'px';
+      tip.style.top  = y + 'px';
+    });
+
+    cell.addEventListener('mouseleave', function() {
+      const tip = document.getElementById('calTooltip');
+      if (tip) tip.style.display = 'none';
+    });
+  });
+}
+
 // Default date to today, then restore saved entry (overrides today if saved)
 const today = new Date().toISOString().slice(0,10);
 document.getElementById('plantDate').value = today;
@@ -1572,5 +1917,6 @@ if (restored) {
   setTimeout(() => { const el = document.getElementById('statusMsg'); if(el) el.style.display = 'none'; }, 2500);
 }
 </script>
+<div id="calTooltip" class="cal-tooltip"></div>
 </body>
 </html>
