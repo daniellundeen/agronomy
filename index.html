@@ -12,92 +12,44 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green-50: #EAF3DE;
-      --green-200: #C0DD97;
-      --green-600: #3B6D11;
-      --green-800: #27500A;
-      --amber-50: #FAEEDA;
-      --amber-200: #FAC775;
-      --amber-600: #BA7517;
-      --amber-800: #633806;
-      --blue-50: #E6F1FB;
-      --blue-200: #85B7EB;
-      --blue-600: #185FA5;
-      --blue-800: #0C447C;
-      --teal-50: #E1F5EE;
-      --teal-200: #5DCAA5;
-      --teal-600: #0F6E56;
-      --teal-800: #085041;
-      --text-primary: #1a1a18;
-      --text-secondary: #5F5E5A;
-      --bg-primary: #ffffff;
-      --bg-secondary: #F7F6F2;
-      --border-light: rgba(0,0,0,0.10);
-      --border-mid: rgba(0,0,0,0.18);
-      --radius-md: 8px;
-      --radius-lg: 12px;
+      --green-50: #EAF3DE; --green-200: #C0DD97; --green-600: #3B6D11; --green-800: #27500A;
+      --amber-50: #FAEEDA; --amber-200: #FAC775; --amber-600: #BA7517; --amber-800: #633806;
+      --blue-50: #E6F1FB; --blue-200: #85B7EB; --blue-600: #185FA5; --blue-800: #0C447C;
+      --teal-50: #E1F5EE; --teal-200: #5DCAA5; --teal-600: #0F6E56; --teal-800: #085041;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A;
+      --bg-primary: #ffffff; --bg-secondary: #F7F6F2;
+      --border-light: rgba(0,0,0,0.10); --border-mid: rgba(0,0,0,0.18);
+      --radius-md: 8px; --radius-lg: 12px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --text-primary: #EDECE8;
-        --text-secondary: #9E9D98;
-        --bg-primary: #1C1C1A;
-        --bg-secondary: #252522;
-        --border-light: rgba(255,255,255,0.09);
-        --border-mid: rgba(255,255,255,0.16);
-        --green-50: #173404;
-        --green-200: #C0DD97;
-        --green-600: #3B6D11;
-        --green-800: #C0DD97;
-        --amber-50: #412402;
-        --amber-200: #FAC775;
-        --amber-600: #BA7517;
-        --amber-800: #FAC775;
-        --blue-50: #042C53;
-        --blue-200: #85B7EB;
-        --blue-600: #185FA5;
-        --blue-800: #B5D4F4;
-        --teal-50: #04342C;
-        --teal-200: #5DCAA5;
-        --teal-600: #0F6E56;
-        --teal-800: #9FE1CB;
+        --text-primary: #EDECE8; --text-secondary: #9E9D98;
+        --bg-primary: #1C1C1A; --bg-secondary: #252522;
+        --border-light: rgba(255,255,255,0.09); --border-mid: rgba(255,255,255,0.16);
+        --green-50: #173404; --green-200: #C0DD97; --green-600: #3B6D11; --green-800: #C0DD97;
+        --amber-50: #412402; --amber-200: #FAC775; --amber-600: #BA7517; --amber-800: #FAC775;
+        --blue-50: #042C53; --blue-200: #85B7EB; --blue-600: #185FA5; --blue-800: #B5D4F4;
+        --teal-50: #04342C; --teal-200: #5DCAA5; --teal-600: #0F6E56; --teal-800: #9FE1CB;
       }
     }
 
     html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); background: var(--bg-secondary); min-height: 100vh; padding: 0 1.5rem; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 0 4rem; }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text-primary);
-      background: var(--bg-secondary);
-      min-height: 100vh;
-      padding: 0 1.5rem;
-    }
-
-    .wrap {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 0 4rem;
-    }
-
-    /* Top bar */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.75rem 0 1rem;
-    }
-
+    .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 0 1rem; flex-wrap: wrap; gap: 12px; }
+    .top-bar-left { display: flex; align-items: center; gap: 16px; }
     .wordmark { display: flex; align-items: baseline; }
     .wordmark-agronomy { font-family: 'Lora', Georgia, serif; font-weight: 600; font-size: 22px; color: var(--text-primary); letter-spacing: -0.3px; }
     .wordmark-info { font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 22px; color: var(--text-secondary); letter-spacing: 1px; }
-
     .badge-open { font-size: 11px; font-weight: 500; color: var(--green-800); background: var(--green-50); border: 0.5px solid var(--green-200); border-radius: 20px; padding: 3px 10px; letter-spacing: 0.3px; }
+
+    .x-follow { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; border: 0.5px solid var(--border-mid); border-radius: 20px; padding: 5px 12px; transition: border-color 0.15s, color 0.15s; }
+    .x-follow:hover { color: var(--text-primary); border-color: var(--text-secondary); }
 
     .header-rule { border: none; border-top: 1px solid var(--border-light); margin: 0 0 2.5rem; }
 
-    /* Hero */
     .hero { padding: 2rem 0 2.5rem; border-bottom: 0.5px solid var(--border-light); margin-bottom: 2.5rem; }
     .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1rem; }
     .hero-headline { font-family: 'Lora', Georgia, serif; font-weight: 400; font-size: 42px; line-height: 1.2; color: var(--text-primary); margin-bottom: 1.25rem; letter-spacing: -0.5px; max-width: 640px; }
@@ -110,57 +62,26 @@
     .btn-ghost { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; color: var(--text-primary); background: transparent; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 9px 20px; cursor: pointer; text-decoration: none; transition: background 0.15s; }
     .btn-ghost:hover { background: var(--bg-primary); }
 
-    /* Section label */
     .section-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1.25rem; }
 
-    /* Tools grid */
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 3rem; }
 
-    /* Fully clickable tool card */
-    .tool-card {
-      background: var(--bg-primary);
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .tool-card:hover {
-      border-color: var(--border-mid);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      transform: translateY(-2px);
-    }
-
-    .tool-card:active { transform: translateY(0); }
-
-    .tool-card.coming-soon { opacity: 0.62; pointer-events: none; cursor: default; }
+    .tool-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s; }
+    .tool-card:not(.coming-soon):hover { border-color: var(--border-mid); box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .tool-card.coming-soon { opacity: 0.62; }
 
     .tool-card-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
     .icon-corn  { background: var(--amber-50); }
     .icon-soy   { background: var(--green-50); }
     .icon-rain  { background: var(--blue-50); }
     .icon-yield { background: var(--teal-50); }
+    .icon-irr   { background: #EEF3FA; }
+    @media (prefers-color-scheme: dark) { .icon-irr { background: #0d1e30; } }
 
     .tool-name { font-family: 'Lora', Georgia, serif; font-size: 17px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
     .tool-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; flex: 1; }
 
-    .tool-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 0.5px solid var(--border-light);
-      flex-wrap: wrap;
-    }
-
+    .tool-meta { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 0.5px solid var(--border-light); flex-wrap: wrap; }
     .tag { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.2px; white-space: nowrap; }
     .tag-amber { color: var(--amber-800); background: var(--amber-50); border: 0.5px solid var(--amber-200); }
     .tag-green { color: var(--green-800); background: var(--green-50); border: 0.5px solid var(--green-200); }
@@ -168,19 +89,19 @@
     .tag-teal  { color: var(--teal-800);  background: var(--teal-50);  border: 0.5px solid var(--teal-200); }
     .tag-soon  { color: var(--text-secondary); background: var(--bg-secondary); border: 0.5px solid var(--border-light); }
 
-    /* Open tool CTA — replaces the old small link */
-    .tool-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin-left: auto;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--green-600);
-      white-space: nowrap;
-    }
-
+    .tool-cta { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; font-size: 12px; font-weight: 500; color: var(--green-600); white-space: nowrap; }
     .tool-card:hover .tool-cta { color: var(--green-800); }
+
+    /* External links */
+    .links-section { border-top: 0.5px solid var(--border-light); padding-top: 2.5rem; margin-bottom: 3rem; }
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+    .ext-link { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); text-decoration: none; color: var(--text-primary); transition: border-color 0.15s, transform 0.12s; }
+    .ext-link:hover { border-color: var(--border-mid); transform: translateY(-1px); }
+    .ext-link-icon { width: 32px; height: 32px; border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-secondary); }
+    .ext-link-text { flex: 1; }
+    .ext-link-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .ext-link-url { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+    .ext-link-arrow { color: var(--text-secondary); flex-shrink: 0; }
 
     /* Stats */
     .divider-section { border-top: 0.5px solid var(--border-light); padding-top: 2.5rem; margin-bottom: 2.5rem; }
@@ -213,10 +134,16 @@
   <div class="wrap">
 
     <div class="top-bar">
-      <div class="wordmark">
-        <span class="wordmark-agronomy">Agronomy.</span><span class="wordmark-info">INFO</span>
+      <div class="top-bar-left">
+        <div class="wordmark">
+          <span class="wordmark-agronomy">Agronomy.</span><span class="wordmark-info">INFO</span>
+        </div>
+        <span class="badge-open">Open source</span>
       </div>
-      <span class="badge-open">Open source</span>
+      <a href="https://x.com/DanielLundeen" target="_blank" class="x-follow">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.26 5.632 5.904-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        @DanielLundeen
+      </a>
     </div>
     <hr class="header-rule">
 
@@ -242,7 +169,6 @@
       <div class="section-label">Tools</div>
       <div class="tools-grid">
 
-        <!-- Corn GDU Tracker -->
         <a class="tool-card" href="https://daniellundeen.github.io/agronomy/corn-gdu-tracker">
           <div class="tool-card-icon icon-corn">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -257,14 +183,10 @@
           <div class="tool-meta">
             <span class="tag tag-amber">Corn</span>
             <span class="tag tag-green">Live weather</span>
-            <span class="tool-cta">
-              Open tool
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+            <span class="tool-cta">Open tool <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
         </a>
 
-        <!-- Soybean GDU Tracker -->
         <a class="tool-card" href="https://daniellundeen.github.io/agronomy/soybean-gdu-tracker">
           <div class="tool-card-icon icon-soy">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -278,37 +200,29 @@
           <div class="tool-meta">
             <span class="tag tag-green">Soybeans</span>
             <span class="tag tag-green">Live weather</span>
-            <span class="tool-cta">
-              Open tool
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+            <span class="tool-cta">Open tool <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
         </a>
 
-        <!-- Emergence Calculator -->
         <a class="tool-card" href="https://daniellundeen.github.io/agronomy/emergence-calculator">
           <div class="tool-card-icon icon-soy">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <circle cx="9" cy="10" r="4" stroke="#3B6D11" stroke-width="1.5"/>
-              <circle cx="15" cy="14" r="4" stroke="#3B6D11" stroke-width="1.5"/>
-              <path d="M9 14 Q12 18 12 22" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 20V10" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 10 Q9 7 6 8" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <path d="M12 13 Q15 10 18 11" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <ellipse cx="12" cy="21" rx="3" ry="1" stroke="#BA7517" stroke-width="1" opacity="0.5"/>
             </svg>
           </div>
           <div class="tool-name">Emergence Calculator</div>
-          <div class="tool-desc">Predict corn and soybean emergence date using soil data and field conditions.</div>
+          <div class="tool-desc">Predict corn and soybean emergence date using soil temperature, moisture, and field conditions from planting date forward.</div>
           <div class="tool-meta">
-            <span class="tag tag-green">Corn</span>
+            <span class="tag tag-amber">Corn</span>
             <span class="tag tag-green">Soybeans</span>
-            <span class="tag tag-green">soil temperature</span>
-            <span class="tool-cta">
-              Open tool
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+            <span class="tool-cta">Open tool <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
-        </a>        
-        <!-- Rainfall Tracker -->
+        </a>
+
         <a class="tool-card" href="https://daniellundeen.github.io/agronomy/rainfall-tracker_7">
-        
           <div class="tool-card-icon icon-rain">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M5 13a7 7 0 1 1 14 0" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/>
@@ -320,9 +234,85 @@
           <div class="tool-desc">Compare cumulative in-season rainfall against historical averages for your location. Identify drought stress windows and estimated yield drag by growth stage.</div>
           <div class="tool-meta">
             <span class="tag tag-blue">Precipitation</span>
-            <span class="tag tag-soon">track</span>
+            <span class="tag tag-green">Live weather</span>
+            <span class="tool-cta">Open tool <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="https://daniellundeen.github.io/agronomy/corn-irrigation-coach">
+          <div class="tool-card-icon icon-irr">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M3 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 3v10" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M9 7l3-4 3 4" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 13c0 2 1.5 3 5 3s5-1 5-3" stroke="#185FA5" stroke-width="1" stroke-dasharray="2 2"/>
+            </svg>
+          </div>
+          <div class="tool-name">Corn Irrigation Coach</div>
+          <div class="tool-desc">Irrigation timing and rate recommendations based on crop growth stage, evapotranspiration, and recent rainfall for Midwest corn production.</div>
+          <div class="tool-meta">
+            <span class="tag tag-amber">Corn</span>
+            <span class="tag tag-blue">Irrigation</span>
+            <span class="tool-cta">Open tool <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
+
+        <div class="tool-card coming-soon">
+          <div class="tool-card-icon icon-yield">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="14" width="3" height="7" rx="1" fill="#0F6E56"/>
+              <rect x="8" y="10" width="3" height="11" rx="1" fill="#0F6E56"/>
+              <rect x="13" y="6" width="3" height="15" rx="1" fill="#1D9E75"/>
+              <rect x="18" y="3" width="3" height="18" rx="1" fill="#1D9E75"/>
+            </svg>
+          </div>
+          <div class="tool-name">More coming soon</div>
+          <div class="tool-desc">Additional tools for Midwest row crop production are in development.</div>
+          <div class="tool-meta">
+            <span class="tag tag-soon">Coming soon</span>
           </div>
         </div>
+
+      </div>
+    </div>
+
+    <!-- External Resources -->
+    <div class="links-section">
+      <div class="section-label" style="margin-bottom:1.25rem;">Useful resources</div>
+      <div class="links-grid">
+
+        <a class="ext-link" href="https://droughtmonitor.unl.edu" target="_blank">
+          <div class="ext-link-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="ext-link-text">
+            <div class="ext-link-name">US Drought Monitor</div>
+            <div class="ext-link-url">droughtmonitor.unl.edu</div>
+          </div>
+          <svg class="ext-link-arrow" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+
+        <a class="ext-link" href="https://synopticwx.com" target="_blank">
+          <div class="ext-link-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 8h18M5 12h14M7 16h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="ext-link-text">
+            <div class="ext-link-name">Synoptic Weather</div>
+            <div class="ext-link-url">synopticwx.com</div>
+          </div>
+          <svg class="ext-link-arrow" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+
+        <a class="ext-link" href="https://ag-wx.com" target="_blank">
+          <div class="ext-link-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v1M12 20v1M4.22 4.22l.7.7M18.36 18.36l.7.7M3 12h1M20 12h1M4.92 19.07l.7-.7M18.36 5.64l.7-.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <div class="ext-link-text">
+            <div class="ext-link-name">Ag Weather</div>
+            <div class="ext-link-url">ag-wx.com</div>
+          </div>
+          <svg class="ext-link-arrow" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
 
       </div>
     </div>
@@ -332,8 +322,8 @@
       <div class="section-label" style="margin-bottom: 1.25rem;">At a glance</div>
       <div class="stats-row">
         <div class="stat-cell">
-          <div class="stat-num">4</div>
-          <div class="stat-label">Tools planned</div>
+          <div class="stat-num">5</div>
+          <div class="stat-label">Tools available</div>
         </div>
         <div class="stat-cell">
           <div class="stat-num">Free</div>
@@ -363,7 +353,7 @@
       </div>
       <div class="about-item">
         <div class="about-item-label">Open source</div>
-        <div class="about-item-text">All tools are MIT-licensed and published on GitHub. Contributions, forks, and feedback are welcome. Built with plain HTML and React — no build step required.</div>
+        <div class="about-item-text">All tools are MIT-licensed and published on GitHub. Contributions, forks, and feedback are welcome. Built with plain HTML — no build step required.</div>
       </div>
     </div>
 
