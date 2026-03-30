@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corn Irrigation Scheduler - AgronomyINFO</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root {
+  --bg: #0a0f0a; --surface: #111911; --surface2: #182018; --border: #2a3a2a;
+  --accent: #6db86d; --accent2: #3a7a3a; --warn: #d4a843; --danger: #c0392b;
+  --text: #d8e8d8; --text-dim: #6a8a6a; --text-bright: #f0f8f0;
+  --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif; --display: 'Bebas Neue', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh;
+  background-image: radial-gradient(ellipse at 20% 0%, #1a2f1a 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, #0f1f0f 0%, transparent 50%); }
+header { border-bottom: 1px solid var(--border); padding: 18px 24px; display: flex; align-items: baseline; gap: 16px;
+  background: rgba(10,15,10,0.8); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100; }
+.brand { font-family: var(--display); font-size: 22px; letter-spacing: 3px; color: var(--accent); }
+.brand span { color: var(--text-dim); }
+.tool-name { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; border-left: 1px solid var(--border); padding-left: 16px; }
+.container { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+.inputs-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 24px; margin-bottom: 24px; }
+.inputs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 700px) { .inputs-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .inputs-grid { grid-template-columns: 1fr; } }
+.field label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+.field input, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text-bright);
+  font-family: var(--mono); font-size: 13px; padding: 9px 12px; border-radius: 3px; outline: none; transition: border-color 0.2s; }
+.field input:focus, .field select:focus { border-color: var(--accent2); }
+input[type="date"] { background: #ffffff; color: #1a1a1a; cursor: pointer; }
+input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.7; }
+.run-btn { background: var(--accent2); color: var(--text-bright); border: none; font-family: var(--mono); font-size: 12px;
+  letter-spacing: 2px; text-transform: uppercase; padding: 11px 28px; border-radius: 3px; cursor: pointer; transition: background 0.2s; }
+.run-btn:hover { background: var(--accent); }
+.run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.status { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 12px; min-height: 16px; }
+.status.loading { color: var(--accent); }
+.status.error { color: var(--danger); }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+@media (max-width: 700px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; }
+.card-label { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #9ab89a; margin-bottom: 10px; }
+.card-value { font-family: var(--display); font-size: 38px; letter-spacing: 1px; line-height: 1; color: #ffffff; }
+.card-value.warn { color: #f0c060; }
+.card-value.danger { color: #e05545; }
+.card-value.ok { color: #7dd87d; }
+.card-sub { font-family: var(--mono); font-size: 11px; color: #8aaa8a; margin-top: 6px; }
+.recommendation { border-radius: 4px; padding: 20px 24px; margin-bottom: 24px; border: 1px solid; display: none; }
+.recommendation.irrigate-now { background: rgba(192,57,43,0.12); border-color: var(--danger); }
+.recommendation.irrigate-soon { background: rgba(212,168,67,0.1); border-color: var(--warn); }
+.recommendation.ok { background: rgba(109,184,109,0.08); border-color: var(--accent2); }
+.rec-header { font-family: var(--display); font-size: 26px; letter-spacing: 2px; margin-bottom: 8px; }
+.rec-detail { font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+.rec-detail strong { color: var(--text); }
+.stage-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 24px; display: none; }
+.stage-label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+.stage-row { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 10px; }
+.stage-seg { flex: 1; min-width: 28px; height: 28px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
+.stage-seg.past { border-color: var(--accent2); }
+.stage-seg.current { background: var(--accent2); border-color: var(--accent); color: var(--text-bright); font-weight: 600; box-shadow: 0 0 8px rgba(109,184,109,0.4); }
+.stage-seg.future { background: var(--bg); color: var(--border); }
+.stage-info { font-family: var(--mono); font-size: 11px; color: var(--text); margin-top: 8px; }
+.chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 24px; display: none; }
+.chart-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+canvas { max-height: 260px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; display: none; overflow-x: auto; }
+.table-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+th { text-align: left; padding: 8px 10px; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 7px 10px; border-bottom: 1px solid rgba(42,58,42,0.5); color: var(--text); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr.forecast-row td { color: var(--text-dim); }
+td.deficit-warn { color: var(--warn); }
+td.deficit-crit { color: var(--danger); font-weight: 600; }
+td.positive { color: var(--accent); }
+.footnote { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 24px; line-height: 1.7; border-top: 1px solid var(--border); padding-top: 16px; }
+.results { display: none; }
+.results.visible { display: block; }
+.sm-layer { margin-bottom: 14px; }
+.sm-layer-label { font-family: var(--mono); font-size: 11px; color: var(--text); margin-bottom: 5px; display: flex; justify-content: space-between; }
+.sm-layer-label span { color: var(--text-dim); font-size: 10px; }
+.sm-bar-track { position: relative; height: 20px; background: var(--surface2); border-radius: 3px; border: 1px solid var(--border); overflow: visible; }
+.sm-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.sm-bar-baseline { position: absolute; top: -3px; bottom: -3px; width: 3px; border-radius: 2px; background: rgba(255,255,255,0.5); }
+.sm-anom-label { font-family: var(--mono); font-size: 10px; margin-top: 3px; text-align: right; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Agronomy<span>INFO</span></div>
+  <div class="tool-name">Corn Irrigation Scheduler</div>
+</header>
+<div class="container">
+  <div class="inputs-panel">
+    <div class="inputs-grid">
+      <div class="field">
+        <label>ZIP Code</label>
+        <input type="text" id="zip" placeholder="61443" maxlength="5" value="61443">
+      </div>
+      <div class="field">
+        <label>Planting Date</label>
+        <input type="date" id="plantDate">
+      </div>
+      <div class="field">
+        <label>System Capacity (in/day)</label>
+        <input type="number" id="sysCapacity" placeholder="0.30" step="0.05" min="0.05" max="2.0" value="0.30">
+      </div>
+      <div class="field">
+        <label>Soil Texture</label>
+        <select id="soilTexture">
+          <option value="sand">Sandy (0.75 in/ft AWC)</option>
+          <option value="loam">Sandy Loam (1.2 in/ft AWC)</option>
+          <option value="siltloam" selected>Silt Loam (1.9 in/ft AWC)</option>
+          <option value="clayloam">Clay Loam (1.7 in/ft AWC)</option>
+          <option value="clay">Clay (1.5 in/ft AWC)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Root Zone Depth (ft)</label>
+        <select id="rootDepth">
+          <option value="2">2 ft - early season</option>
+          <option value="3" selected>3 ft - typical</option>
+          <option value="4">4 ft - deep roots</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mgmt Allowable Depletion</label>
+        <select id="madPct">
+          <option value="40">40% - sandy / high value</option>
+          <option value="50" selected>50% - standard</option>
+          <option value="60">60% - stress tolerant</option>
+        </select>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="runAnalysis()">Calculate Irrigation Schedule</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="results" class="results">
+    <div class="summary-grid">
+      <div class="card">
+        <div class="card-label">Growth Stage</div>
+        <div class="card-value ok" id="cardStage">-</div>
+        <div class="card-sub" id="cardGDU">- GDU accumulated</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Current ET Demand</div>
+        <div class="card-value" id="cardET">-</div>
+        <div class="card-sub" id="cardETsub">in/day at current stage</div>
+      </div>
+      <div class="card">
+        <div class="card-label">7-Day Rain Forecast</div>
+        <div class="card-value" id="cardForecast">-</div>
+        <div class="card-sub">inches expected</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Water Deficit</div>
+        <div class="card-value ok" id="cardDeficit">-</div>
+        <div class="card-sub" id="cardDeficitSub">running balance</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Drought Status</div>
+        <div class="card-value ok" id="cardDrought">-</div>
+        <div class="card-sub" id="cardDroughtSub">ERA5 soil moisture</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Trigger Threshold</div>
+        <div class="card-value ok" id="cardTrigger">-</div>
+        <div class="card-sub" id="cardTriggerSub">MAD x AWC x root zone</div>
+      </div>
+    </div>
+
+    <div class="recommendation" id="recommendation">
+      <div class="rec-header" id="recHeader">-</div>
+      <div class="rec-detail" id="recDetail">-</div>
+    </div>
+
+    <div class="stage-bar-wrap" id="smPanel" style="display:none">
+      <div class="stage-label">Soil Moisture Profile - Current vs 5-Year Baseline (ERA5-Land)</div>
+      <div id="smBars"></div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:12px">
+        Values in m3/m3. Bars show current (solid) vs baseline average (outline). Drought assessment uses 28-100cm layer.
+      </div>
+    </div>
+
+    <div class="stage-bar-wrap" id="stageBarWrap">
+      <div class="stage-label">Corn Growth Stage Progress</div>
+      <div class="stage-row" id="stageRow"></div>
+      <div class="stage-info" id="stageInfo"></div>
+    </div>
+
+    <div class="chart-wrap" id="chartWrap">
+      <div class="chart-title">Water Balance - Past 14 Days + Forecast</div>
+      <canvas id="waterChart"></canvas>
+    </div>
+
+    <div class="chart-wrap" id="etChartWrap">
+      <div class="chart-title">Cumulative Seasonal Water Use - Planting to Present + Forecast</div>
+      <canvas id="etChart"></canvas>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <div class="table-title">Daily Water Balance</div>
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Stage</th><th>Rain (in)</th><th>ET (in)</th>
+          <th>Solar MJ/m2</th><th>Net (in)</th><th>Deficit</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="footnote">
+      ET: FAO-56 Penman-Monteith from Open-Meteo solar, temperature, humidity and wind data. Crop coefficients (Kc) from
+      University of Illinois and University of Nebraska-Lincoln corn water use research. Drought status from ERA5-Land
+      soil moisture anomaly vs 15-year baseline (Open-Meteo archive). Trigger = AWC x MAD x root depth. GDU: base 50F cap 86F.
+    </div>
+  </div>
+</div>
+
+<script>
+var STAGES = [
+  { stage: 'VE',  gdu: 0,    kc: 0.10, et: 0.05, desc: 'Emergence' },
+  { stage: 'V3',  gdu: 175,  kc: 0.18, et: 0.08, desc: 'V3 - 3 leaves' },
+  { stage: 'V6',  gdu: 475,  kc: 0.35, et: 0.16, desc: 'V6 - 6 leaves' },
+  { stage: 'V10', gdu: 810,  kc: 0.60, et: 0.22, desc: 'V10 - rapid growth' },
+  { stage: 'VT',  gdu: 1135, kc: 1.15, et: 0.33, desc: 'Tassel - peak demand' },
+  { stage: 'R1',  gdu: 1400, kc: 1.20, et: 0.35, desc: 'Silk - critical period' },
+  { stage: 'R2',  gdu: 1600, kc: 1.15, et: 0.33, desc: 'Blister' },
+  { stage: 'R3',  gdu: 1800, kc: 1.05, et: 0.30, desc: 'Milk' },
+  { stage: 'R4',  gdu: 2000, kc: 0.85, et: 0.24, desc: 'Dough' },
+  { stage: 'R5',  gdu: 2200, kc: 0.60, et: 0.17, desc: 'Dent - demand drops' },
+  { stage: 'R6',  gdu: 2700, kc: 0.25, et: 0.07, desc: 'Black layer - maturity' }
+];
+
+var AWC_MAP = { sand: 0.75, loam: 1.2, siltloam: 1.9, clayloam: 1.7, clay: 1.5 };
+var SOIL_LABELS = { sand: 'Sandy', loam: 'Sandy Loam', siltloam: 'Silt Loam', clayloam: 'Clay Loam', clay: 'Clay' };
+var LS_KEY = 'agronomyinfo_irr_v3';
+var waterChart = null;
+var etChart = null;
+
+function getStage(gdu) {
+  var s = STAGES[0];
+  for (var i = 0; i < STAGES.length; i++) {
+    if (gdu >= STAGES[i].gdu) s = STAGES[i]; else break;
+  }
+  return s;
+}
+
+function getStageIdx(gdu) {
+  var idx = 0;
+  for (var i = 0; i < STAGES.length; i++) {
+    if (gdu >= STAGES[i].gdu) idx = i; else break;
+  }
+  return idx;
+}
+
+function calcGDU(tmaxF, tminF) {
+  return Math.max(0, (Math.min(tmaxF, 86) + Math.max(tminF, 50)) / 2 - 50);
+}
+
+function calcETo(solar, tmaxC, tminC, rh, windMs) {
+  var tm = (tmaxC + tminC) / 2;
+  var delta = 4098 * (0.6108 * Math.exp(17.27 * tm / (tm + 237.3))) / Math.pow(tm + 237.3, 2);
+  var gamma = 0.0665;
+  var eMax = 0.6108 * Math.exp(17.27 * tmaxC / (tmaxC + 237.3));
+  var eMin = 0.6108 * Math.exp(17.27 * tminC / (tminC + 237.3));
+  var es = (eMax + eMin) / 2;
+  var ea = es * (rh / 100);
+  var Rn = solar * 0.408 * 0.77 - 4.903e-9 * Math.pow(tm + 273.16, 4) * (0.34 - 0.14 * Math.sqrt(ea)) * (1.35 * Math.min(solar / 40, 1) - 0.35);
+  var u2 = windMs * (4.87 / Math.log(67.8 * 10 - 5.42));
+  var etoMm = (0.408 * delta * Rn + gamma * (900 / (tm + 273)) * u2 * (es - ea)) / (delta + gamma * (1 + 0.34 * u2));
+  return Math.max(0, etoMm) / 25.4;
+}
+
+function isoDate(d) {
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function shortDate(iso) {
+  var d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function setStatus(msg, cls) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + (cls || '');
+}
+
+function avg(arr) {
+  var v = arr.filter(function(x) { return x !== null && x !== undefined && !isNaN(x); });
+  return v.length ? v.reduce(function(a, b) { return a + b; }, 0) / v.length : null;
+}
+
+function savePrefs() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      zip: document.getElementById('zip').value,
+      plantDate: document.getElementById('plantDate').value,
+      sysCapacity: document.getElementById('sysCapacity').value,
+      soilTexture: document.getElementById('soilTexture').value,
+      rootDepth: document.getElementById('rootDepth').value,
+      madPct: document.getElementById('madPct').value
+    }));
+  } catch (e) {}
+}
+
+function loadPrefs() {
+  try {
+    var s = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    var yr = new Date().getFullYear();
+    if (s.zip) document.getElementById('zip').value = s.zip;
+    if (s.sysCapacity) document.getElementById('sysCapacity').value = s.sysCapacity;
+    if (s.soilTexture) document.getElementById('soilTexture').value = s.soilTexture;
+    if (s.rootDepth) document.getElementById('rootDepth').value = s.rootDepth;
+    if (s.madPct) document.getElementById('madPct').value = s.madPct;
+    if (s.plantDate && s.plantDate.slice(0, 4) === String(yr)) {
+      document.getElementById('plantDate').value = s.plantDate;
+    }
+  } catch (e) {}
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  var yr = new Date().getFullYear();
+  var pd = document.getElementById('plantDate');
+  pd.min = yr + '-01-01';
+  pd.max = yr + '-09-30';
+  pd.value = yr + '-05-01';
+  loadPrefs();
+  ['zip', 'plantDate', 'sysCapacity', 'soilTexture', 'rootDepth', 'madPct'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', savePrefs);
+  });
+});
+
+async function runAnalysis() {
+  var zip = document.getElementById('zip').value.trim();
+  var plantDateStr = document.getElementById('plantDate').value;
+  var sysCap = parseFloat(document.getElementById('sysCapacity').value) || 0.30;
+  var soilTex = document.getElementById('soilTexture').value;
+  var rootDep = parseFloat(document.getElementById('rootDepth').value) || 3;
+  var mad = parseFloat(document.getElementById('madPct').value) / 100 || 0.50;
+  savePrefs();
+
+  var awc = (AWC_MAP[soilTex] || 1.9) * rootDep;
+  var TRIGGER = awc * mad;
+
+  if (!zip || zip.length !== 5) { setStatus('Enter a valid 5-digit ZIP code.', 'error'); return; }
+  if (!plantDateStr) { setStatus('Select a planting date.', 'error'); return; }
+
+  var plantDate = new Date(plantDateStr + 'T12:00:00');
+  var today = new Date(); today.setHours(12, 0, 0, 0);
+  var isFuture = plantDate > today;
+
+  document.getElementById('runBtn').disabled = true;
+  setStatus('Locating ZIP code...', 'loading');
+
+  try {
+    // --- 1. Geocode ---
+    var lat, lon;
+    try {
+      var cr = await fetch('https://geocoding.geo.census.gov/geocoder/locations/address?benchmark=Public_AR_Current&format=json&zip=' + zip);
+      var cd = await cr.json();
+      if (cd.result && cd.result.addressMatches && cd.result.addressMatches.length) {
+        lat = cd.result.addressMatches[0].coordinates.y;
+        lon = cd.result.addressMatches[0].coordinates.x;
+      }
+    } catch (e) {}
+    if (!lat) {
+      var gr = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + zip + '&count=1&format=json');
+      var gd = await gr.json();
+      if (!gd.results || !gd.results.length) throw new Error('ZIP code not found.');
+      lat = gd.results[0].latitude;
+      lon = gd.results[0].longitude;
+    }
+    setStatus('Found ' + lat.toFixed(3) + ', ' + lon.toFixed(3) + '. Checking soil moisture...', 'loading');
+
+    // --- 2. Drought via ERA5 soil moisture - all 4 layers ---
+    // Primary signal: 28-100cm (root zone) - slow to recover, matches USDM better
+    // Visual: all 4 layers shown as bars vs 5-year baseline
+    var droughtCat = -1;
+    var droughtLabel = 'None';
+    var droughtPenalty = 0;
+    var droughtDebug = 'Checking...';
+    var smLayers = null; // will hold {cur, base, anom} for each layer for visualization
+
+    var SM_LAYERS = [
+      { key: 'soil_moisture_0_to_7cm',    label: '0-7 cm',    color: '#5a9e5a', depth: '0-7cm' },
+      { key: 'soil_moisture_7_to_28cm',   label: '7-28 cm',   color: '#4a8e8e', depth: '7-28cm' },
+      { key: 'soil_moisture_28_to_100cm', label: '28-100 cm', color: '#6a6aae', depth: '28-100cm' },
+      { key: 'soil_moisture_100_to_255cm',label: '100-255 cm',color: '#8e6a5a', depth: '100-255cm' }
+    ];
+    var smVarList = SM_LAYERS.map(function(l) { return l.key; }).join(',');
+
+    try {
+      var now = new Date();
+      var mo = now.getMonth() + 1;
+      var curYr = now.getFullYear();
+      var smEnd = isoDate(new Date(now.getTime() - 8 * 86400000));
+      var smStart = isoDate(new Date(now.getTime() - 38 * 86400000));
+      var baseYears = [curYr-2, curYr-3, curYr-4, curYr-5, curYr-6];
+      var moS = pad(mo);
+
+      var smBase = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + lat +
+        '&longitude=' + lon + '&hourly=' + smVarList + '&models=era5_land&timezone=America%2FChicago';
+
+      setStatus('Fetching soil moisture profile...', 'loading');
+
+      // Current + 5 baseline year requests all at once
+      var allReqs = [
+        fetch(smBase + '&start_date=' + smStart + '&end_date=' + smEnd)
+          .then(function(r) { return r.json(); }).catch(function(e) { return {_err: e.message}; })
+      ];
+      for (var bi = 0; bi < baseYears.length; bi++) {
+        var by = baseYears[bi];
+        allReqs.push(
+          fetch(smBase + '&start_date=' + by + '-' + moS + '-01&end_date=' + by + '-' + moS + '-28')
+            .then(function(r) { return r.json(); }).catch(function() { return null; })
+        );
+      }
+
+      var allRes = await Promise.all(allReqs);
+      var curData = allRes[0];
+      var baseData = allRes.slice(1);
+
+      function layerAvg(d, key) {
+        if (!d || !d.hourly || !d.hourly[key]) return null;
+        return avg(d.hourly[key]);
+      }
+
+      smLayers = [];
+      var primaryAnom = null;
+
+      // Helper: nth percentile of a sorted array
+      function percentile(sortedArr, p) {
+        if (!sortedArr.length) return null;
+        var idx = (p / 100) * (sortedArr.length - 1);
+        var lo = Math.floor(idx), hi = Math.ceil(idx);
+        return sortedArr[lo] + (sortedArr[hi] - sortedArr[lo]) * (idx - lo);
+      }
+
+      for (var li = 0; li < SM_LAYERS.length; li++) {
+        var lyr = SM_LAYERS[li];
+        var curVal = null;
+        if (curData && !curData._err) curVal = layerAvg(curData, lyr.key);
+
+        // Collect ALL individual year averages for percentile calc
+        var baseVals = [];
+        var allBaseHourly = [];
+        for (var bi = 0; bi < baseData.length; bi++) {
+          var bv = layerAvg(baseData[bi], lyr.key);
+          if (bv !== null) baseVals.push(bv);
+          // Also collect raw hourly values for percentile
+          if (baseData[bi] && baseData[bi].hourly && baseData[bi].hourly[lyr.key]) {
+            var hrs = baseData[bi].hourly[lyr.key];
+            for (var hi2 = 0; hi2 < hrs.length; hi2++) {
+              if (hrs[hi2] !== null && !isNaN(hrs[hi2])) allBaseHourly.push(hrs[hi2]);
+            }
+          }
+        }
+        var baseVal = baseVals.length > 0 ? avg(baseVals) : null;
+
+        // Derive FC from 95th percentile of all baseline hourly values
+        // This reflects actual ERA5 field capacity for this grid cell, not a hardcoded estimate
+        var fc = null;
+        if (allBaseHourly.length > 0) {
+          allBaseHourly.sort(function(a,b){return a-b;});
+          fc = percentile(allBaseHourly, 95);
+        }
+
+        // WP: hardcoded ERA5 typical values per layer (less variable than FC)
+        var WP_FIXED = [0.10, 0.12, 0.13, 0.14];
+        var wp = WP_FIXED[li];
+
+        var anom = (curVal !== null && baseVal !== null && baseVal > 0)
+          ? (baseVal - curVal) / baseVal : null;
+        smLayers.push({ label: lyr.label, color: lyr.color, cur: curVal, base: baseVal, anom: anom, fc: fc, wp: wp });
+        // Use 28-100cm as primary drought signal (index 2)
+        if (li === 2) primaryAnom = anom;
+      }
+
+      if (primaryAnom !== null) {
+        droughtDebug = '28-100cm anom=' + (primaryAnom * 100).toFixed(1) + '%';
+        if      (primaryAnom >= 0.40) { droughtCat = 0; droughtLabel = 'D4 Exceptional'; droughtPenalty = 0.90; }
+        else if (primaryAnom >= 0.30) { droughtCat = 1; droughtLabel = 'D3 Extreme';     droughtPenalty = 0.75; }
+        else if (primaryAnom >= 0.20) { droughtCat = 2; droughtLabel = 'D2 Severe';      droughtPenalty = 0.55; }
+        else if (primaryAnom >= 0.12) { droughtCat = 3; droughtLabel = 'D1 Moderate';    droughtPenalty = 0.35; }
+        else if (primaryAnom >= 0.05) { droughtCat = 4; droughtLabel = 'D0 Dry';         droughtPenalty = 0.15; }
+        else                          { droughtLabel = 'None'; droughtPenalty = 0; }
+        droughtDebug += ' -> ' + droughtLabel;
+      } else if (curData && curData._err) {
+        droughtDebug = 'API error: ' + String(curData._err).slice(0, 80);
+      } else {
+        droughtDebug = 'No data returned';
+      }
+
+    } catch (e) {
+      droughtDebug = 'Exception: ' + e.message;
+    }
+    var smDroughtCat = droughtCat;
+    var smDroughtLabel = droughtLabel;
+
+    // --- 3. Weather ---
+    // Fetch from planting date for GDU accumulation, but ALWAYS fetch
+    // at least 60 days back for the water balance so planting date
+    // does not affect the current deficit calculation.
+    setStatus('Downloading weather data...', 'loading');
+    var todayStr = isoDate(today);
+    var plantStr = isoDate(plantDate);
+    // Water balance lookback: always at least 60 days regardless of planting date
+    var balanceLookback = new Date(today.getTime() - 60 * 86400000);
+    var balanceStart = balanceLookback < plantDate ? plantDate : balanceLookback;
+    var startStr = isFuture ? plantStr : isoDate(balanceStart < plantDate ? plantDate : balanceStart);
+    // GDU start: always from planting date
+    var gduStartStr = isFuture ? plantStr : plantStr;
+
+    var base = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,shortwave_radiation_sum,windspeed_10m_max,relative_humidity_2m_mean' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago';
+
+    var histD = null;
+    var gduHistD = null;
+    if (!isFuture) {
+      // Always fetch last 60 days for water balance
+      var hr = await fetch(base + '&start_date=' + startStr + '&end_date=' + todayStr);
+      histD = await hr.json();
+      if (histD.error) throw new Error(histD.reason || 'Weather API error');
+      // If planting was before the 60-day window, fetch from planting to window start
+      // separately just for GDU accumulation (no water balance needed that far back)
+      if (plantDate < balanceStart) {
+        var gduEnd = isoDate(new Date(balanceStart.getTime() - 86400000));
+        var gr = await fetch(base + '&start_date=' + plantStr + '&end_date=' + gduEnd);
+        gduHistD = await gr.json();
+      }
+    }
+    var fr = await fetch(base + '&forecast_days=16');
+    var foreD = await fr.json();
+
+    // --- 4. Build records ---
+    var records = [];
+    var cumGDU = 0;
+
+    function makeRec(ds, isFore, tmxF, tmnF, pcp, sol, wnd, rh) {
+      var gdu = calcGDU(tmxF || 75, tmnF || 55);
+      cumGDU += gdu;
+      var stg = getStage(cumGDU);
+      var tmxC = ((tmxF || 75) - 32) * 5 / 9;
+      var tmnC = ((tmnF || 55) - 32) * 5 / 9;
+      var et = calcETo(sol || 20, tmxC, tmnC, rh || 65, (wnd || 8) * 0.44704) * stg.kc;
+      records.push({ date: ds, isForecast: isFore, precip: pcp || 0, solar: sol || 0, cumGDU: cumGDU, stage: stg.stage, et: et });
+    }
+
+    function makeGduOnly(d) {
+      // Accumulate GDU from early-season data without adding to water balance records
+      if (!d || !d.daily) return;
+      for (var i = 0; i < d.daily.time.length; i++) {
+        var gdu = calcGDU(d.daily.temperature_2m_max[i] || 75, d.daily.temperature_2m_min[i] || 55);
+        cumGDU += gdu;
+      }
+    }
+
+    // If planting was before the 60-day water balance window, accumulate GDU only for that early period
+    if (gduHistD) makeGduOnly(gduHistD);
+
+    if (histD) {
+      for (var i = 0; i < histD.daily.time.length; i++) {
+        makeRec(histD.daily.time[i], false,
+          histD.daily.temperature_2m_max[i], histD.daily.temperature_2m_min[i],
+          histD.daily.precipitation_sum[i], histD.daily.shortwave_radiation_sum[i],
+          histD.daily.windspeed_10m_max[i], histD.daily.relative_humidity_2m_mean[i]);
+      }
+    }
+    var histSet = new Set(histD ? histD.daily.time : []);
+    for (var i = 0; i < foreD.daily.time.length; i++) {
+      var ds = foreD.daily.time[i];
+      if (histSet.has(ds) || new Date(ds + 'T12:00:00') < plantDate) continue;
+      makeRec(ds, true,
+        foreD.daily.temperature_2m_max[i], foreD.daily.temperature_2m_min[i],
+        foreD.daily.precipitation_sum[i], foreD.daily.shortwave_radiation_sum[i],
+        foreD.daily.windspeed_10m_max[i], foreD.daily.relative_humidity_2m_mean[i]);
+    }
+
+    // --- 5. Water balance ---
+    // Seed deficit from ERA5 drought assessment - represents current soil moisture state.
+    // The 60-day lookback window means planting date no longer affects current deficit.
+    var deficit = awc * droughtPenalty; // penalty is a fraction of AWC
+    var daysSinceRain = 0;
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      deficit = Math.min(awc, Math.max(0, deficit - r.precip + r.et));
+      if (r.precip >= 0.25 && deficit < 0.1 && !r.isForecast) daysSinceRain = 0;
+      else if (!r.isForecast && r.precip < 0.25) daysSinceRain++;
+      r.deficit = deficit;
+      r.net = r.precip - r.et;
+    }
+
+    // --- 5b. Precip-deficit drought backstop ---
+    // If SM said no drought, check if recent 90-day precip is significantly below normal
+    // Use the historical data we already have: sum precip from histRecs
+    if (smDroughtCat === -1 && !isFuture) {
+      var last90 = records.filter(function(r) { return !r.isForecast; }).slice(-90);
+      var recentPrecip = last90.reduce(function(s, r) { return s + r.precip; }, 0);
+      // Illinois March 90-day normal ~8-10" - use 9" as baseline
+      // If we have fewer than 60 days of data, scale proportionally
+      var daysAvail = last90.length;
+      var normalPrecip = 9.0 * (daysAvail / 90);
+      var precipAnom = (normalPrecip - recentPrecip) / normalPrecip;
+      droughtDebug += ' precip90=' + recentPrecip.toFixed(2) + 'in/' + daysAvail + 'd (norm~' + normalPrecip.toFixed(1) + ')';
+      if (precipAnom >= 0.40 && droughtCat === -1) {
+        droughtCat = 2; droughtLabel = 'D2 Severe'; droughtPenalty = 0.55;
+        droughtDebug += ' [precip backstop]';
+      } else if (precipAnom >= 0.25 && droughtCat === -1) {
+        droughtCat = 3; droughtLabel = 'D1 Moderate'; droughtPenalty = 0.35;
+        droughtDebug += ' [precip backstop]';
+      } else if (precipAnom >= 0.15 && droughtCat === -1) {
+        droughtCat = 4; droughtLabel = 'D0 Dry'; droughtPenalty = 0.15;
+        droughtDebug += ' [precip backstop]';
+      }
+    }
+
+    // --- 6. Summarize ---
+    var hRecs = records.filter(function (r) { return !r.isForecast; });
+    var fRecs = records.filter(function (r) { return r.isForecast; });
+    var nowRec = hRecs.length ? hRecs[hRecs.length - 1] : fRecs[0];
+    if (!nowRec) throw new Error('No weather data returned for these dates.');
+
+    var curStage = getStage(nowRec.cumGDU);
+    var curDef = nowRec.deficit;
+    var fRain = fRecs.reduce(function (s, r) { return s + r.precip; }, 0);
+    var fET = fRecs.reduce(function (s, r) { return s + r.et; }, 0);
+    var fNet = fRain - fET;
+
+    // Project deficit forward through entire forecast window
+    var daysToIrr = null;
+    var pDef = curDef;
+    var minForecastDef = curDef; // lowest deficit expected during forecast window
+    var defAfterForecast = curDef;
+    for (var i = 0; i < fRecs.length; i++) {
+      pDef = Math.min(awc, Math.max(0, pDef - fRecs[i].precip + fRecs[i].et));
+      if (pDef < minForecastDef) minForecastDef = pDef;
+      if (pDef >= TRIGGER && daysToIrr === null) daysToIrr = i + 1;
+    }
+    defAfterForecast = pDef;
+
+    // Irrigation decision logic:
+    // IRRIGATE NOW only if deficit exceeds trigger AND forecast rain won't bring it below trigger
+    // IRRIGATE SOON if deficit will exceed trigger after forecast rain clears
+    // HOLDING if forecast rain will reduce deficit below trigger within the window
+    // NO ACTION if deficit is below trigger throughout
+    var rainWillResolve = (curDef >= TRIGGER && minForecastDef < TRIGGER);
+    var toApply = Math.max(0, Math.ceil((curDef - awc * 0.2) / sysCap) * sysCap);
+    var runDays = toApply > 0 ? (toApply / sysCap).toFixed(1) : '0';
+
+    // --- 7. Cards ---
+    document.getElementById('cardStage').textContent = curStage.stage;
+    document.getElementById('cardGDU').textContent = Math.round(nowRec.cumGDU) + ' GDU accumulated';
+    document.getElementById('cardET').textContent = curStage.et.toFixed(2) + '"';
+    document.getElementById('cardETsub').textContent = 'Kc ' + curStage.kc + ' - ' + curStage.desc;
+    document.getElementById('cardForecast').textContent = fRain.toFixed(2) + '"';
+
+    var dEl = document.getElementById('cardDeficit');
+    dEl.textContent = curDef.toFixed(2) + '"';
+    dEl.className = curDef >= TRIGGER ? 'card-value danger' : curDef >= TRIGGER * 0.6 ? 'card-value warn' : 'card-value ok';
+    document.getElementById('cardDeficitSub').textContent = isFuture ? 'Projected from planting' : daysSinceRain + 'd since rain';
+
+    var drEl = document.getElementById('cardDrought');
+    drEl.textContent = droughtLabel;
+    drEl.className = droughtCat <= 1 && droughtCat >= 0 ? 'card-value danger' : droughtCat <= 3 && droughtCat >= 0 ? 'card-value warn' : 'card-value ok';
+    document.getElementById('cardDroughtSub').textContent = droughtDebug + (droughtCat >= 0 ? ' (+' + (awc * droughtPenalty).toFixed(2) + '")' : '');
+
+    // Render soil moisture profile panel
+    if (smLayers && smLayers.length) {
+      document.getElementById('smPanel').style.display = 'block';
+
+      // Use dynamically derived FC (95th pct of baseline) - avoids hardcoded values
+      // that don't match ERA5's actual soil hydraulics for this location
+      // Scale bar to max FC across all layers for consistent visual comparison
+      var trackMax = 0;
+      for (var li = 0; li < smLayers.length; li++) {
+        var lfc = smLayers[li].fc || 0.45;
+        if (lfc > trackMax) trackMax = lfc;
+      }
+      trackMax = Math.ceil(trackMax * 10) / 10 + 0.05; // round up to nearest 0.1 + small buffer
+
+      var smHtml = '';
+
+      // ---- Legend ----
+      smHtml += '<div style="display:flex;gap:16px;margin-bottom:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);flex-wrap:wrap;align-items:center">';
+      smHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:24px;height:10px;background:#5a9e5a;border-radius:2px;opacity:0.85"></span>Current moisture</span>';
+      smHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:2px;height:14px;background:rgba(255,255,255,0.65);border-radius:1px"></span>5-yr baseline avg</span>';
+      smHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:2px;height:14px;background:rgba(125,216,125,0.8);border-radius:1px"></span>Field capacity (95th pct)</span>';
+      smHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:2px;height:14px;background:rgba(192,57,43,0.7);border-radius:1px"></span>Wilting point</span>';
+      smHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:16px;height:10px;background:rgba(192,57,43,0.12);border-radius:1px"></span>Below WP zone</span>';
+      smHtml += '</div>';
+
+      // ---- Scale ruler - dynamic tick marks based on trackMax ----
+      var rulerWP = smLayers[0].wp || 0.10; // use layer 0 WP for ruler reference
+      var rulerFC = smLayers[0].fc || 0.36;
+      smHtml += '<div style="position:relative;height:22px;margin-bottom:6px;font-family:var(--mono);font-size:9px">';
+      smHtml += '<div style="position:absolute;left:0;right:0;top:10px;height:1px;background:var(--border)"></div>';
+      // Tick every 0.05
+      for (var tick = 0; tick <= trackMax + 0.001; tick += 0.05) {
+        var tpct = Math.min(100, tick / trackMax * 100);
+        var isMajor = Math.round(tick * 100) % 10 === 0;
+        smHtml += '<div style="position:absolute;left:' + tpct.toFixed(1) + '%;top:' + (isMajor?4:7) + 'px;width:1px;height:' + (isMajor?8:5) + 'px;background:var(--border)"></div>';
+        if (isMajor) smHtml += '<div style="position:absolute;left:' + tpct.toFixed(1) + '%;top:0;transform:translateX(-50%);color:var(--text-dim)">' + tick.toFixed(2) + '</div>';
+      }
+      smHtml += '</div>';
+
+      // ---- Bars ----
+      for (var li = 0; li < smLayers.length; li++) {
+        var sl = smLayers[li];
+        var fc = sl.fc || 0.40;
+        var wp = sl.wp || 0.12;
+        var isPrimary = (li === 2);
+
+        var curPct  = sl.cur  !== null ? Math.min(100, sl.cur  / trackMax * 100) : 0;
+        var basePct = sl.base !== null ? Math.min(100, sl.base / trackMax * 100) : 0;
+        var fcPct   = Math.min(99, fc / trackMax * 100);
+        var wpPct   = Math.min(99, wp / trackMax * 100);
+        var pctOfFC = sl.cur !== null ? Math.round(sl.cur / fc * 100) : null;
+
+        var barColor = sl.anom === null ? sl.color
+          : sl.anom >= 0.20 ? '#c0392b'
+          : sl.anom >= 0.10 ? '#d4a843'
+          : sl.anom >= 0.05 ? '#c8a030'
+          : sl.color;
+
+        var anomPct = sl.anom !== null ? parseFloat((sl.anom * 100).toFixed(1)) : null;
+        var anomText = anomPct !== null
+          ? (anomPct > 0 ? anomPct.toFixed(1) + '% below normal' : Math.abs(anomPct).toFixed(1) + '% above normal')
+          : 'no data';
+        var anomColor = anomPct === null ? '#6a8a6a'
+          : anomPct >= 20 ? '#e05545'
+          : anomPct >= 10 ? '#f0c060'
+          : anomPct >= 5  ? '#d4a843'
+          : '#7dd87d';
+
+        smHtml += '<div style="margin-bottom:' + (isPrimary ? '0' : '10px') + ';' + (isPrimary ? 'padding:8px 10px;background:rgba(106,106,174,0.1);border:1px solid rgba(106,106,174,0.25);border-radius:3px;margin-bottom:10px' : '') + '">';
+
+        // Layer label row
+        smHtml += '<div style="display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);margin-bottom:5px">';
+        smHtml += '<span style="font-size:11px;color:' + sl.color + ';font-weight:600">' + sl.label;
+        if (isPrimary) smHtml += ' <span style="font-size:9px;color:#8a8aae;font-weight:400">(primary)</span>';
+        smHtml += '</span>';
+        smHtml += '<span style="font-size:11px;color:' + anomColor + '">' + anomText + '</span>';
+        smHtml += '</div>';
+
+        // Main bar - height 18px, clean, no overlapping markers
+        smHtml += '<div style="position:relative;height:18px;background:var(--surface2);border-radius:3px;border:1px solid var(--border);overflow:hidden">';
+        // WP zone tint inside bar
+        smHtml += '<div style="position:absolute;left:0;top:0;bottom:0;width:' + wpPct.toFixed(1) + '%;background:rgba(192,57,43,0.12)"></div>';
+        // Current fill
+        smHtml += '<div style="position:absolute;left:0;top:0;bottom:0;width:' + curPct.toFixed(1) + '%;background:' + barColor + ';opacity:0.85;transition:width 0.5s ease"></div>';
+        // Baseline tick inside bar
+        smHtml += '<div style="position:absolute;top:0;bottom:0;left:' + basePct.toFixed(1) + '%;width:2px;background:rgba(255,255,255,0.6)"></div>';
+        smHtml += '</div>';
+
+        // Reference scale row below bar - WP and FC ticks aligned to same trackMax
+        smHtml += '<div style="position:relative;height:14px;margin-top:1px">';
+        // FC tick below bar
+        smHtml += '<div style="position:absolute;left:' + fcPct.toFixed(1) + '%;top:0;bottom:0;width:1px;background:rgba(125,216,125,0.5)"></div>';
+        smHtml += '<div style="position:absolute;left:' + (fcPct+0.4).toFixed(1) + '%;top:1px;font-family:var(--mono);font-size:9px;color:#7dd87d;white-space:nowrap">' + (pctOfFC !== null ? pctOfFC + '% of FC' : 'FC') + '</div>';
+        // WP tick below bar
+        smHtml += '<div style="position:absolute;left:' + wpPct.toFixed(1) + '%;top:0;bottom:0;width:1px;background:rgba(192,57,43,0.5)"></div>';
+        smHtml += '</div>';
+
+        smHtml += '</div>';
+      }
+
+      document.getElementById('smBars').innerHTML = smHtml;
+    }
+
+    document.getElementById('cardTrigger').textContent = TRIGGER.toFixed(2) + '"';
+    document.getElementById('cardTriggerSub').textContent = SOIL_LABELS[soilTex] + ' ' + rootDep + 'ft MAD ' + (mad * 100) + '% AWC ' + awc.toFixed(2) + '"';
+
+    // --- 8. Recommendation ---
+    var rec = document.getElementById('recommendation');
+    var rHdr = document.getElementById('recHeader');
+    var rDet = document.getElementById('recDetail');
+    rec.style.display = 'block';
+    var dLbl = isFuture ? 'Projected deficit' : 'Deficit';
+
+    if (curDef >= TRIGGER && rainWillResolve) {
+      // Over trigger now but forecast rain will bring it below - hold off
+      rec.className = 'recommendation irrigate-soon';
+      rHdr.textContent = 'HOLD - RAIN EXPECTED';
+      rDet.innerHTML = dLbl + ' <strong>' + curDef.toFixed(2) + '"</strong> exceeds ' + TRIGGER.toFixed(2) + '" trigger, but <strong>' + fRain.toFixed(2) + '"</strong> forecast rain over ' + fRecs.length + ' days is expected to bring deficit to <strong>' + minForecastDef.toFixed(2) + '"</strong>.<br>' +
+        'Monitor and irrigate only if rain underperforms. After-forecast deficit: <strong>' + defAfterForecast.toFixed(2) + '"</strong>.';
+    } else if (curDef >= TRIGGER && !rainWillResolve) {
+      // Over trigger and rain won't fix it
+      rec.className = 'recommendation irrigate-now';
+      rHdr.textContent = 'IRRIGATE NOW';
+      rDet.innerHTML = '<strong>' + dLbl + ': ' + curDef.toFixed(2) + '"</strong> exceeds ' + TRIGGER.toFixed(2) + '" trigger and forecast rain (<strong>' + fRain.toFixed(2) + '"</strong>) is insufficient to recover.<br>' +
+        'Apply <strong>' + toApply.toFixed(2) + '"</strong> (~' + runDays + ' days at ' + sysCap + '" capacity). Stage <strong>' + curStage.stage + ' - ' + curStage.desc + '</strong>, ET <strong>' + curStage.et.toFixed(2) + '"/day</strong>.' +
+        (droughtCat >= 0 ? ' <strong>' + droughtLabel + '</strong> drought conditions.' : '');
+    } else if (daysToIrr !== null) {
+      // Below trigger now but will exceed it during forecast window
+      rec.className = 'recommendation irrigate-soon';
+      rHdr.textContent = 'IRRIGATE IN ~' + daysToIrr + ' DAY' + (daysToIrr !== 1 ? 'S' : '');
+      rDet.innerHTML = dLbl + ' <strong>' + curDef.toFixed(2) + '"</strong> (' + (curDef / TRIGGER * 100).toFixed(0) + '% of ' + TRIGGER.toFixed(2) + '" trigger).<br>' +
+        'Forecast rain <strong>' + fRain.toFixed(2) + '"</strong> vs ET demand <strong>' + fET.toFixed(2) + '"</strong> - deficit projected to reach trigger in ' + daysToIrr + ' days.' +
+        (droughtCat >= 0 ? ' <strong>' + droughtLabel + '</strong> conditions.' : '');
+    } else {
+      // All clear
+      rec.className = 'recommendation ok';
+      rHdr.textContent = 'NO IRRIGATION NEEDED';
+      rDet.innerHTML = dLbl + ' <strong>' + curDef.toFixed(2) + '"</strong> is below ' + TRIGGER.toFixed(2) + '" trigger.<br>' +
+        'Forecast net: <strong>' + (fNet >= 0 ? '+' : '') + fNet.toFixed(2) + '"</strong> over ' + fRecs.length + ' days. Re-evaluate in 3-5 days.';
+    }
+
+    // --- 9. Stage bar ---
+    document.getElementById('stageBarWrap').style.display = 'block';
+    var sIdx = getStageIdx(nowRec.cumGDU);
+    var sRow = document.getElementById('stageRow');
+    sRow.innerHTML = '';
+    STAGES.forEach(function (s, i) {
+      var div = document.createElement('div');
+      div.className = 'stage-seg ' + (i < sIdx ? 'past' : i === sIdx ? 'current' : 'future');
+      div.textContent = s.stage;
+      div.title = s.stage + ': ' + s.desc;
+      sRow.appendChild(div);
+    });
+    document.getElementById('stageInfo').textContent = curStage.stage + ' - ' + curStage.desc + '   Kc = ' + curStage.kc + '   Peak demand: R1 Silk (~0.35"/day)';
+
+    // --- 10. Chart ---
+    var chartRows = hRecs.slice(-14).concat(fRecs);
+    document.getElementById('chartWrap').style.display = 'block';
+    if (waterChart) waterChart.destroy();
+    waterChart = new Chart(document.getElementById('waterChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: chartRows.map(function (r) { return shortDate(r.date); }),
+        datasets: [
+          { label: 'Precipitation (in)', data: chartRows.map(function (r) { return r.precip; }),
+            backgroundColor: chartRows.map(function (r) { return r.isForecast ? 'rgba(109,184,109,0.35)' : 'rgba(109,184,109,0.7)'; }), borderWidth: 1, stack: 'daily' },
+          { label: 'ET (in)', data: chartRows.map(function (r) { return -r.et; }),
+            backgroundColor: chartRows.map(function (r) { return r.isForecast ? 'rgba(212,168,67,0.3)' : 'rgba(212,168,67,0.65)'; }), borderWidth: 1, stack: 'daily' },
+          { label: 'Running Deficit (in)', data: chartRows.map(function (r) { return -r.deficit; }),
+            type: 'line', borderColor: 'rgba(192,57,43,0.85)', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 2, tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 10 }, boxWidth: 12 } },
+          tooltip: { backgroundColor: '#111911', borderColor: '#2a3a2a', borderWidth: 1, titleColor: '#d8e8d8', bodyColor: '#6a8a6a' }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 } }, grid: { color: 'rgba(42,58,42,0.3)' } },
+          y: { stacked: true, ticks: { color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 } }, grid: { color: 'rgba(42,58,42,0.3)' } }
+        }
+      }
+    });
+
+    // --- 10b. Cumulative ET chart (full season) ---
+    document.getElementById('etChartWrap').style.display = 'block';
+    if (etChart) etChart.destroy();
+
+    // Use ALL records from planting for cumulative view
+    var allRecs = records; // includes full history + forecast
+    var cumET = 0, cumRain = 0, cumNet = 0;
+    var etLabels = [], etData = [], rainData = [], netData = [], stageColors = [];
+    // Stage color map for background bands
+    var stagePalette = {
+      'VE':'rgba(100,160,100,0.08)', 'V3':'rgba(100,160,100,0.10)',
+      'V6':'rgba(80,180,120,0.10)',  'V10':'rgba(60,180,140,0.12)',
+      'VT':'rgba(220,160,60,0.14)',  'R1':'rgba(220,120,60,0.16)',
+      'R2':'rgba(200,100,80,0.14)',  'R3':'rgba(180,100,100,0.12)',
+      'R4':'rgba(160,100,120,0.10)', 'R5':'rgba(140,100,140,0.08)',
+      'R6':'rgba(120,100,160,0.06)'
+    };
+
+    for (var i = 0; i < allRecs.length; i++) {
+      var r = allRecs[i];
+      cumET   += r.et;
+      cumRain += r.precip;
+      cumNet   = cumRain - cumET;
+      etLabels.push(shortDate(r.date));
+      etData.push(parseFloat(cumET.toFixed(3)));
+      rainData.push(parseFloat(cumRain.toFixed(3)));
+      netData.push(parseFloat(cumNet.toFixed(3)));
+      stageColors.push(stagePalette[r.stage] || 'rgba(100,100,100,0.05)');
+    }
+
+    // Build stage change annotation bands for background
+    var stageBands = [];
+    var prevStage = null, bandStart = 0;
+    for (var i = 0; i < allRecs.length; i++) {
+      if (allRecs[i].stage !== prevStage) {
+        if (prevStage !== null) stageBands.push({ stage: prevStage, from: bandStart, to: i - 1 });
+        prevStage = allRecs[i].stage;
+        bandStart = i;
+      }
+    }
+    if (prevStage) stageBands.push({ stage: prevStage, from: bandStart, to: allRecs.length - 1 });
+
+    // Today index for vertical line
+    var todayIdx = hRecs.length > 0 ? hRecs.length - 1 : 0;
+
+    etChart = new Chart(document.getElementById('etChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: etLabels,
+        datasets: [
+          {
+            label: 'Cumulative ET (in)',
+            data: etData,
+            borderColor: '#d4a843',
+            backgroundColor: 'rgba(212,168,67,0.08)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            fill: false
+          },
+          {
+            label: 'Cumulative Rain (in)',
+            data: rainData,
+            borderColor: '#6db86d',
+            backgroundColor: 'rgba(109,184,109,0.08)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            fill: false
+          },
+          {
+            label: 'Net (Rain - ET)',
+            data: netData,
+            borderColor: 'rgba(109,150,200,0.8)',
+            backgroundColor: netData.map(function(v) { return v >= 0 ? 'rgba(109,184,109,0.15)' : 'rgba(192,57,43,0.10)'; }),
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.3,
+            fill: { target: 'origin', above: 'rgba(109,184,109,0.10)', below: 'rgba(192,57,43,0.08)' }
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 10 }, boxWidth: 12 } },
+          tooltip: {
+            backgroundColor: '#111911', borderColor: '#2a3a2a', borderWidth: 1,
+            titleColor: '#d8e8d8', bodyColor: '#6a8a6a',
+            callbacks: {
+              afterBody: function(items) {
+                var idx = items[0].dataIndex;
+                return ['Stage: ' + allRecs[idx].stage];
+              }
+            }
+          },
+          annotation: {
+            annotations: (function() {
+              var anns = {};
+              // Today vertical line
+              anns['today'] = {
+                type: 'line', xMin: todayIdx, xMax: todayIdx,
+                borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1,
+                borderDash: [4, 4],
+                label: { content: 'Today', display: true, position: 'start',
+                  color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 } }
+              };
+              // Stage band labels at top
+              for (var si = 0; si < stageBands.length; si++) {
+                var sb = stageBands[si];
+                var midX = Math.round((sb.from + sb.to) / 2);
+                anns['stage' + si] = {
+                  type: 'label', xValue: midX, yValue: 'max',
+                  content: sb.stage,
+                  color: 'rgba(180,200,180,0.5)',
+                  font: { family: 'IBM Plex Mono', size: 8 },
+                  yAdjust: 8
+                };
+                // Vertical dividers between stages
+                if (sb.from > 0) {
+                  anns['div' + si] = {
+                    type: 'line', xMin: sb.from, xMax: sb.from,
+                    borderColor: 'rgba(100,120,100,0.2)', borderWidth: 1
+                  };
+                }
+              }
+              return anns;
+            })()
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 },
+              maxTicksLimit: 12, maxRotation: 0
+            },
+            grid: { color: 'rgba(42,58,42,0.3)' }
+          },
+          y: {
+            ticks: { color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 } },
+            grid: { color: 'rgba(42,58,42,0.3)' },
+            title: { display: true, text: 'inches', color: '#6a8a6a', font: { family: 'IBM Plex Mono', size: 9 } }
+          }
+        }
+      }
+    });
+
+    // --- 11. Table ---
+    document.getElementById('tableWrap').style.display = 'block';
+    var tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    var tRows = hRecs.slice(-14).concat(fRecs);
+    for (var i = 0; i < tRows.length; i++) {
+      var r = tRows[i];
+      var tr = document.createElement('tr');
+      if (r.isForecast) tr.className = 'forecast-row';
+      var net = r.precip - r.et;
+      var dc = r.deficit >= TRIGGER ? 'deficit-crit' : r.deficit >= TRIGGER * 0.6 ? 'deficit-warn' : 'positive';
+      tr.innerHTML =
+        '<td>' + shortDate(r.date) + '</td>' +
+        '<td>' + r.stage + '</td>' +
+        '<td class="' + (r.precip > 0 ? 'positive' : '') + '">' + r.precip.toFixed(2) + '</td>' +
+        '<td>' + r.et.toFixed(2) + '</td>' +
+        '<td>' + r.solar.toFixed(1) + '</td>' +
+        '<td class="' + (net >= 0 ? 'positive' : 'deficit-warn') + '">' + (net >= 0 ? '+' : '') + net.toFixed(2) + '</td>' +
+        '<td class="' + dc + '">' + r.deficit.toFixed(2) + '"</td>';
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('results').className = 'results visible';
+    setStatus('Updated ' + shortDate(todayStr) + '   ' + lat.toFixed(3) + ', ' + lon.toFixed(3), '');
+
+  } catch (e) {
+    setStatus('Error: ' + e.message, 'error');
+    console.error(e);
+  }
+  document.getElementById('runBtn').disabled = false;
+}
+</script>
+</body>
+</html>
