@@ -89,147 +89,34 @@
       padding: 1.75rem 0 1rem;
     }
 
-    .wordmark {
-      display: flex;
-      align-items: baseline;
-    }
+    .wordmark { display: flex; align-items: baseline; }
+    .wordmark-agronomy { font-family: 'Lora', Georgia, serif; font-weight: 600; font-size: 22px; color: var(--text-primary); letter-spacing: -0.3px; }
+    .wordmark-info { font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 22px; color: var(--text-secondary); letter-spacing: 1px; }
 
-    .wordmark-agronomy {
-      font-family: 'Lora', Georgia, serif;
-      font-weight: 600;
-      font-size: 22px;
-      color: var(--text-primary);
-      letter-spacing: -0.3px;
-    }
+    .badge-open { font-size: 11px; font-weight: 500; color: var(--green-800); background: var(--green-50); border: 0.5px solid var(--green-200); border-radius: 20px; padding: 3px 10px; letter-spacing: 0.3px; }
 
-    .wordmark-info {
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
-      font-size: 22px;
-      color: var(--text-secondary);
-      letter-spacing: 1px;
-    }
-
-    .badge-open {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--green-800);
-      background: var(--green-50);
-      border: 0.5px solid var(--green-200);
-      border-radius: 20px;
-      padding: 3px 10px;
-      letter-spacing: 0.3px;
-    }
-
-    .header-rule {
-      border: none;
-      border-top: 1px solid var(--border-light);
-      margin: 0 0 2.5rem;
-    }
+    .header-rule { border: none; border-top: 1px solid var(--border-light); margin: 0 0 2.5rem; }
 
     /* Hero */
-    .hero {
-      padding: 2rem 0 2.5rem;
-      border-bottom: 0.5px solid var(--border-light);
-      margin-bottom: 2.5rem;
-    }
+    .hero { padding: 2rem 0 2.5rem; border-bottom: 0.5px solid var(--border-light); margin-bottom: 2.5rem; }
+    .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1rem; }
+    .hero-headline { font-family: 'Lora', Georgia, serif; font-weight: 400; font-size: 42px; line-height: 1.2; color: var(--text-primary); margin-bottom: 1.25rem; letter-spacing: -0.5px; max-width: 640px; }
+    .hero-headline em { font-style: italic; color: var(--text-secondary); }
+    .hero-sub { font-size: 16px; color: var(--text-secondary); line-height: 1.7; max-width: 520px; margin-bottom: 1.75rem; font-weight: 300; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .eyebrow {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-    }
-
-    .hero-headline {
-      font-family: 'Lora', Georgia, serif;
-      font-weight: 400;
-      font-size: 42px;
-      line-height: 1.2;
-      color: var(--text-primary);
-      margin-bottom: 1.25rem;
-      letter-spacing: -0.5px;
-      max-width: 640px;
-    }
-
-    .hero-headline em {
-      font-style: italic;
-      color: var(--text-secondary);
-    }
-
-    .hero-sub {
-      font-size: 16px;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      max-width: 520px;
-      margin-bottom: 1.75rem;
-      font-weight: 300;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      color: #fff;
-      background: var(--green-600);
-      border: none;
-      border-radius: var(--radius-md);
-      padding: 9px 20px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s;
-    }
-
+    .btn-primary { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #fff; background: var(--green-600); border: none; border-radius: var(--radius-md); padding: 9px 20px; cursor: pointer; text-decoration: none; transition: background 0.15s; }
     .btn-primary:hover { background: var(--green-800); }
-
-    .btn-ghost {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-primary);
-      background: transparent;
-      border: 0.5px solid var(--border-mid);
-      border-radius: var(--radius-md);
-      padding: 9px 20px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s;
-    }
-
+    .btn-ghost { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; color: var(--text-primary); background: transparent; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 9px 20px; cursor: pointer; text-decoration: none; transition: background 0.15s; }
     .btn-ghost:hover { background: var(--bg-primary); }
 
     /* Section label */
-    .section-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 1.25rem;
-    }
+    .section-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1.25rem; }
 
     /* Tools grid */
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-      margin-bottom: 3rem;
-    }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 3rem; }
 
+    /* Fully clickable tool card */
     .tool-card {
       background: var(--bg-primary);
       border: 0.5px solid var(--border-light);
@@ -240,43 +127,29 @@
       gap: 12px;
       text-decoration: none;
       color: inherit;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+      cursor: pointer;
+      position: relative;
     }
 
-    .tool-card:hover { border-color: var(--border-mid); }
-
-    .tool-card.coming-soon {
-      opacity: 0.72;
+    .tool-card:hover {
+      border-color: var(--border-mid);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
     }
 
-    .tool-card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .tool-card:active { transform: translateY(0); }
 
+    .tool-card.coming-soon { opacity: 0.62; pointer-events: none; cursor: default; }
+
+    .tool-card-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
     .icon-corn  { background: var(--amber-50); }
     .icon-soy   { background: var(--green-50); }
     .icon-rain  { background: var(--blue-50); }
     .icon-yield { background: var(--teal-50); }
 
-    .tool-name {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text-primary);
-      line-height: 1.3;
-    }
-
-    .tool-desc {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      font-weight: 300;
-    }
+    .tool-name { font-family: 'Lora', Georgia, serif; font-size: 17px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+    .tool-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; flex: 1; }
 
     .tool-meta {
       display: flex;
@@ -288,132 +161,46 @@
       flex-wrap: wrap;
     }
 
-    .tag {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 20px;
-      letter-spacing: 0.2px;
-      white-space: nowrap;
-    }
-
+    .tag { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.2px; white-space: nowrap; }
     .tag-amber { color: var(--amber-800); background: var(--amber-50); border: 0.5px solid var(--amber-200); }
     .tag-green { color: var(--green-800); background: var(--green-50); border: 0.5px solid var(--green-200); }
     .tag-blue  { color: var(--blue-800);  background: var(--blue-50);  border: 0.5px solid var(--blue-200); }
     .tag-teal  { color: var(--teal-800);  background: var(--teal-50);  border: 0.5px solid var(--teal-200); }
     .tag-soon  { color: var(--text-secondary); background: var(--bg-secondary); border: 0.5px solid var(--border-light); }
 
-    .tool-link {
-      font-size: 12px;
-      color: var(--text-secondary);
-      display: flex;
+    /* Open tool CTA — replaces the old small link */
+    .tool-cta {
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       margin-left: auto;
-      text-decoration: none;
-      font-weight: 400;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green-600);
       white-space: nowrap;
     }
 
-    .tool-link:hover { color: var(--text-primary); }
+    .tool-card:hover .tool-cta { color: var(--green-800); }
 
     /* Stats */
-    .divider-section {
-      border-top: 0.5px solid var(--border-light);
-      padding-top: 2.5rem;
-      margin-bottom: 2.5rem;
-    }
+    .divider-section { border-top: 0.5px solid var(--border-light); padding-top: 2.5rem; margin-bottom: 2.5rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 3rem; }
+    .stat-cell { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 1.25rem 1rem; text-align: center; }
+    .stat-num { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 600; color: var(--text-primary); line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 3rem;
-    }
-
-    .stat-cell {
-      background: var(--bg-primary);
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-md);
-      padding: 1.25rem 1rem;
-      text-align: center;
-    }
-
-    .stat-num {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 26px;
-      font-weight: 600;
-      color: var(--text-primary);
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
-
-    /* About grid */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 3rem;
-    }
-
-    .about-item {
-      padding: 1.25rem;
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      background: var(--bg-primary);
-    }
-
-    .about-item-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .about-item-text {
-      font-size: 13px;
-      color: var(--text-primary);
-      line-height: 1.65;
-      font-weight: 300;
-    }
+    /* About */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 3rem; }
+    .about-item { padding: 1.25rem; border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); background: var(--bg-primary); }
+    .about-item-label { font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
+    .about-item-text { font-size: 13px; color: var(--text-primary); line-height: 1.65; font-weight: 300; }
 
     /* Footer */
-    .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 2rem;
-      border-top: 0.5px solid var(--border-light);
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .footer-left {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 300;
-    }
-
-    .footer-link {
-      font-size: 13px;
-      color: var(--text-secondary);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
+    .footer { display: flex; align-items: center; justify-content: space-between; padding-top: 2rem; border-top: 0.5px solid var(--border-light); flex-wrap: wrap; gap: 12px; }
+    .footer-left { font-size: 13px; color: var(--text-secondary); font-weight: 300; }
+    .footer-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 5px; }
     .footer-link:hover { color: var(--text-primary); }
 
-    /* Responsive */
     @media (max-width: 540px) {
       .hero-headline { font-size: 30px; }
       .stats-row { grid-template-columns: 1fr 1fr; }
@@ -436,7 +223,7 @@
     <!-- Hero -->
     <div class="hero">
       <div class="eyebrow">Agricultural data tools</div>
-      <h1 class="hero-headline">tools for the <p></p><em>modern agronomist</em></h1>
+      <h1 class="hero-headline">tools for the<br><em>modern agronomist</em></h1>
       <p class="hero-sub">Free, open-source web tools built for Midwest row crop production — tracking growing degree units, stage timing, and crop development from planting to harvest.</p>
       <div class="hero-actions">
         <a href="#tools" class="btn-primary">
@@ -456,7 +243,7 @@
       <div class="tools-grid">
 
         <!-- Corn GDU Tracker -->
-        <div class="tool-card">
+        <a class="tool-card" href="https://daniellundeen.github.io/agronomy/corn-gdu-tracker">
           <div class="tool-card-icon icon-corn">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <ellipse cx="12" cy="13" rx="5" ry="7" stroke="#BA7517" stroke-width="1.5"/>
@@ -470,15 +257,15 @@
           <div class="tool-meta">
             <span class="tag tag-amber">Corn</span>
             <span class="tag tag-green">Live weather</span>
-            <a href="https://daniellundeen.github.io/agronomy/corn-gdu-tracker" class="tool-link">
-              View on GitHub
+            <span class="tool-cta">
+              Open tool
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
+            </span>
           </div>
-        </div>
+        </a>
 
         <!-- Soybean GDU Tracker -->
-        <div class="tool-card">
+        <a class="tool-card" href="https://daniellundeen.github.io/agronomy/soybean-gdu-tracker">
           <div class="tool-card-icon icon-soy">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <circle cx="9" cy="10" r="4" stroke="#3B6D11" stroke-width="1.5"/>
@@ -491,12 +278,12 @@
           <div class="tool-meta">
             <span class="tag tag-green">Soybeans</span>
             <span class="tag tag-green">Live weather</span>
-            <a href="https://daniellundeen.github.io/agronomy/soybean-gdu-tracker" class="tool-link">
-              View on GitHub
+            <span class="tool-cta">
+              Open tool
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
+            </span>
           </div>
-        </div>
+        </a>
 
         <!-- Coming Soon: Rainfall Deficit Tracker -->
         <div class="tool-card coming-soon">
@@ -515,9 +302,6 @@
           </div>
         </div>
 
-        
-        </div>
-
       </div>
     </div>
 
@@ -531,7 +315,7 @@
         </div>
         <div class="stat-cell">
           <div class="stat-num">Free</div>
-          <div class="stat-label">Always & forever</div>
+          <div class="stat-label">Always &amp; forever</div>
         </div>
         <div class="stat-cell">
           <div class="stat-num">Midwest</div>
