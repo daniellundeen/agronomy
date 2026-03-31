@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channel Corn Finder · AgronomyINFO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --bg:      #0e0c09;
+  --bg2:     #161209;
+  --bg3:     #1e1810;
+  --border:  #2e2415;
+  --border2: #3d3018;
+  --text:    #e8dcc8;
+  --muted:   #7a6840;
+  --dim:     #3a2e18;
+  --gold:    #d4961a;
+  --gold2:   #f0b030;
+  --amber:   #e87020;
+  --green:   #5a9e40;
+  --green2:  #74c454;
+  --blue:    #4a88c8;
+  --red:     #c84040;
+  --mono:    'IBM Plex Mono', monospace;
+  --cond:    'Barlow Condensed', sans-serif;
+  --sans:    'DM Sans', sans-serif;
+}
+
+html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; }
+
+nav {
+  background: var(--bg2);
+  border-bottom: 2px solid var(--gold);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { font-family: var(--cond); font-size: 21px; font-weight: 900; letter-spacing: .10em; color: var(--gold2); }
+.nav-logo em { color: var(--muted); font-style: normal; font-weight: 700; }
+.nav-pill { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .12em; border: 1px solid var(--border2); padding: 4px 10px; border-radius: 4px; background: var(--bg3); }
+
+.page { max-width: 680px; margin: 0 auto; padding: 28px 16px 72px; }
+
+.search-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.field-label { display: block; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .14em; margin-bottom: 9px; }
+.search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+
+input[type=text] {
+  flex: 1; background: var(--bg); border: 1px solid var(--border2); border-radius: 7px;
+  padding: 11px 14px; color: var(--text); font-family: var(--mono); font-size: 14px; transition: border-color .15s;
+}
+input[type=text]:focus { outline: none; border-color: var(--gold); }
+input[type=text]::placeholder { color: var(--dim); }
+
+.btn { font-family: var(--sans); font-weight: 600; font-size: 14px; padding: 11px 22px; border: none; border-radius: 7px; cursor: pointer; transition: background .15s, opacity .15s; white-space: nowrap; }
+.btn-primary { background: var(--gold); color: #0e0c09; }
+.btn-primary:hover { background: var(--gold2); }
+.btn-primary:disabled { opacity: .5; cursor: wait; }
+
+.chip-group { margin-bottom: 10px; }
+.chip-group-label { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .12em; margin-bottom: 7px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--mono); font-size: 11px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 4px 10px; color: var(--muted); cursor: pointer; transition: all .15s; }
+.chip:hover { border-color: var(--gold); color: var(--gold); background: #d4961a12; }
+.chip.recent { border-color: #d4961a28; color: #d4961a70; }
+.chip.recent:hover { border-color: var(--gold); color: var(--gold); background: #d4961a12; }
+
+.empty-state { text-align: center; padding: 56px 0 32px; }
+.empty-icon { font-size: 44px; opacity: .2; margin-bottom: 14px; }
+.empty-title { font-family: var(--cond); font-size: 20px; font-weight: 700; letter-spacing: .06em; color: var(--dim); margin-bottom: 5px; }
+.empty-sub { font-family: var(--mono); font-size: 10px; color: #2a1e0a; letter-spacing: .12em; }
+
+.loading-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 44px; text-align: center; }
+.loading-icon { font-size: 32px; display: block; margin-bottom: 12px; animation: bob 1.2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.loading-text { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .05em; }
+
+.error-card { background: #160808; border: 1px solid #5a1818; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; font-size: 13px; color: #d08080; font-family: var(--mono); line-height: 1.5; }
+
+.hero-card { background: linear-gradient(135deg, #1a1208 0%, #100c06 100%); border: 1px solid #d4961a30; border-radius: 12px; padding: 22px 24px; margin-bottom: 12px; }
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+.hybrid-name { font-family: var(--cond); font-size: 42px; font-weight: 900; color: var(--gold2); line-height: 1; letter-spacing: .02em; }
+.hybrid-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: .06em; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px; letter-spacing: .04em; }
+.tag-gold  { background: #d4961a18; color: var(--gold2); border: 1px solid #d4961a35; }
+.tag-blue  { background: #4a88c818; color: var(--blue);  border: 1px solid #4a88c835; }
+.tag-amber { background: #e8702018; color: var(--amber); border: 1px solid #e8702035; }
+.hero-desc { font-size: 13px; color: #9a8060; line-height: 1.65; margin-top: 14px; font-style: italic; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 9px; padding: 14px; text-align: center; }
+.stat-val { font-family: var(--cond); font-size: 30px; font-weight: 800; color: var(--gold2); line-height: 1; }
+.stat-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .10em; margin-top: 5px; }
+
+.section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; }
+.section-title { font-family: var(--mono); font-size: 10px; letter-spacing: .15em; margin-bottom: 14px; display: flex; align-items: baseline; gap: 8px; }
+.section-note { color: var(--dim); font-weight: 400; font-size: 9px; }
+
+.strength-list { list-style: none; }
+.strength-item { position: relative; padding: 6px 0 6px 18px; font-size: 13px; color: #c0a870; line-height: 1.5; border-bottom: 1px solid var(--border); }
+.strength-item:last-child { border-bottom: none; }
+.strength-item::before { content: "▸"; position: absolute; left: 0; color: var(--gold); font-size: 10px; top: 8px; }
+
+.rating-row { margin-bottom: 11px; }
+.rating-row:last-child { margin-bottom: 0; }
+.rating-meta { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.rating-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.rating-val   { font-family: var(--mono); font-size: 11px; color: var(--text); font-weight: 600; }
+.rating-track { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.rating-fill  { height: 100%; border-radius: 3px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+
+.herb-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.herb-block { border-radius: 8px; padding: 12px 16px; min-width: 120px; }
+.herb-grade { font-family: var(--cond); font-size: 32px; font-weight: 800; line-height: 1; }
+.herb-name  { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+.source-footer { text-align: center; padding: 18px 0 4px; font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .08em; }
+.source-footer a { color: #d4961a40; text-decoration: none; transition: color .15s; }
+.source-footer a:hover { color: var(--gold); }
+
+@media (max-width: 480px) {
+  .search-row { flex-direction: column; }
+  .hybrid-name { font-size: 32px; }
+}
+```
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">AGRONOMY<em>INFO</em></div>
+  <div class="nav-pill">CHANNEL CORN FINDER</div>
+</nav>
+
+<div class="page">
+
+  <div class="search-card">
+    <span class="field-label">HYBRID PRODUCT NUMBER</span>
+    <div class="search-row">
+      <input id="hybridInput" type="text"
+        placeholder="e.g. 212-02VT2P or 194-04VT2PRIB"
+        autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button class="btn btn-primary" id="lookupBtn" onclick="doLookup()">Look Up →</button>
+    </div>
+    <div class="chip-group">
+      <div class="chip-group-label">COMMON HYBRIDS</div>
+      <div class="chips" id="commonChips"></div>
+    </div>
+    <div class="chip-group" id="recentGroup" style="display:none;">
+      <div class="chip-group-label">RECENT</div>
+      <div class="chips" id="recentChips"></div>
+    </div>
+  </div>
+
+  <div id="errorCard"   class="error-card"   style="display:none;"></div>
+  <div id="loadingCard" class="loading-card"  style="display:none;">
+    <span class="loading-icon">🌽</span>
+    <div class="loading-text">Fetching hybrid data from Channel / Bayer…</div>
+  </div>
+  <div id="results"     style="display:none;"></div>
+  <div id="emptyState"  class="empty-state">
+    <div class="empty-icon">🌽</div>
+    <div class="empty-title">ENTER A HYBRID TO GET STARTED</div>
+    <div class="empty-sub">AGRONOMICS · DISEASE · MATURITY · GDUs · HERBICIDE</div>
+  </div>
+
+</div>
+
+<script>
+const COMMON_HYBRIDS = [
+  "194-04VT2PRIB","195-85","212-02VT2P","186-56STXRIB",
+  "189-64VT2PRIB","207-65STXRIB","205-15DGVT2PRIB","217-28"
+];
+let recent = [];
+
+// Build quick-access chips
+const commonWrap = document.getElementById("commonChips");
+COMMON_HYBRIDS.forEach(h => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = h;
+  b.onclick = () => { document.getElementById("hybridInput").value = h; doLookup(h); };
+  commonWrap.appendChild(b);
+});
+
+function updateRecent() {
+  const grp  = document.getElementById("recentGroup");
+  const wrap = document.getElementById("recentChips");
+  if (!recent.length) { grp.style.display = "none"; return; }
+  grp.style.display = "";
+  wrap.innerHTML = "";
+  recent.forEach(h => {
+    const b = document.createElement("button");
+    b.className = "chip recent";
+    b.textContent = h;
+    b.onclick = () => { document.getElementById("hybridInput").value = h; doLookup(h); };
+    wrap.appendChild(b);
+  });
+}
+
+document.getElementById("hybridInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLookup();
+});
+
+function setState(id) {
+  ["errorCard","loadingCard","results","emptyState"].forEach(x =>
+    document.getElementById(x).style.display = (x === id ? "" : "none")
+  );
+}
+
+function showError(msg) {
+  document.getElementById("errorCard").textContent = "⚠ " + msg;
+  setState("errorCard");
+}
+
+async function doLookup(override) {
+  const raw = (override || document.getElementById("hybridInput").value).trim();
+  if (!raw) return;
+  const name    = raw.toUpperCase().replace(/\s+/g, "");
+  const slug    = "channel-" + name.toLowerCase() + "-corn";
+  const pageUrl = "https://www.cropscience.bayer.us/corn/channel/" + slug;
+
+  setState("loadingCard");
+  const btn = document.getElementById("lookupBtn");
+  btn.disabled = true;
+  btn.textContent = "Looking up…";
+
+  const prompt = `You are an agricultural data extractor. Use web search to retrieve the Channel seed hybrid page at this URL: ${pageUrl}
+
+Return ONLY a single valid JSON object. No markdown. No explanation. No text outside the JSON.
+
+{
+  "found": true,
+  "hybrid": "${name}",
+  "url": "${pageUrl}",
+  "trait": "",
+  "technology": "",
+  "relativeMaturity": "",
+  "gdusToBlackLayer": "",
+  "gdusToMidPollination": "",
+  "kernelRow": "",
+  "strengths": [],
+  "agronomics": {
+    "Emergence": "",
+    "Drydown": "",
+    "Staygreen": "",
+    "Root Strength": "",
+    "Stalk Strength": "",
+    "Test Weight": "",
+    "Greensnap Tolerance": ""
+  },
+  "disease": {
+    "Gray Leaf Spot": "",
+    "Northern Corn Leaf Blight": "",
+    "Goss's Wilt": "",
+    "Anthracnose Stalk Rot": "",
+    "Common Rust": "",
+    "Southern Rust": "",
+    "Tar Spot": ""
+  },
+  "herbicides": {
+    "Growth Regulators": "",
+    "Pigment Inhibitors": "",
+    "Sulfonylureas": ""
+  },
+  "description": ""
+}
+
+Rules:
+- strengths = array of bullet-point strength statements from the page
+- description = 1-2 sentence product summary
+- Ratings: 1-9 scale (1=Excellent, 9=Poor). Estimate bar positions as numbers.
+- Use "-" for unavailable fields.
+- If page not found: {"found": false, "hybrid": "${name}"}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1500,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const json = await res.json();
+    console.log("[ChannelFinder] API raw:", JSON.stringify(json).slice(0, 800));
+
+    if (json.error) {
+      showError("API error (" + json.error.type + "): " + json.error.message);
+      return;
+    }
+
+    const allText = (json.content || []).map(b => b.text || "").filter(Boolean).join("");
+    console.log("[ChannelFinder] Text blocks:", allText.slice(0, 600));
+
+    if (!allText) {
+      showError("Empty response from API. Check browser console (F12) for details.");
+      return;
+    }
+
+    const s = allText.indexOf("{");
+    const e = allText.lastIndexOf("}");
+    if (s === -1) {
+      showError("No JSON found in response. Got: " + allText.slice(0, 150));
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(allText.slice(s, e + 1));
+    } catch (pe) {
+      showError("JSON parse failed: " + pe.message);
+      return;
+    }
+
+    if (!parsed.found) {
+      showError('"' + name + '" not found in the Channel catalog. Check the product number and try again.');
+      return;
+    }
+
+    if (!recent.includes(name)) recent = [name, ...recent].slice(0, 8);
+    updateRecent();
+    renderResults(parsed);
+    setState("results");
+
+  } catch (err) {
+    console.error("[ChannelFinder] Fetch error:", err);
+    showError(err.message || "Network error — please try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Look Up →";
+  }
+}
+
+function barPct(val) {
+  const n = parseFloat(val);
+  return isNaN(n) ? null : Math.max(0, Math.min(100, ((9 - n) / 8) * 100));
+}
+
+function ratingBar(label, val, color) {
+  const p = barPct(val);
+  const disp = p !== null ? parseFloat(val).toFixed(1) + " / 9" : (val || "—");
+  return `<div class="rating-row">
+    <div class="rating-meta">
+      <span class="rating-label">${label}</span>
+      <span class="rating-val">${disp}</span>
+    </div>
+    ${p !== null ? `<div class="rating-track"><div class="rating-fill" style="width:${p}%;background:${color}"></div></div>` : ""}
+  </div>`;
+}
+
+function herbBlock(label, val) {
+  if (!val || val === "-") return "";
+  const cfg = {
+    A: ["var(--green2)", "#5a9e4014", "#5a9e4038"],
+    C: ["var(--gold2)",  "#d4961a14", "#d4961a38"],
+    W: ["var(--red)",    "#c8404014", "#c8404038"],
+  }[val] || ["var(--muted)", "var(--bg3)", "var(--border)"];
+  return `<div class="herb-block" style="background:${cfg[1]};border:1px solid ${cfg[2]};">
+    <div class="herb-grade" style="color:${cfg[0]};">${val}</div>
+    <div class="herb-name">${label}</div>
+  </div>`;
+}
+
+function renderResults(d) {
+  const agr  = Object.entries(d.agronomics || {}).filter(([,v]) => v && v !== "-");
+  const dis  = Object.entries(d.disease    || {}).filter(([,v]) => v && v !== "-");
+  const hrb  = Object.entries(d.herbicides || {}).filter(([,v]) => v && v !== "-");
+  const stats = [
+    { l: "GDUs TO BLACK LAYER", v: d.gdusToBlackLayer },
+    { l: "GDUs TO MID-POLL",    v: d.gdusToMidPollination },
+    { l: "KERNEL ROW COUNT",    v: d.kernelRow },
+  ].filter(s => s.v && s.v !== "-");
+
+  document.getElementById("results").innerHTML = `
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <div class="hybrid-name">${d.hybrid}</div>
+          <div class="hybrid-sub">CHANNEL® CORN HYBRID</div>
+        </div>
+        <div class="tag-row">
+          ${d.relativeMaturity ? `<span class="tag tag-gold">${d.relativeMaturity} RM</span>` : ""}
+          ${d.trait      ? `<span class="tag tag-blue">${d.trait}</span>`  : ""}
+          ${d.technology ? `<span class="tag tag-amber">${d.technology}</span>` : ""}
+        </div>
+      </div>
+      ${d.description && d.description !== "-" ? `<p class="hero-desc">${d.description}</p>` : ""}
+    </div>
+
+    ${stats.length ? `<div class="stats-grid">
+      ${stats.map(s => `<div class="stat-card"><div class="stat-val">${s.v}</div><div class="stat-label">${s.l}</div></div>`).join("")}
+    </div>` : ""}
+
+    ${d.strengths?.length ? `<div class="section">
+      <div class="section-title" style="color:var(--gold2);">KEY STRENGTHS</div>
+      <ul class="strength-list">${d.strengths.map(s => `<li class="strength-item">${s}</li>`).join("")}</ul>
+    </div>` : ""}
+
+    ${agr.length ? `<div class="section">
+      <div class="section-title" style="color:var(--blue);">AGRONOMICS <span class="section-note">1 = EXCELLENT · 9 = POOR</span></div>
+      ${agr.map(([k,v]) => ratingBar(k, v, "var(--blue)")).join("")}
+    </div>` : ""}
+
+    ${dis.length ? `<div class="section">
+      <div class="section-title" style="color:var(--amber);">DISEASE TOLERANCE <span class="section-note">1 = EXCELLENT · 9 = POOR</span></div>
+      ${dis.map(([k,v]) => ratingBar(k, v, "var(--amber)")).join("")}
+    </div>` : ""}
+
+    ${hrb.length ? `<div class="section">
+      <div class="section-title" style="color:#9a7ad4;">HERBICIDE SENSITIVITY <span class="section-note">A = ACCEPTABLE · C = CAUTION · W = WARNING</span></div>
+      <div class="herb-grid">${hrb.map(([k,v]) => herbBlock(k, v)).join("")}</div>
+    </div>` : ""}
+
+    <div class="source-footer">
+      Source: <a href="${d.url}" target="_blank" rel="noreferrer">cropscience.bayer.us ↗</a> &nbsp;·&nbsp; AgronomyINFO
+    </div>`;
+}
+</script>
+
+</body>
+</html>
