@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channel Corn Finder · AgronomyINFO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --bg:       #07111d;
+  --bg2:      #0c1a28;
+  --bg3:      #111f30;
+  --border:   #1a2d40;
+  --border2:  #243d54;
+  --text:     #d1dde8;
+  --muted:    #4a6480;
+  --dim:      #1e3050;
+  --green:    #3ddc84;
+  --green2:   #22c45e;
+  --blue:     #4fa3e0;
+  --amber:    #f0a030;
+  --red:      #e05050;
+  --mono:     'IBM Plex Mono', monospace;
+  --condensed:'Barlow Condensed', sans-serif;
+  --sans:     'DM Sans', sans-serif;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-brand {
+  font-family: var(--condensed);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: var(--green);
+}
+.nav-brand span { color: var(--muted); font-weight: 700; }
+.nav-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .12em;
+  border: 1px solid var(--border2);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── LAYOUT ──────────────────────────────────────── */
+.page { max-width: 720px; margin: 0 auto; padding: 28px 16px 60px; }
+
+/* ── SEARCH BOX ──────────────────────────────────── */
+.search-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.search-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .14em;
+  margin-bottom: 10px;
+  display: block;
+}
+.search-row { display: flex; gap: 10px; }
+.search-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  transition: border-color .15s;
+}
+.search-input:focus { outline: none; border-color: var(--green); }
+.search-input::placeholder { color: var(--dim); }
+.btn-lookup {
+  background: var(--green);
+  color: #000;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 22px;
+  cursor: pointer;
+  transition: background .15s, opacity .15s;
+  white-space: nowrap;
+}
+.btn-lookup:hover { background: #4fe894; }
+.btn-lookup:disabled { opacity: .5; cursor: wait; }
+
+/* quick chips */
+.chip-section { margin-top: 14px; }
+.chip-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: .1em;
+  margin-bottom: 7px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.chip:hover, .chip.recent { border-color: #3ddc8440; color: var(--green); background: #3ddc8410; }
+
+/* ── STATES ──────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 64px 0 40px;
+  color: var(--dim);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
+.empty-title {
+  font-family: var(--condensed);
+  font-size: 22px;
+  letter-spacing: .06em;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+.empty-sub { font-family: var(--mono); font-size: 11px; color: #0f2040; letter-spacing: .1em; }
+
+.loading-state {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+}
+.loading-icon { font-size: 32px; margin-bottom: 10px; animation: spin 2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+.error-box {
+  background: #1a0a0a;
+  border: 1px solid #7f1d1d;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  color: #fca5a5;
+  font-size: 14px;
+}
+
+/* ── RESULT CARDS ────────────────────────────────── */
+.hero-card {
+  background: linear-gradient(135deg, #0d2a1a 0%, #0a1f14 100%);
+  border: 1px solid #3ddc8430;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 14px;
+}
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+.hybrid-name {
+  font-family: var(--condensed);
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+  letter-spacing: .02em;
+}
+.hybrid-sub { font-family: var(--mono); font-size: 11px; color: #4a8060; margin-top: 2px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+.tag-green  { background: #3ddc8420; color: var(--green);  border: 1px solid #3ddc8440; }
+.tag-blue   { background: #4fa3e020; color: var(--blue);   border: 1px solid #4fa3e040; }
+.tag-amber  { background: #f0a03020; color: var(--amber);  border: 1px solid #f0a03040; }
+.hero-desc { font-size: 13px; color: #7a9ab8; line-height: 1.6; margin-top: 12px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.stat-val {
+  font-family: var(--condensed);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1;
+}
+.stat-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .1em; margin-top: 4px; }
+
+.section-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+.section-header {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-header .scale-note { color: var(--dim); font-weight: 400; }
+
+.strength-list { list-style: none; }
+.strength-item {
+  font-size: 13px;
+  color: #94b8cc;
+  padding: 5px 0;
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border);
+}
+.strength-item:last-child { border-bottom: none; }
+.strength-item::before { content: "▸"; color: var(--green); position: absolute; left: 0; font-size: 10px; top: 7px; }
+
+/* rating bars */
+.rating-row { margin-bottom: 11px; }
+.rating-row:last-child { margin-bottom: 0; }
+.rating-meta { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.rating-label { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.rating-val   { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 600; }
+.rating-track {
+  height: 5px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.rating-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* herbicide blocks */
+.herb-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.herb-block {
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 110px;
+}
+.herb-grade { font-family: var(--condensed); font-size: 28px; font-weight: 700; line-height: 1; }
+.herb-name  { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.source-line {
+  text-align: center;
+  padding: 14px 0 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+.source-line a { color: #3ddc8440; text-decoration: none; }
+.source-line a:hover { color: var(--green); }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .search-row { flex-direction: column; }
+  .hybrid-name { font-size: 32px; }
+  .stat-val { font-size: 22px; }
+}
+```
+
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+
+<nav>
+  <div class="nav-brand">AGRONOMY<span>INFO</span></div>
+  <div class="nav-tag">CHANNEL CORN FINDER</div>
+</nav>
+
+<!-- PAGE -->
+
+<div class="page">
+
+  <!-- SEARCH -->
+
+  <div class="search-card">
+    <span class="search-label">HYBRID PRODUCT NUMBER</span>
+    <div class="search-row">
+      <input id="hybridInput" class="search-input" type="text"
+        placeholder="e.g. 212-02VT2P or 194-04VT2PRIB"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+      <button class="btn-lookup" id="lookupBtn" onclick="doLookup()">Look Up →</button>
+    </div>
+
+```
+<div class="chip-section">
+  <div class="chip-label">COMMON HYBRIDS</div>
+  <div class="chips" id="commonChips"></div>
+</div>
+
+<div class="chip-section" id="recentSection" style="display:none;">
+  <div class="chip-label">RECENT</div>
+  <div class="chips" id="recentChips"></div>
+</div>
+```
+
+  </div>
+
+  <!-- FEEDBACK -->
+
+  <div id="errorBox" class="error-box" style="display:none;"></div>
+  <div id="loadingBox" class="loading-state" style="display:none;">
+    <div class="loading-icon">🌽</div>
+    <div class="loading-text">Fetching hybrid data from Channel…</div>
+  </div>
+
+  <!-- RESULTS -->
+
+  <div id="results" style="display:none;"></div>
+
+  <!-- EMPTY -->
+
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">🌽</div>
+    <div class="empty-title">Enter a hybrid to get started</div>
+    <div class="empty-sub">AGRONOMICS · DISEASE · MATURITY · GDUs</div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+const COMMON = [
+  "194-04VT2PRIB","195-85","212-02VT2P","186-56STXRIB",
+  "189-64VT2PRIB","207-65STXRIB","205-15DGVT2PRIB","217-28"
+];
+let recentHistory = [];
+
+// Build common chips
+const commonChips = document.getElementById("commonChips");
+COMMON.forEach(h => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = h;
+  b.onclick = () => { document.getElementById("hybridInput").value = h; doLookup(h); };
+  commonChips.appendChild(b);
+});
+
+function updateRecent() {
+  const sec = document.getElementById("recentSection");
+  const wrap = document.getElementById("recentChips");
+  if (!recentHistory.length) { sec.style.display = "none"; return; }
+  sec.style.display = "";
+  wrap.innerHTML = "";
+  recentHistory.forEach(h => {
+    const b = document.createElement("button");
+    b.className = "chip recent";
+    b.textContent = h;
+    b.onclick = () => { document.getElementById("hybridInput").value = h; doLookup(h); };
+    wrap.appendChild(b);
+  });
+}
+
+document.getElementById("hybridInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLookup();
+});
+
+function show(id) {
+  ["errorBox","loadingBox","results","emptyState"].forEach(x =>
+    document.getElementById(x).style.display = x === id ? "" : "none"
+  );
+}
+
+async function doLookup(override) {
+  const raw = (override || document.getElementById("hybridInput").value).trim();
+  const name = raw.toUpperCase().replace(/\s+/g,"");
+  if (!name) return;
+
+  show("loadingBox");
+  document.getElementById("lookupBtn").disabled = true;
+  document.getElementById("lookupBtn").textContent = "Looking up…";
+
+  const slug = `channel-${name.toLowerCase()}-corn`;
+  const pageUrl = `https://www.cropscience.bayer.us/corn/channel/${slug}`;
+
+  const prompt = `You are an agricultural data extraction assistant. Use web search to fetch the Channel seed hybrid page at this URL: ${pageUrl}
+
+Return ONLY valid JSON — no markdown fences, no explanation, no preamble — with this exact structure:
+{
+  "hybrid": "${name}",
+  "url": "${pageUrl}",
+  "trait": "",
+  "technology": "",
+  "relativeMaturity": "",
+  "gdusToBlackLayer": "",
+  "gdusToMidPollination": "",
+  "kernelRow": "",
+  "strengths": [],
+  "agronomics": {
+    "Emergence": "",
+    "Drydown": "",
+    "Staygreen": "",
+    "Root Strength": "",
+    "Stalk Strength": "",
+    "Test Weight": "",
+    "Greensnap Tolerance": ""
+  },
+  "disease": {
+    "Gray Leaf Spot": "",
+    "Northern Corn Leaf Blight": "",
+    "Goss's Wilt": "",
+    "Anthracnose Stalk Rot": "",
+    "Common Rust": "",
+    "Southern Rust": "",
+    "Tar Spot": ""
+  },
+  "herbicides": {
+    "Growth Regulators": "",
+    "Pigment Inhibitors": "",
+    "Sulfonylureas": ""
+  },
+  "description": "",
+  "found": true
+}
+
+Rules:
+- Ratings use a 1–9 scale where 1=Excellent, 9=Poor. The page shows visual bars — estimate numeric values based on bar position.
+- strengths is an array of the bullet-point strength statements from the page.
+- description is the 1–2 sentence product summary.
+- If a field is not available use "-".
+- If the hybrid page does not exist or 404s, return only: {"found": false, "hybrid": "${name}"}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const json = await res.json();
+    const text = (json.content || []).map(b => b.text || "").filter(Boolean).join("");
+    const s = text.indexOf("{"), e = text.lastIndexOf("}");
+    if (s === -1) throw new Error("No data returned. The hybrid may not exist in the Channel lineup.");
+    const parsed = JSON.parse(text.slice(s, e + 1));
+
+    if (!parsed.found) {
+      const errBox = document.getElementById("errorBox");
+      errBox.textContent = `⚠ Hybrid "${name}" not found in the Channel catalog. Check spelling and try again.`;
+      show("errorBox");
+    } else {
+      if (!recentHistory.includes(name)) recentHistory = [name, ...recentHistory].slice(0, 8);
+      updateRecent();
+      renderResults(parsed);
+      show("results");
+    }
+  } catch(err) {
+    const errBox = document.getElementById("errorBox");
+    errBox.textContent = `⚠ ${err.message || "Lookup failed. Please try again."}`;
+    show("errorBox");
+  } finally {
+    document.getElementById("lookupBtn").disabled = false;
+    document.getElementById("lookupBtn").textContent = "Look Up →";
+  }
+}
+
+function ratingPct(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return null;
+  return Math.max(0, Math.min(100, ((9 - n) / 8) * 100));
+}
+
+function ratingBar(label, val, color) {
+  const pct = ratingPct(val);
+  const display = pct !== null ? `${parseFloat(val).toFixed(1)}/9` : val;
+  return `
+    <div class="rating-row">
+      <div class="rating-meta">
+        <span class="rating-label">${label}</span>
+        <span class="rating-val">${display}</span>
+      </div>
+      ${pct !== null ? `
+      <div class="rating-track">
+        <div class="rating-fill" style="width:${pct}%;background:${color};"></div>
+      </div>` : ""}
+    </div>`;
+}
+
+function herbBlock(label, val) {
+  if (!val || val === "-") return "";
+  const col = val === "A" ? "var(--green)" : val === "C" ? "var(--amber)" : "var(--red)";
+  const bg  = val === "A" ? "#3ddc8418" : val === "C" ? "#f0a03018" : "#e0505018";
+  const border = val === "A" ? "#3ddc8435" : val === "C" ? "#f0a03035" : "#e0505035";
+  return `
+    <div class="herb-block" style="background:${bg};border:1px solid ${border};">
+      <div class="herb-grade" style="color:${col};">${val}</div>
+      <div class="herb-name">${label}</div>
+    </div>`;
+}
+
+function renderResults(d) {
+  const agrEntries = Object.entries(d.agronomics || {}).filter(([,v]) => v && v !== "-");
+  const disEntries = Object.entries(d.disease   || {}).filter(([,v]) => v && v !== "-");
+  const herbEntries= Object.entries(d.herbicides|| {}).filter(([,v]) => v && v !== "-");
+  const stats = [
+    { label: "GDUs TO BLACK LAYER", val: d.gdusToBlackLayer },
+    { label: "GDUs TO MID-POLL",    val: d.gdusToMidPollination },
+    { label: "KERNEL ROW",          val: d.kernelRow },
+  ].filter(s => s.val && s.val !== "-");
+
+  document.getElementById("results").innerHTML = `
+    <!-- HERO -->
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <div class="hybrid-name">${d.hybrid}</div>
+          <div class="hybrid-sub">Channel® Corn</div>
+        </div>
+        <div class="tag-row">
+          ${d.relativeMaturity ? `<span class="tag tag-green">${d.relativeMaturity} RM</span>` : ""}
+          ${d.trait ? `<span class="tag tag-blue">${d.trait}</span>` : ""}
+          ${d.technology ? `<span class="tag tag-amber">${d.technology}</span>` : ""}
+        </div>
+      </div>
+      ${d.description && d.description !== "-" ? `<p class="hero-desc">${d.description}</p>` : ""}
+    </div>
+
+    <!-- STATS -->
+    ${stats.length ? `
+    <div class="stats-grid">
+      ${stats.map(s => `
+        <div class="stat-card">
+          <div class="stat-val">${s.val}</div>
+          <div class="stat-label">${s.label}</div>
+        </div>`).join("")}
+    </div>` : ""}
+
+    <!-- STRENGTHS -->
+    ${d.strengths?.length ? `
+    <div class="section-card">
+      <div class="section-header" style="color:var(--green);">KEY STRENGTHS</div>
+      <ul class="strength-list">
+        ${d.strengths.map(s => `<li class="strength-item">${s}</li>`).join("")}
+      </ul>
+    </div>` : ""}
+
+    <!-- AGRONOMICS -->
+    ${agrEntries.length ? `
+    <div class="section-card">
+      <div class="section-header" style="color:var(--blue);">
+        AGRONOMICS <span class="scale-note">· 1=Excellent, 9=Poor</span>
+      </div>
+      ${agrEntries.map(([k,v]) => ratingBar(k, v, "var(--blue)")).join("")}
+    </div>` : ""}
+
+    <!-- DISEASE -->
+    ${disEntries.length ? `
+    <div class="section-card">
+      <div class="section-header" style="color:var(--amber);">
+        DISEASE TOLERANCE <span class="scale-note">· 1=Excellent, 9=Poor</span>
+      </div>
+      ${disEntries.map(([k,v]) => ratingBar(k, v, "var(--amber)")).join("")}
+    </div>` : ""}
+
+    <!-- HERBICIDE -->
+    ${herbEntries.length ? `
+    <div class="section-card">
+      <div class="section-header" style="color:#a78bfa;">
+        HERBICIDE SENSITIVITY <span class="scale-note">· A=Acceptable · C=Caution · W=Warning</span>
+      </div>
+      <div class="herb-grid">
+        ${herbEntries.map(([k,v]) => herbBlock(k, v)).join("")}
+      </div>
+    </div>` : ""}
+
+    <!-- SOURCE -->
+    <div class="source-line">
+      Data source: <a href="${d.url}" target="_blank" rel="noreferrer">cropscience.bayer.us ↗</a>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
