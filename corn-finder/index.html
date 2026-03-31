@@ -1,0 +1,406 @@
+import { useState } from “react”;
+
+const COMMON_HYBRIDS = [
+“194-04VT2PRIB”, “195-85”, “212-02VT2P”, “186-56STXRIB”,
+“189-64VT2PRIB”, “207-65STXRIB”, “205-15DGVT2PRIB”, “217-28”
+];
+
+const RATING_CATEGORIES = {
+agronomics: [“Emergence”, “Drydown”, “Staygreen”, “Root Strength”, “Stalk Strength”, “Test Weight”, “Greensnap Tolerance”],
+disease: [“Gray Leaf Spot”, “Northern Corn Leaf Blight”, “Goss’s Wilt”, “Anthracnose Stalk Rot”, “Common Rust”, “Southern Rust”, “Tar Spot”],
+};
+
+function RatingBar({ label, value, color = “#22c55e” }) {
+const num = parseFloat(value);
+const isNumeric = !isNaN(num);
+const pct = isNumeric ? Math.max(0, Math.min(100, ((9 - num) / 8) * 100)) : null;
+
+return (
+<div style={{ marginBottom: “10px” }}>
+<div style={{ display: “flex”, justifyContent: “space-between”, marginBottom: “3px” }}>
+<span style={{ fontSize: “12px”, color: “#94a3b8”, fontFamily: “‘DM Mono’, monospace” }}>{label}</span>
+<span style={{ fontSize: “12px”, color: “#e2e8f0”, fontFamily: “‘DM Mono’, monospace”, fontWeight: 600 }}>
+{isNumeric ? `${num}/9` : value}
+</span>
+</div>
+{isNumeric && (
+<div style={{ height: “5px”, background: “#1e293b”, borderRadius: “3px”, overflow: “hidden” }}>
+<div style={{
+height: “100%”, width: `${pct}%`, background: color,
+borderRadius: “3px”, transition: “width 0.8s cubic-bezier(.4,0,.2,1)”
+}} />
+</div>
+)}
+</div>
+);
+}
+
+function Chip({ label, color = “#16a34a” }) {
+return (
+<span style={{
+display: “inline-block”, padding: “3px 10px”, borderRadius: “999px”,
+fontSize: “11px”, fontWeight: 700, fontFamily: “‘DM Mono’, monospace”,
+background: color + “22”, color, border: `1px solid ${color}44`,
+marginRight: “6px”, marginBottom: “6px”, letterSpacing: “0.05em”
+}}>{label}</span>
+);
+}
+
+export default function ChannelHybridFinder() {
+const [input, setInput] = useState(””);
+const [loading, setLoading] = useState(false);
+const [data, setData] = useState(null);
+const [error, setError] = useState(””);
+const [history, setHistory] = useState([]);
+
+async function lookup(hybridName) {
+const name = (hybridName || input).trim().toUpperCase().replace(/\s+/g, “”);
+if (!name) return;
+setLoading(true);
+setError(””);
+setData(null);
+
+```
+// Build the slug: e.g. "194-04VT2PRIB" → "channel-194-04vt2prib-corn"
+const slug = `channel-${name.toLowerCase()}-corn`;
+const url = `https://www.cropscience.bayer.us/corn/channel/${slug}`;
+
+const prompt = `You are an agricultural data extractor. Fetch and parse the Channel seed hybrid page at this URL: ${url}
+```
+
+Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+“hybrid”: “${name}”,
+“url”: “${url}”,
+“brand”: “”,
+“trait”: “”,
+“technology”: “”,
+“relativeMaturity”: “”,
+“gdusToBlackLayer”: “”,
+“gdusToMidPollination”: “”,
+“kernelRow”: “”,
+“emergence”: “”,
+“strengths”: [],
+“agronomics”: {
+“Emergence”: “”,
+“Drydown”: “”,
+“Staygreen”: “”,
+“Root Strength”: “”,
+“Stalk Strength”: “”,
+“Test Weight”: “”,
+“Greensnap Tolerance”: “”
+},
+“disease”: {
+“Gray Leaf Spot”: “”,
+“Northern Corn Leaf Blight”: “”,
+“Goss’s Wilt”: “”,
+“Anthracnose Stalk Rot”: “”,
+“Common Rust”: “”,
+“Southern Rust”: “”,
+“Tar Spot”: “”
+},
+“herbicides”: {
+“Growth Regulators”: “”,
+“Pigment Inhibitors”: “”,
+“Sulfonylureas”: “”
+},
+“description”: “”,
+“found”: true
+}
+
+If the page 404s or the hybrid doesn’t exist, return {“found”: false, “hybrid”: “${name}”}.
+
+Ratings are on a 1–9 scale where 1=Excellent, 9=Poor. If a rating shows as a bar/slider with a position, estimate the numeric value 1–9. If data is unavailable use “-”.`;
+
+```
+try {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+  const json = await res.json();
+  const text = json.content?.map(b => b.text || "").filter(Boolean).join("");
+  const clean = text.replace(/```json|```/g, "").trim();
+
+  let parsed;
+  try {
+    const jsonStart = clean.indexOf("{");
+    const jsonEnd = clean.lastIndexOf("}");
+    parsed = JSON.parse(clean.slice(jsonStart, jsonEnd + 1));
+  } catch {
+    throw new Error("Could not parse response. The hybrid may not exist.");
+  }
+
+  if (!parsed.found) {
+    setError(`Hybrid "${name}" not found. Check the product name and try again.`);
+  } else {
+    setData(parsed);
+    setHistory(h => [name, ...h.filter(x => x !== name)].slice(0, 8));
+  }
+} catch (e) {
+  setError(e.message || "Lookup failed. Please try again.");
+} finally {
+  setLoading(false);
+}
+```
+
+}
+
+return (
+<div style={{
+minHeight: “100vh”,
+background: “#0a0f1a”,
+fontFamily: “‘DM Sans’, sans-serif”,
+color: “#e2e8f0”,
+padding: “0”,
+}}>
+<style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;600&family=Barlow+Condensed:wght@700;800&display=swap'); * { box-sizing: border-box; } input:focus { outline: none; border-color: #22c55e !important; } .chip-btn:hover { background: #22c55e22 !important; color: #22c55e !important; } .lookup-btn:hover { background: #16a34a !important; } .section-card { background: #0f1929; border: 1px solid #1e2d42; border-radius: 12px; padding: 20px; margin-bottom: 14px; } .strength-item::before { content: "▸"; color: #22c55e; margin-right: 8px; font-size: 11px; }`}</style>
+
+```
+  {/* Header */}
+  <div style={{
+    background: "linear-gradient(135deg, #0d1b2a 0%, #0a1520 50%, #071020 100%)",
+    borderBottom: "1px solid #1a2d40",
+    padding: "28px 24px 20px",
+  }}>
+    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+        <div style={{
+          width: "32px", height: "32px", background: "#22c55e",
+          borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "18px", color: "#000"
+        }}>C</div>
+        <div>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "22px", letterSpacing: "0.05em", lineHeight: 1 }}>
+            CHANNEL HYBRID FINDER
+          </div>
+          <div style={{ fontSize: "11px", color: "#4a6080", letterSpacing: "0.15em", fontFamily: "'DM Mono', monospace" }}>
+            AGRONOMYINFO · POWERED BY BAYER CROP SCIENCE
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Search */}
+  <div style={{ maxWidth: "700px", margin: "0 auto", padding: "24px 16px 0" }}>
+    <div style={{
+      background: "#0f1929",
+      border: "1px solid #1e2d42",
+      borderRadius: "14px",
+      padding: "20px",
+      marginBottom: "16px"
+    }}>
+      <label style={{ display: "block", fontSize: "11px", color: "#4a6080", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", marginBottom: "10px" }}>
+        HYBRID PRODUCT NUMBER
+      </label>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && lookup()}
+          placeholder="e.g. 212-02VT2P or 194-04VT2PRIB"
+          style={{
+            flex: 1, background: "#07111d", border: "1px solid #1e2d42",
+            borderRadius: "8px", padding: "11px 14px", color: "#e2e8f0",
+            fontSize: "14px", fontFamily: "'DM Mono', monospace"
+          }}
+        />
+        <button
+          className="lookup-btn"
+          onClick={() => lookup()}
+          disabled={loading}
+          style={{
+            background: "#22c55e", color: "#000", border: "none",
+            borderRadius: "8px", padding: "11px 22px", fontWeight: 700,
+            fontSize: "14px", cursor: loading ? "wait" : "pointer",
+            fontFamily: "'DM Sans', sans-serif", transition: "background 0.15s",
+            opacity: loading ? 0.7 : 1, whiteSpace: "nowrap"
+          }}
+        >
+          {loading ? "Looking up…" : "Look Up →"}
+        </button>
+      </div>
+
+      {/* Quick-access common hybrids */}
+      <div style={{ marginTop: "14px" }}>
+        <div style={{ fontSize: "10px", color: "#334155", fontFamily: "'DM Mono', monospace", letterSpacing: "0.1em", marginBottom: "8px" }}>COMMON HYBRIDS</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {COMMON_HYBRIDS.map(h => (
+            <button
+              key={h}
+              className="chip-btn"
+              onClick={() => { setInput(h); lookup(h); }}
+              style={{
+                background: "#07111d", border: "1px solid #1e2d42", borderRadius: "6px",
+                padding: "4px 10px", fontSize: "11px", color: "#64748b", cursor: "pointer",
+                fontFamily: "'DM Mono', monospace", transition: "all 0.15s"
+              }}
+            >{h}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent lookups */}
+      {history.length > 0 && (
+        <div style={{ marginTop: "12px" }}>
+          <div style={{ fontSize: "10px", color: "#334155", fontFamily: "'DM Mono', monospace", letterSpacing: "0.1em", marginBottom: "8px" }}>RECENT</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {history.map(h => (
+              <button key={h} className="chip-btn" onClick={() => { setInput(h); lookup(h); }}
+                style={{
+                  background: "#0d1e30", border: "1px solid #22c55e33", borderRadius: "6px",
+                  padding: "4px 10px", fontSize: "11px", color: "#22c55e88", cursor: "pointer",
+                  fontFamily: "'DM Mono', monospace", transition: "all 0.15s"
+                }}>{h}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Error */}
+    {error && (
+      <div style={{ background: "#1a0a0a", border: "1px solid #7f1d1d", borderRadius: "10px", padding: "14px 18px", marginBottom: "14px", color: "#fca5a5", fontSize: "14px" }}>
+        ⚠ {error}
+      </div>
+    )}
+
+    {/* Loading skeleton */}
+    {loading && (
+      <div className="section-card" style={{ textAlign: "center", padding: "40px" }}>
+        <div style={{ fontSize: "28px", marginBottom: "10px" }}>🌽</div>
+        <div style={{ color: "#4a6080", fontSize: "13px", fontFamily: "'DM Mono', monospace" }}>Fetching hybrid data from Channel…</div>
+      </div>
+    )}
+
+    {/* Results */}
+    {data && !loading && (
+      <div>
+        {/* Hero */}
+        <div style={{
+          background: "linear-gradient(135deg, #0d2a1a 0%, #0a1f14 100%)",
+          border: "1px solid #22c55e33",
+          borderRadius: "14px",
+          padding: "20px",
+          marginBottom: "14px"
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "36px", color: "#22c55e", lineHeight: 1 }}>
+                {data.hybrid}
+              </div>
+              <div style={{ fontSize: "12px", color: "#4a8060", fontFamily: "'DM Mono', monospace", marginTop: "2px" }}>
+                Channel® {data.brand || "Corn"}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {data.relativeMaturity && <Chip label={`${data.relativeMaturity} RM`} color="#22c55e" />}
+              {data.trait && <Chip label={data.trait} color="#3b82f6" />}
+              {data.technology && <Chip label={data.technology} color="#f59e0b" />}
+            </div>
+          </div>
+
+          {data.description && (
+            <p style={{ margin: "14px 0 0", fontSize: "13px", color: "#94a3b8", lineHeight: 1.6 }}>{data.description}</p>
+          )}
+        </div>
+
+        {/* Key stats row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px", marginBottom: "14px" }}>
+          {[
+            { label: "GDUs to Black Layer", value: data.gdusToBlackLayer },
+            { label: "GDUs to Mid-Poll", value: data.gdusToMidPollination },
+            { label: "Kernel Row", value: data.kernelRow },
+            { label: "Emergence Score", value: data.emergence },
+          ].filter(s => s.value && s.value !== "-").map(s => (
+            <div key={s.label} style={{
+              background: "#0f1929", border: "1px solid #1e2d42", borderRadius: "10px",
+              padding: "14px", textAlign: "center"
+            }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: "26px", color: "#22c55e" }}>{s.value}</div>
+              <div style={{ fontSize: "10px", color: "#4a6080", fontFamily: "'DM Mono', monospace", letterSpacing: "0.08em", marginTop: "2px" }}>{s.label.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Strengths */}
+        {data.strengths?.length > 0 && (
+          <div className="section-card">
+            <div style={{ fontSize: "11px", color: "#22c55e", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", marginBottom: "12px" }}>KEY STRENGTHS</div>
+            {data.strengths.map((s, i) => (
+              <div key={i} className="strength-item" style={{ fontSize: "13px", color: "#cbd5e1", marginBottom: "6px", lineHeight: 1.5 }}>{s}</div>
+            ))}
+          </div>
+        )}
+
+        {/* Agronomic ratings */}
+        <div className="section-card">
+          <div style={{ fontSize: "11px", color: "#3b82f6", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", marginBottom: "14px" }}>
+            AGRONOMICS <span style={{ color: "#334155", fontWeight: 400 }}>· 1=Excellent, 9=Poor</span>
+          </div>
+          {Object.entries(data.agronomics || {}).filter(([, v]) => v && v !== "-").map(([k, v]) => (
+            <RatingBar key={k} label={k} value={v} color="#3b82f6" />
+          ))}
+        </div>
+
+        {/* Disease ratings */}
+        <div className="section-card">
+          <div style={{ fontSize: "11px", color: "#f59e0b", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", marginBottom: "14px" }}>
+            DISEASE TOLERANCE <span style={{ color: "#334155", fontWeight: 400 }}>· 1=Excellent, 9=Poor</span>
+          </div>
+          {Object.entries(data.disease || {}).filter(([, v]) => v && v !== "-").map(([k, v]) => (
+            <RatingBar key={k} label={k} value={v} color="#f59e0b" />
+          ))}
+        </div>
+
+        {/* Herbicide sensitivity */}
+        {data.herbicides && Object.values(data.herbicides).some(v => v && v !== "-") && (
+          <div className="section-card">
+            <div style={{ fontSize: "11px", color: "#a78bfa", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", marginBottom: "12px" }}>
+              HERBICIDE SENSITIVITY <span style={{ color: "#334155", fontWeight: 400 }}>· A=Acceptable, C=Caution, W=Warning</span>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {Object.entries(data.herbicides || {}).filter(([, v]) => v && v !== "-").map(([k, v]) => {
+                const col = v === "A" ? "#22c55e" : v === "C" ? "#f59e0b" : "#ef4444";
+                return (
+                  <div key={k} style={{
+                    background: col + "15", border: `1px solid ${col}33`,
+                    borderRadius: "8px", padding: "10px 14px"
+                  }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: "22px", color: col }}>{v}</div>
+                    <div style={{ fontSize: "10px", color: "#64748b", fontFamily: "'DM Mono', monospace" }}>{k}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Source link */}
+        <div style={{ textAlign: "center", padding: "10px 0 24px", fontSize: "11px", color: "#334155", fontFamily: "'DM Mono', monospace" }}>
+          Data source: <a href={data.url} target="_blank" rel="noreferrer" style={{ color: "#22c55e55", textDecoration: "none" }}>cropscience.bayer.us</a>
+        </div>
+      </div>
+    )}
+
+    {/* Empty state */}
+    {!data && !loading && !error && (
+      <div style={{ textAlign: "center", padding: "48px 16px", color: "#1e3050" }}>
+        <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>🌽</div>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "20px", color: "#1e3a5f", letterSpacing: "0.05em" }}>Enter a hybrid to get started</div>
+        <div style={{ fontSize: "12px", color: "#0f2040", marginTop: "6px", fontFamily: "'DM Mono', monospace" }}>Agronomics · Disease · Maturity · GDUs</div>
+      </div>
+    )}
+  </div>
+</div>
+```
+
+);
+}
