@@ -698,6 +698,44 @@
     margin-top: 10px;
   }
 
+  .rain-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .rainfall-alert {
+    border-radius: 7px;
+    padding: 9px 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  .rainfall-alert.alert-dry  { background:#fdf3dc; border:1.5px solid #c49a2a; color:#6a4800; }
+  .rainfall-alert.alert-wet  { background:#dceef8; border:1.5px solid #2878c8; color:#0a3a6a; }
+  .rainfall-alert.alert-cold { background:#fce8e8; border:1.5px solid #c03030; color:#6a0a0a; }
+
+  .rain-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-light);
+    flex-wrap: wrap;
+  }
+
+  .rain-swatch {
+    display: inline-block;
+    width: 20px; height: 4px;
+    border-radius: 2px;
+  }
+
   .climate-note {
     background: #eaf3fb;
     border-left: 3px solid #5a9fc7;
@@ -1048,6 +1086,8 @@ async function fetchWeather(lat, lon, startDate, days) {
   // Fetch hourly from forecast API (covers past 14d + next 16d) and archive for older dates.
   let hourlyData = {};
 
+  let precipData = {}; // date -> mm precipitation
+
   async function ingestHourly(d) {
     if (!d.hourly || !d.hourly.time) return;
     d.hourly.time.forEach((t, i) => {
@@ -1058,6 +1098,13 @@ async function fetchWeather(lat, lon, startDate, days) {
       if (st !== null && st !== undefined) hourlyData[date].soilTemps.push(st);
       if (at !== null && at !== undefined) hourlyData[date].airTemps.push(at);
     });
+    // Also grab daily precip if present
+    if (d.daily && d.daily.time) {
+      d.daily.time.forEach((t, i) => {
+        const p = d.daily.precipitation_sum[i];
+        if (p !== null && p !== undefined) precipData[t] = p;
+      });
+    }
   }
 
   // Always fetch forecast window
@@ -1084,8 +1131,43 @@ async function fetchWeather(lat, lon, startDate, days) {
     } catch(e) { /* archive may not cover very recent dates, that's ok */ }
   }
 
+  // Separate daily precip fetch — forecast API (past 14d + 16d forecast)
+  // This is a separate request because Open-Meteo doesn't mix hourly+daily in one call
+  try {
+    const rp = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&daily=precipitation_sum&timezone=auto&past_days=14&forecast_days=16`
+    );
+    const dp = await rp.json();
+    if (dp.daily && dp.daily.time) {
+      dp.daily.time.forEach((t, i) => {
+        const p = dp.daily.precipitation_sum[i];
+        if (p !== null && p !== undefined) precipData[t] = p;
+      });
+    }
+  } catch(e) { /* precip optional */ }
+
+  // Also fetch archive precip if planting date is in the past
+  if (startDate < today) {
+    try {
+      const archEnd = endStr < today ? endStr : today;
+      const rpa = await fetch(
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+        `&daily=precipitation_sum&timezone=auto` +
+        `&start_date=${startDate}&end_date=${archEnd}`
+      );
+      const dpa = await rpa.json();
+      if (dpa.daily && dpa.daily.time) {
+        dpa.daily.time.forEach((t, i) => {
+          const p = dpa.daily.precipitation_sum[i];
+          if (p !== null && p !== undefined && precipData[t] === undefined) precipData[t] = p;
+        });
+      }
+    } catch(e) { /* optional */ }
+  }
+
   // Aggregate hourly -> daily min/max
-  const daily = { time: [], tmax: [], tmin: [], usedSoil: [] };
+  const daily = { time: [], tmax: [], tmin: [], usedSoil: [], precip: [] };
   let cur = new Date(startDate + 'T12:00:00');
   const endDate = new Date(endStr + 'T12:00:00');
 
@@ -1100,6 +1182,7 @@ async function fetchWeather(lat, lon, startDate, days) {
         daily.tmax.push(Math.max(...temps));
         daily.tmin.push(Math.min(...temps));
         daily.usedSoil.push(useSoil);
+        daily.precip.push(precipData[ds] !== undefined ? precipData[ds] : null);
       }
     }
     cur.setDate(cur.getDate() + 1);
@@ -1107,7 +1190,7 @@ async function fetchWeather(lat, lon, startDate, days) {
 
   if (daily.time.length === 0) throw new Error('No temperature data found for this location and date range.');
   const soilDays = daily.usedSoil.filter(Boolean).length;
-  return { daily, soilDays, totalDays: daily.time.length };
+  return { daily, soilDays, totalDays: daily.time.length, precipData };
 }
 
 // ─── CLIMATE NORMALS FALLBACK ─────────────────────────────────────────────────
@@ -1230,7 +1313,8 @@ function calcEmergence(dailyTemps, plantIdx, plantTimeFactor, soilF, tillF, crop
       adjGDU: adj.toFixed(1),
       cumGDU: accumulated.toFixed(1),
       pct: Math.min(100, (accumulated / target.base) * 100),
-      isClimate: dailyTemps[i].isClimate || false
+      isClimate: dailyTemps[i].isClimate || false,
+      precip: dailyTemps[i].precip !== undefined ? dailyTemps[i].precip : null
     });
 
     if (accumulated >= target.base) break;
@@ -1269,7 +1353,8 @@ async function calculate() {
       date: d,
       tmax: weather.daily.tmax[i],
       tmin: weather.daily.tmin[i],
-      usedSoilTemp: weather.daily.usedSoil[i]
+      usedSoilTemp: weather.daily.usedSoil[i],
+      precip: weather.daily.precip[i]  // mm
     }));
     const plantIdx = dailyTemps.findIndex(d => d.date === plantDateVal);
     if (plantIdx < 0) throw new Error('Planting date not found in weather data.');
@@ -1373,6 +1458,97 @@ function renderResults(results, loc, plantDate, soilType, tillageType, dailyTemp
 
   // Draw chart
   setTimeout(() => drawChart(chartData, crops), 100);
+}
+
+// ─── RAINFALL HELPERS ────────────────────────────────────────────────────────
+
+const MM_TO_IN = 0.0393701;
+
+// 7-day rolling precip total in inches ending on row idx
+function rollingPrecip(rows, idx) {
+  // Only count real forecast rows — skip climate-average rows (no precip data)
+  let total = 0;
+  let realCount = 0;
+  for (let i = Math.max(0, idx - 6); i <= idx; i++) {
+    if (rows[i].isClimate) continue;
+    if (rows[i].precip !== null && rows[i].precip !== undefined) {
+      total += rows[i].precip;
+      realCount++;
+    }
+  }
+  // If we have no real precip data at all, return null to signal unknown
+  return realCount > 0 ? total * MM_TO_IN : null;
+}
+
+// Icon to overlay on cell — null = nothing shown
+// dry/wet icons only; no color bar
+function precipIcon(rows, idx, cumGDU, targetBase) {
+  const inches = rollingPrecip(rows, idx);
+  if (inches === null) return null; // no precip data — don't flag anything
+  const pct = cumGDU / targetBase;
+
+  if (inches >= 2.0)               return '🌊'; // saturated
+  if (inches >= 1.25)              return '💧'; // wet
+  if (inches < 0.1 && pct >= 0.70) return '⚠️'; // crust risk — last 30% only
+  return null;
+}
+
+// Alert callouts
+function buildRainfallAlerts(rows, plantDate, plantTmin, targetBase) {
+  const alerts = [];
+
+  // Imbibitional chilling: rain at planting + tmin < 50°F
+  const plantRow = rows[0];
+  if (plantRow) {
+    const p = (plantRow.precip || 0) * MM_TO_IN;
+    if (p > 0.1 && plantTmin < 50) {
+      alerts.push({ type: 'cold',
+        msg: '🥶 Imbibitional chilling risk — rain near planting with temps below 50°F. Cold water imbibition can reduce germination rates.'
+      });
+    }
+  }
+
+  // Saturation: peak 7-day rolling total (real rows only)
+  let maxWet = 0, maxWetDate = null;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].isClimate) continue;
+    const in7 = rollingPrecip(rows, i);
+    if (in7 !== null && in7 > maxWet) { maxWet = in7; maxWetDate = rows[i].date; }
+  }
+  if (maxWet >= 2.0) {
+    const fmt = new Date(maxWetDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    alerts.push({ type: 'wet',
+      msg: `💧 Saturated soil — ${maxWet.toFixed(1)}" accumulated by ${fmt}. Poor aeration may slow germination and increase seedling disease risk.`
+    });
+  } else if (maxWet >= 1.25) {
+    alerts.push({ type: 'wet',
+      msg: `💧 Wet conditions — ${maxWet.toFixed(1)}" in 7 days. Monitor for aeration stress, especially on clay soils.`
+    });
+  }
+
+  // Crusting: dry streak (5+ days < 0.05") in last 30% of GDU window — real rows only
+  let dryStreak = 0, dryStart = null;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].isClimate) continue; // can't know future precip from climate normals
+    const pct = parseFloat(rows[i].cumGDU) / targetBase;
+    const p   = rows[i].precip !== null && rows[i].precip !== undefined ? rows[i].precip * MM_TO_IN : null;
+    if (p === null) { dryStreak = 0; dryStart = null; continue; } // unknown = reset streak
+    if (p < 0.05) {
+      if (dryStreak === 0) dryStart = rows[i].date;
+      dryStreak++;
+    } else {
+      dryStreak = 0; dryStart = null;
+    }
+    if (dryStreak >= 5 && dryStart && pct >= 0.70) {
+      const fmt = new Date(dryStart + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      alerts.push({ type: 'dry',
+        msg: `⚠️ Crusting risk — dry streak from ${fmt} during final emergence push. Physical barrier possible on silt loam and clay soils.`
+      });
+      break;
+    }
+  }
+
+  return alerts;
 }
 
 // ─── GDU INTENSITY BAND (0-5) ─────────────────────────────────────────────
@@ -1489,6 +1665,12 @@ function buildCropPanel(crop, result, adjF, plantDate, today, soilDays, totalDay
     </div>
     ${climateNote}`;
 
+  // ── Rainfall alerts ──────────────────────────────────────────────────────
+  const rainfallAlerts = buildRainfallAlerts(result.rows, plantDate, result.rows[0] ? result.rows[0].tmin : 60, target.base);
+  const rainfallAlertsHTML = rainfallAlerts.map(a =>
+    `<div class="rainfall-alert alert-${a.type}">${a.msg}</div>`
+  ).join('');
+
   // ── Calendar heatmap ─────────────────────────────────────────────────────
   // Group rows by month, build full calendar grids
   const calHTML = buildCalendarHeatmap(result.rows, crop, color);
@@ -1506,6 +1688,10 @@ function buildCropPanel(crop, result, adjF, plantDate, today, soilDays, totalDay
         <div class="cal-wrap" id="cal-${crop}">
           ${calHTML}
         </div>
+
+        <div class="rain-legend">⚠️ Crust risk (last 30%) &nbsp;·&nbsp; 💧 Wet &nbsp;·&nbsp; 🌊 Saturated</div>
+
+        ${rainfallAlertsHTML}
 
         <div class="cal-legend">
           <div class="cal-legend-cell" style="background:#e8d0cc;border-color:#d4b0aa"></div><span>Cool</span>
@@ -1602,11 +1788,17 @@ function buildCalendarHeatmap(rows, crop, color) {
         const title     = `${ds}: ${row.adjGDU} adj GDU | ${row.cumGDU} total${row.isClimate ? ' [15-yr avg]' : ''}`;
 
         const avgTag = row.isClimate ? `<span style="display:block;font-size:0.6rem;line-height:1;opacity:0.75;letter-spacing:0.02em">avg</span>` : '';
-        const dataAttrs = `data-date="${ds}" data-tmax="${row.tmax}" data-tmin="${row.tmin}" data-gdu="${row.adjGDU}" data-cum="${row.cumGDU}" data-climate="${row.isClimate ? '1' : '0'}"`;
+        const rowIdx    = rows.indexOf(row);
+        const cumGDUval = parseFloat(row.cumGDU);
+        // No rainfall icons on climate-average rows — we don't know future precip
+        const rainIcon  = row.isClimate ? null : precipIcon(rows, rowIdx, cumGDUval, GDU_TARGETS[crop].base);
+        const iconTag   = rainIcon ? `<span style="position:absolute;bottom:2px;right:2px;font-size:0.55rem;line-height:1">${rainIcon}</span>` : '';
+        const pStatus   = (() => { const i = rollingPrecip(rows, rowIdx); return i >= 2 ? 'saturated' : i >= 1.25 ? 'wet' : i < 0.1 ? 'dry' : i < 0.5 ? 'light' : 'adequate'; })();
+        const dataAttrs = `data-date="${ds}" data-tmax="${row.tmax}" data-tmin="${row.tmin}" data-gdu="${row.adjGDU}" data-cum="${row.cumGDU}" data-climate="${row.isClimate ? '1' : '0'}" data-precip="${row.precip !== null ? (row.precip * 0.0393701).toFixed(2) : '?'}" data-pstatus="${pStatus}"`;
         if (isEmerg) {
-          html += `<div class="cal-cell gdu-${band}${climClass} emergence" ${dataAttrs} style="${plantStyle}">🌱</div>`;
+          html += `<div class="cal-cell gdu-${band}${climClass} emergence" ${dataAttrs} style="${plantStyle};overflow:hidden">🌱${iconTag}</div>`;
         } else {
-          html += `<div class="cal-cell gdu-${band}${climClass}" ${dataAttrs} style="${plantStyle};flex-direction:column;gap:0">${dayNum}${avgTag}</div>`;
+          html += `<div class="cal-cell gdu-${band}${climClass}" ${dataAttrs} style="${plantStyle};flex-direction:column;gap:0;overflow:hidden">${dayNum}${avgTag}${iconTag}</div>`;
         }
       }
     });
@@ -1868,23 +2060,29 @@ function attachCalTooltips() {
 
   document.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
     cell.addEventListener('mouseenter', function() {
-      const ds     = this.dataset.date;
-      const tmax   = this.dataset.tmax;
-      const tmin   = this.dataset.tmin;
-      const gdu    = parseFloat(this.dataset.gdu).toFixed(1);
-      const cum    = parseFloat(this.dataset.cum).toFixed(1);
-      const isClim = this.dataset.climate === '1';
-      const d      = new Date(ds + 'T12:00:00');
-      const fmt    = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      const ds      = this.dataset.date;
+      const tmax    = this.dataset.tmax;
+      const tmin    = this.dataset.tmin;
+      const gdu     = parseFloat(this.dataset.gdu).toFixed(1);
+      const cum     = parseFloat(this.dataset.cum).toFixed(1);
+      const isClim  = this.dataset.climate === '1';
+      const precip  = this.dataset.precip;
+      const pstatus = this.dataset.pstatus;
+      const d       = new Date(ds + 'T12:00:00');
+      const fmt     = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      const pLabel  = { dry:'Dry / crust risk', light:'Light rain', adequate:'Adequate', wet:'Wet', saturated:'Saturated' }[pstatus] || '';
+      const pColor  = { dry:'#e8a020', light:'#60b8e0', adequate:'#4a7c3f', wet:'#2878c8', saturated:'#1050a8' }[pstatus] || 'transparent';
 
       tip.innerHTML =
         '<div class="cal-tooltip-date">' + fmt + (isClim ? ' <span style="font-weight:400;opacity:0.65;font-size:0.8rem">(15-yr avg)</span>' : '') + '</div>' +
         '<div class="cal-tooltip-row"><span class="cal-tooltip-label">High</span><span class="cal-tooltip-val">' + tmax + '°F</span></div>' +
         '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Low</span><span class="cal-tooltip-val">' + tmin + '°F</span></div>' +
         '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Daily GDU</span><span class="cal-tooltip-val">' + gdu + '</span></div>' +
-        '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">Cumulative GDU</span><span class="cal-tooltip-val">' + cum + '</span></div>';
+        '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">Cumulative GDU</span><span class="cal-tooltip-val">' + cum + '</span></div>' +
+        (precip && precip !== '?' ? '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">7-day rain</span><span class="cal-tooltip-val">' + precip + '"</span></div>' : '') +
+        (pLabel && pstatus !== 'adequate' ? '<div style="margin-top:5px;padding:3px 7px;border-radius:4px;font-size:0.8rem;font-weight:600;background:' + pColor + ';color:white">' + pLabel + '</div>' : '');
 
-      tip.style.display = 'block';
+            tip.style.display = 'block';
 
       const r  = this.getBoundingClientRect();
       const tr = tip.getBoundingClientRect();
