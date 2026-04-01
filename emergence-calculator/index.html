@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Emergence GDU Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --soil: #12100a;        /* darkest — page background */
+    --soil-light: #1c1812;  /* sidebar background */
+    --earth: #8b6347;
+    --straw: #d4a853;
+    --straw-light: #f0cc7a;
+    --green: #4a7c3f;
+    --green-light: #6aaa5e;
+    --sky: #b8d4e8;
+    --cream: #f5edd8;       /* light surface — cards, inputs */
+    --paper: #faf6ee;       /* dark page background */
+    --corn-gold: #f5a623;
+    --soy-green: #5b8f3a;
+    --warn: #c0392b;
+    --text: #1a1208;        /* light text on dark bg */
+    --text-light: #6b5a42;
+    --border: #2e2418;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: #faf6ee;
+color: #1a1208;
+font-family: ‘Source Sans 3’, sans-serif;
+min-height: 100vh;
+}
+
+header {
+background: var(–soil);
+color: var(–cream);
+padding: 20px 32px;
+display: flex;
+align-items: center;
+gap: 16px;
+border-bottom: 4px solid var(–straw);
+position: relative;
+overflow: hidden;
+}
+
+header::after {
+content: ‘’;
+position: absolute;
+right: 0; top: 0; bottom: 0;
+width: 200px;
+background: repeating-linear-gradient(
+90deg,
+transparent,
+transparent 12px,
+rgba(212,168,83,0.08) 12px,
+rgba(212,168,83,0.08) 14px
+);
+}
+
+.header-logo { font-size: 2.2rem; margin-right: 4px; letter-spacing: -2px; }
+
+header h1 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.6rem;
+font-weight: 900;
+letter-spacing: -0.5px;
+line-height: 1.1;
+}
+
+header p {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.7rem;
+color: var(–straw-light);
+margin-top: 4px;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+}
+
+.main-grid {
+display: grid;
+grid-template-columns: 380px 1fr;
+gap: 0;
+min-height: calc(100vh - 85px);
+}
+
+/* SIDEBAR */
+.sidebar {
+background: #3d2b1f;
+padding: 28px 24px;
+border-right: 3px solid #5c3d2e;
+overflow-y: auto;
+}
+
+.section-label {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+color: #f5edd8;
+margin-bottom: 10px;
+margin-top: 22px;
+padding-bottom: 6px;
+border-bottom: 1px solid rgba(245,237,216,0.25);
+}
+.section-label:first-child { margin-top: 0; }
+
+.field-group { margin-bottom: 14px; }
+
+label {
+display: block;
+font-size: 0.82rem;
+color: #f5edd8;
+margin-bottom: 5px;
+font-weight: 600;
+}
+
+input, select {
+width: 100%;
+padding: 9px 12px;
+background: #f8f0dc;
+border: 2px solid #d4a853;
+border-radius: 6px;
+color: #1a1208;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.85rem;
+outline: none;
+transition: border-color 0.2s, background 0.2s;
+}
+
+input:focus, select:focus {
+border-color: #f0cc7a;
+background: #fff8ea;
+box-shadow: 0 0 0 3px rgba(212,168,83,0.25);
+}
+
+select option { background: #2a2010; color: #f5edd8; }
+
+.radio-group {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+}
+
+.radio-btn {
+flex: 1;
+min-width: 80px;
+}
+
+.radio-btn input[type=radio] { display: none; }
+
+.radio-btn label {
+display: block;
+text-align: center;
+padding: 8px 6px;
+background: rgba(245,237,216,0.12);
+border: 1.5px solid rgba(245,237,216,0.3);
+border-radius: 6px;
+cursor: pointer;
+font-size: 0.78rem;
+color: #f5edd8;
+transition: all 0.18s;
+margin: 0;
+}
+
+.radio-btn input[type=radio]:checked + label {
+background: #d4a853;
+color: #1a1208;
+border-color: #f0cc7a;
+font-weight: 700;
+box-shadow: 0 0 0 3px rgba(212,168,83,0.5);
+}
+
+.calc-btn {
+width: 100%;
+margin-top: 22px;
+padding: 14px;
+background: var(–straw);
+color: #1a1208;
+border: none;
+border-radius: 8px;
+font-family: ‘Playfair Display’, serif;
+font-size: 1.05rem;
+font-weight: 700;
+cursor: pointer;
+transition: all 0.2s;
+letter-spacing: 0.02em;
+}
+
+.calc-btn:hover { background: var(–straw-light); transform: translateY(-1px); }
+.calc-btn:active { transform: translateY(0); }
+
+.status-msg {
+margin-top: 12px;
+padding: 10px 12px;
+border-radius: 6px;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.85rem;
+line-height: 1.5;
+}
+.status-msg.info { background: rgba(212,168,83,0.15); color: #f0cc7a; border: 1px solid rgba(212,168,83,0.3); }
+.status-msg.error { background: rgba(192,57,43,0.2); color: #f08080; border: 1px solid rgba(192,57,43,0.4); }
+.status-msg.success { background: rgba(74,124,63,0.25); color: #a8e090; border: 1px solid rgba(74,124,63,0.5); }
+
+/* CONTENT AREA */
+.content {
+padding: 28px 32px;
+overflow-y: auto;
+}
+
+.placeholder {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+height: 100%;
+color: var(–text-light);
+text-align: center;
+gap: 18px;
+padding: 32px;
+}
+
+.placeholder h2 { font-family: ‘Playfair Display’, serif; font-size: 1.4rem; color: var(–straw-light); margin: 0; }
+.placeholder p { font-size: 0.9rem; max-width: 320px; opacity: 0.7; margin: 0; }
+
+/* RESULTS */
+.results { display: flex; flex-direction: column; gap: 24px; }
+
+.result-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 12px;
+}
+
+.result-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.5rem;
+font-weight: 700;
+color: #8b6347;
+}
+
+.result-subtitle {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.72rem;
+color: var(–text-light);
+margin-top: 4px;
+letter-spacing: 0.05em;
+}
+
+.forecast-meta {
+background: #f0e8d0;
+border: 1px solid #c9a060;
+border-radius: 8px;
+padding: 10px 14px;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.7rem;
+color: #6b4e2a;
+display: flex;
+flex-wrap: wrap;
+gap: 6px 20px;
+line-height: 1.6;
+}
+
+.forecast-meta-item { display: flex; flex-direction: column; }
+.forecast-meta-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; }
+.forecast-meta-val { font-weight: 600; color: #3d2b1f; }
+
+.conf-bar-wrap {
+display: flex;
+align-items: center;
+gap: 4px;
+margin-top: 2px;
+}
+
+.conf-segment {
+height: 6px;
+flex: 1;
+border-radius: 3px;
+}
+
+.forecast-meta {
+background: #f0e8d0;
+border: 1px solid #c9a060;
+border-radius: 8px;
+padding: 10px 14px;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.7rem;
+color: #6b4e2a;
+display: flex;
+flex-wrap: wrap;
+gap: 6px 20px;
+line-height: 1.6;
+}
+
+.forecast-meta-item { display: flex; flex-direction: column; gap: 1px; }
+.forecast-meta-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; }
+.forecast-meta-val { font-weight: 600; color: #3d2b1f; font-size: 0.72rem; }
+
+.conf-bar-wrap { display: flex; align-items: center; gap: 3px; margin-top: 3px; }
+.conf-segment { height: 7px; flex: 1; border-radius: 2px; }
+
+.weather-badge {
+background: #b8d4e8;
+color: #1a3a5c;
+padding: 6px 12px;
+border-radius: 20px;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.7rem;
+font-weight: 500;
+}
+
+/* CROP PANELS */
+.crop-panels {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 20px;
+}
+
+.crop-panel {
+background: #f5edd8;
+border-radius: 12px;
+overflow: hidden;
+box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+border: 1.5px solid #c9a060;
+}
+
+.crop-header {
+padding: 14px 18px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.crop-header.corn { background: linear-gradient(135deg, #8b6d1a, #c49a2a); }
+.crop-header.soy  { background: linear-gradient(135deg, #2d5a1b, #4a8c35); }
+
+.crop-header h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+color: white;
+font-weight: 700;
+}
+
+.crop-header .crop-emoji { font-size: 1.4rem; }
+
+.crop-body { padding: 18px; }
+
+/* CALENDAR HEATMAP */
+.cal-wrap {
+margin-bottom: 14px;
+}
+
+.cal-month-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.78rem;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(–text-light);
+margin-bottom: 5px;
+margin-top: 10px;
+}
+
+.cal-month-label:first-child { margin-top: 0; }
+
+.cal-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 5px;
+margin-bottom: 5px;
+}
+
+.cal-dow-row {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 3px;
+margin-bottom: 4px;
+}
+
+.cal-dow {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.72rem;
+text-align: center;
+color: var(–text-light);
+opacity: 0.6;
+}
+
+.cal-cell {
+aspect-ratio: 1;
+border-radius: 6px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.72rem;
+font-weight: 500;
+cursor: default;
+position: relative;
+transition: transform 0.12s;
+border: 1.5px solid transparent;
+min-width: 0;
+}
+
+.cal-cell:hover { transform: scale(1.2); z-index: 10; }
+
+.cal-tooltip {
+position: absolute;
+background: #2e2210 !important;
+color: #f0e0b8 !important;
+border: 2px solid #d4a853;
+border-radius: 8px;
+padding: 10px 14px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.9rem;
+line-height: 1.6;
+pointer-events: none;
+z-index: 9999;
+white-space: nowrap;
+display: none;
+box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+top: 0; left: 0;
+opacity: 1 !important;
+}
+
+.cal-tooltip-date {
+font-weight: 700;
+font-size: 0.95rem;
+color: var(–straw);
+margin-bottom: 5px;
+letter-spacing: 0.04em;
+}
+
+.cal-tooltip-row {
+display: flex;
+justify-content: space-between;
+gap: 16px;
+font-size: 0.85rem;
+line-height: 1.6;
+}
+
+.cal-tooltip-label { color: #c8a860; }
+.cal-tooltip-val   { font-weight: 700; text-align: right; color: #f8f0dc; }
+
+.cal-cell.empty { background: transparent; border: none; }
+
+.cal-cell.pre-plant {
+background: #e0d0a8;
+color: #a08040;
+border-color: transparent;
+}
+
+.cal-cell.gdu-0  { background: #f0b8b0; color: #7a1a10; border-color: #d89080; }  /* red — no GDU */
+.cal-cell.gdu-1  { background: #f5cfa0; color: #7a3a00; border-color: #e0a860; }  /* orange — very little */
+.cal-cell.gdu-2  { background: #f5e8a0; color: #6a5000; border-color: #d8cc70; }  /* yellow — marginal */
+.cal-cell.gdu-3  { background: #c8e8a8; color: #1a5010; border-color: #88c878; }  /* lt green — good */
+.cal-cell.gdu-4  { background: #88c860; color: #0a3008; border-color: #58a030; }  /* green — excellent */
+
+.cal-cell.climate {
+opacity: 0.7;
+border-style: dashed !important;
+}
+
+.cal-cell.emergence {
+border: 2.5px solid #1a5008 !important;
+box-shadow: 0 0 0 3px rgba(58,160,20,0.45), 0 2px 10px rgba(58,160,20,0.35);
+z-index: 5;
+font-weight: 700;
+background: #3a9018 !important;
+transform: scale(1.18);
+}
+
+.cal-cell.emergence:hover {
+transform: scale(1.28);
+}
+
+.gdu-progress-bar {
+height: 8px;
+border-radius: 4px;
+background: #d4b880;
+overflow: hidden;
+margin-bottom: 10px;
+position: relative;
+}
+
+.gdu-progress-fill {
+height: 100%;
+border-radius: 4px;
+transition: width 1s cubic-bezier(0.34,1.2,0.64,1);
+width: 0%;
+}
+
+.gdu-stat-row {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+margin-bottom: 8px;
+}
+
+.gdu-stat-val {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 1.6rem;
+font-weight: 700;
+line-height: 1;
+}
+
+.gdu-stat-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.78rem;
+color: var(–text-light);
+text-transform: uppercase;
+letter-spacing: 0.06em;
+}
+
+.status-bar-wrap {
+background: #e8d5a8;
+border: 1.5px solid var(–border);
+border-radius: 10px;
+padding: 14px 16px;
+margin-bottom: 14px;
+}
+
+.status-bar-header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+margin-bottom: 10px;
+}
+
+.status-bar-gdu {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 1.5rem;
+font-weight: 700;
+line-height: 1;
+}
+
+.status-bar-sub {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.76rem;
+color: var(–text-light);
+text-transform: uppercase;
+letter-spacing: 0.07em;
+margin-top: 2px;
+}
+
+.status-bar-pct {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 1rem;
+font-weight: 600;
+text-align: right;
+}
+
+.status-bar-track {
+height: 10px;
+background: #d4b880;
+border-radius: 5px;
+overflow: visible;
+position: relative;
+margin-bottom: 6px;
+}
+
+.status-bar-fill {
+height: 100%;
+border-radius: 5px;
+transition: width 1s cubic-bezier(0.34,1.1,0.64,1);
+width: 0%;
+position: relative;
+}
+
+.status-bar-fill::after {
+content: ‘’;
+position: absolute;
+right: -1px; top: -3px;
+width: 16px; height: 16px;
+border-radius: 50%;
+background: inherit;
+border: 2px solid white;
+box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.days-in-soil {
+text-align: right;
+padding-left: 12px;
+border-left: 1.5px solid #c9a060;
+}
+
+.days-in-soil-val {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 1.5rem;
+font-weight: 700;
+line-height: 1;
+}
+
+.days-in-soil-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.76rem;
+color: var(–text-light);
+text-transform: uppercase;
+letter-spacing: 0.07em;
+margin-top: 2px;
+}
+
+.status-bar-dates {
+display: flex;
+justify-content: space-between;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.76rem;
+color: var(–text-light);
+margin-top: 4px;
+}
+
+.status-emerge-callout {
+margin-top: 12px;
+padding: 12px 16px;
+border-radius: 9px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 600;
+}
+
+.status-emerge-callout.projected {
+background: #d8f0c8;
+border: 2px solid #4a7c3f;
+color: #1a4010;
+}
+
+.status-emerge-callout.projected .callout-main {
+font-size: 1.15rem;
+font-weight: 700;
+display: block;
+margin-bottom: 3px;
+}
+
+.status-emerge-callout.projected .callout-sub {
+font-size: 0.85rem;
+font-weight: 400;
+color: #3a6a28;
+display: block;
+}
+
+.status-emerge-callout.emerged {
+background: #2d6a20;
+border: 2px solid #1a4010;
+color: #fff;
+}
+
+.status-emerge-callout.emerged .callout-main {
+font-size: 1.15rem;
+font-weight: 700;
+display: block;
+margin-bottom: 3px;
+}
+
+.status-emerge-callout.emerged .callout-sub {
+font-size: 0.85rem;
+font-weight: 400;
+opacity: 0.85;
+display: block;
+}
+
+.status-emerge-callout.pending {
+background: #fdf3dc;
+border: 2px solid #c49a2a;
+color: #6a4800;
+font-size: 1rem;
+padding: 10px 16px;
+}
+
+.soil-temp-note {
+margin-top: 8px;
+padding: 5px 10px;
+border-radius: 5px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.82rem;
+font-weight: 500;
+}
+
+.soil-temp-note.full {
+background: rgba(74,124,63,0.12);
+border: 1px solid rgba(74,124,63,0.35);
+color: #2a5a18;
+}
+
+.soil-temp-note.partial {
+background: rgba(180,140,60,0.12);
+border: 1px solid rgba(180,140,60,0.35);
+color: #6a4800;
+}
+
+.soil-temp-note.air {
+background: rgba(100,130,160,0.12);
+border: 1px solid rgba(100,130,160,0.25);
+color: #2a4060;
+}
+
+.cal-legend {
+display: flex;
+align-items: center;
+gap: 4px;
+margin-top: 8px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.76rem;
+color: #6b4e2a;
+}
+
+.cal-legend-cell {
+width: 12px; height: 12px;
+border-radius: 3px;
+border: 1px solid rgba(0,0,0,0.1);
+}
+
+.emergence-date {
+text-align: center;
+margin-top: 6px;
+}
+
+.emergence-date .date-val {
+font-family: ‘Playfair Display’, serif;
+font-size: 1rem;
+font-weight: 700;
+}
+
+.emergence-date .date-range {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.68rem;
+color: var(–text-light);
+margin-top: 2px;
+}
+
+.emerged-badge {
+display: inline-block;
+background: var(–green);
+color: white;
+padding: 4px 12px;
+border-radius: 20px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.72rem;
+font-weight: 500;
+margin-top: 6px;
+}
+
+.adj-note {
+background: #e8d5a8;
+border-left: 3px solid var(–straw);
+padding: 8px 10px;
+border-radius: 0 6px 6px 0;
+font-size: 0.75rem;
+color: #6b4e2a;
+font-family: ‘Barlow Condensed’, sans-serif;
+line-height: 1.5;
+margin-top: 10px;
+}
+
+.rain-bar {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+height: 4px;
+border-radius: 0 0 4px 4px;
+}
+
+.rainfall-alert {
+border-radius: 7px;
+padding: 9px 13px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.85rem;
+font-weight: 500;
+line-height: 1.4;
+margin-bottom: 6px;
+}
+
+.rainfall-alert.alert-dry  { background:#fdf3dc; border:1.5px solid #c49a2a; color:#6a4800; }
+.rainfall-alert.alert-wet  { background:#dceef8; border:1.5px solid #2878c8; color:#0a3a6a; }
+.rainfall-alert.alert-cold { background:#fce8e8; border:1.5px solid #c03030; color:#6a0a0a; }
+
+.rain-legend {
+display: flex;
+align-items: center;
+gap: 6px;
+margin-top: 4px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 0.76rem;
+color: var(–text-light);
+flex-wrap: wrap;
+}
+
+.rain-swatch {
+display: inline-block;
+width: 20px; height: 4px;
+border-radius: 2px;
+}
+
+.climate-note {
+background: #e0eef8;
+border-left: 3px solid #5a9fc7;
+padding: 8px 10px;
+border-radius: 0 6px 6px 0;
+font-size: 0.84rem;
+color: #1a4060;
+font-family: ‘Barlow Condensed’, sans-serif;
+line-height: 1.5;
+margin-top: 8px;
+}
+
+.td-climate {
+opacity: 0.65;
+font-style: italic;
+}
+
+.climate-row-label {
+font-size: 0.6rem;
+color: #5a9fc7;
+margin-left: 4px;
+}
+
+/* CHART */
+.chart-section {
+background: #f5edd8;
+border-radius: 12px;
+border: 1.5px solid #c9a060;
+box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+padding: 20px 24px;
+}
+
+.chart-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1rem;
+font-weight: 700;
+color: var(–straw);
+margin-bottom: 16px;
+}
+
+.chart-canvas-wrap { position: relative; width: 100%; height: 220px; }
+
+canvas { width: 100%; height: 100%; }
+
+/* DAILY TABLE */
+.table-section {
+background: #f5edd8;
+border-radius: 12px;
+border: 1.5px solid #c9a060;
+box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+overflow: hidden;
+}
+
+.table-header {
+padding: 14px 20px;
+background: #3d2b1f;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.table-header h3 {
+font-family: ‘Playfair Display’, serif;
+color: var(–cream);
+font-size: 0.95rem;
+}
+
+.table-scroll { overflow-x: auto; max-height: 280px; overflow-y: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+
+thead { position: sticky; top: 0; z-index: 2; }
+
+th {
+background: #e8d5a8;
+padding: 8px 12px;
+text-align: left;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(–text-light);
+border-bottom: 2px solid var(–border);
+}
+
+td {
+padding: 7px 12px;
+border-bottom: 1px solid #ddd0b0;
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 0.76rem;
+color: #1a1208;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #f0e8d0; }
+
+.td-corn { color: #8b6d1a; font-weight: 600; }
+.td-soy  { color: #2d5a1b; font-weight: 600; }
+.td-emerged { font-weight: 700; }
+
+.spinner {
+display: inline-block;
+width: 16px; height: 16px;
+border: 2px solid rgba(212,168,83,0.3);
+border-top-color: var(–straw);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+vertical-align: middle;
+margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+.main-grid { grid-template-columns: 1fr; }
+.crop-panels { grid-template-columns: 1fr; }
+.sidebar { border-right: none; border-bottom: 3px solid var(–earth); }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="header-logo">🌽🌱</div>
+  <div>
+    <h1>Emergence GDU Calculator</h1>
+    <p>Soil-adjusted growing degree unit accumulation tracker</p>
+  </div>
+</header>
+
+<div class="main-grid">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+```
+<div class="section-label">📍 Location</div>
+
+<div class="field-group">
+  <label>City or ZIP Code</label>
+  <input type="text" id="locationInput" placeholder="e.g. 61414" value=""/>
+</div>
+
+<div class="section-label">🌽 Planting</div>
+
+<div class="field-group">
+  <label>Planting Date</label>
+  <input type="date" id="plantDate"/>
+</div>
+
+<div class="field-group">
+  <label>Planting Time of Day</label>
+  <div class="radio-group">
+    <div class="radio-btn"><input type="radio" name="plantTime" id="ptMorning" value="full" checked/><label for="ptMorning">Morning<br><span style="font-size:0.65rem;opacity:0.7">Full day</span></label></div>
+    <div class="radio-btn"><input type="radio" name="plantTime" id="ptAfternoon" value="half"/><label for="ptAfternoon">Afternoon<br><span style="font-size:0.65rem;opacity:0.7">Half day</span></label></div>
+    <div class="radio-btn"><input type="radio" name="plantTime" id="ptEvening" value="skip"/><label for="ptEvening">Evening<br><span style="font-size:0.65rem;opacity:0.7">Skip day</span></label></div>
+  </div>
+</div>
+
+<div class="section-label">🪱 Soil & Tillage</div>
+
+<div class="field-group">
+  <label>Soil Type</label>
+  <select id="soilType">
+    <option value="sandy">Sandy / Loamy Sand</option>
+    <option value="siltloam" selected>Silt Loam / Loam</option>
+    <option value="clay">Heavy Clay</option>
+  </select>
+</div>
+
+<div class="field-group">
+  <label>Tillage Practice</label>
+  <select id="tillageType">
+    <option value="notill">No-Till / Strip-Till</option>
+    <option value="vertical">Vertical Tillage</option>
+    <option value="conventional" selected>Conventional Till</option>
+  </select>
+</div>
+
+<button class="calc-btn" onclick="calculate()">🌱 Calculate Emergence</button>
+
+<div id="statusMsg" class="status-msg info" style="display:none"></div>
+```
+
+  </div>
+
+  <!-- CONTENT -->
+
+  <div class="content" id="contentArea" style="position:relative">
+    <div class="placeholder">
+      <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" style="width:min(320px,90%);opacity:0.82">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#b8d4e8"/>
+            <stop offset="100%" stop-color="#dceef8"/>
+          </linearGradient>
+          <linearGradient id="soilGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5c3d2e"/>
+            <stop offset="100%" stop-color="#3d2b1f"/>
+          </linearGradient>
+          <linearGradient id="subsoilGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3d2b1f"/>
+            <stop offset="100%" stop-color="#2a1d14"/>
+          </linearGradient>
+        </defs>
+
+```
+    <!-- Sky background -->
+    <rect x="0" y="0" width="320" height="155" fill="url(#skyGrad)" rx="10"/>
+
+    <!-- Sun -->
+    <circle cx="260" cy="44" r="28" fill="#f5c842" opacity="0.95"/>
+    <!-- Sun rays -->
+    <g stroke="#f5c842" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
+      <line x1="260" y1="8"  x2="260" y2="2"/>
+      <line x1="260" y1="80" x2="260" y2="86"/>
+      <line x1="224" y1="44" x2="218" y2="44"/>
+      <line x1="296" y1="44" x2="302" y2="44"/>
+      <line x1="235" y1="19" x2="231" y2="15"/>
+      <line x1="285" y1="69" x2="289" y2="73"/>
+      <line x1="285" y1="19" x2="289" y2="15"/>
+      <line x1="235" y1="69" x2="231" y2="73"/>
+    </g>
+
+    <!-- Large cloud -->
+    <g opacity="0.93">
+      <ellipse cx="110" cy="68" rx="48" ry="28" fill="white"/>
+      <ellipse cx="80"  cy="76" rx="30" ry="22" fill="white"/>
+      <ellipse cx="148" cy="76" rx="28" ry="20" fill="white"/>
+      <ellipse cx="110" cy="82" rx="52" ry="18" fill="white"/>
+    </g>
+
+    <!-- Small cloud right -->
+    <g opacity="0.75">
+      <ellipse cx="210" cy="92" rx="28" ry="16" fill="white"/>
+      <ellipse cx="192" cy="98" rx="18" ry="13" fill="white"/>
+      <ellipse cx="228" cy="98" rx="16" ry="12" fill="white"/>
+      <ellipse cx="210" cy="103" rx="30" ry="11" fill="white"/>
+    </g>
+
+    <!-- Rain drops from large cloud -->
+    <g fill="#6aaed6" opacity="0.7">
+      <ellipse cx="82"  cy="106" rx="2" ry="5"/>
+      <ellipse cx="96"  cy="112" rx="2" ry="5"/>
+      <ellipse cx="110" cy="108" rx="2" ry="5"/>
+      <ellipse cx="124" cy="114" rx="2" ry="5"/>
+      <ellipse cx="138" cy="107" rx="2" ry="5"/>
+      <ellipse cx="88"  cy="120" rx="2" ry="5"/>
+      <ellipse cx="102" cy="125" rx="2" ry="5"/>
+      <ellipse cx="116" cy="121" rx="2" ry="5"/>
+      <ellipse cx="130" cy="127" rx="2" ry="5"/>
+    </g>
+
+    <!-- Rain from small cloud -->
+    <g fill="#6aaed6" opacity="0.55">
+      <ellipse cx="200" cy="118" rx="1.5" ry="4"/>
+      <ellipse cx="210" cy="123" rx="1.5" ry="4"/>
+      <ellipse cx="220" cy="116" rx="1.5" ry="4"/>
+    </g>
+
+    <!-- Soil layer top -->
+    <rect x="0" y="150" width="320" height="35" fill="url(#soilGrad)" rx="0"/>
+    <!-- Soil texture lines -->
+    <g stroke="#8b6347" stroke-width="0.8" opacity="0.3">
+      <path d="M10 158 Q40 154 70 160 Q100 156 130 161 Q160 157 190 162 Q220 158 250 163 Q280 159 310 162"/>
+      <path d="M20 168 Q55 164 85 170 Q115 166 145 171 Q175 167 205 172 Q235 168 265 173 Q290 169 310 172"/>
+    </g>
+
+    <!-- Sub-soil layer -->
+    <rect x="0" y="185" width="320" height="35" fill="url(#subsoilGrad)" rx="0"/>
+    <!-- Sub-soil texture -->
+    <g stroke="#5c3d2e" stroke-width="0.8" opacity="0.3">
+      <path d="M15 194 Q50 190 80 196 Q110 192 140 197 Q170 193 200 198 Q230 194 260 199 Q285 195 310 198"/>
+    </g>
+
+    <!-- Small pebbles in soil -->
+    <g fill="#8b6347" opacity="0.35">
+      <ellipse cx="42"  cy="164" rx="5" ry="3"/>
+      <ellipse cx="90"  cy="172" rx="4" ry="2.5"/>
+      <ellipse cx="155" cy="165" rx="6" ry="3"/>
+      <ellipse cx="210" cy="174" rx="4" ry="2.5"/>
+      <ellipse cx="270" cy="167" rx="5" ry="3"/>
+      <ellipse cx="60"  cy="196" rx="5" ry="3"/>
+      <ellipse cx="130" cy="200" rx="4" ry="2.5"/>
+      <ellipse cx="195" cy="194" rx="6" ry="3"/>
+      <ellipse cx="255" cy="200" rx="4" ry="2.5"/>
+    </g>
+
+    <!-- Seed in soil -->
+    <ellipse cx="160" cy="172" rx="9" ry="6" fill="#d4a853" opacity="0.9"/>
+    <ellipse cx="160" cy="172" rx="9" ry="6" fill="none" stroke="#8b6347" stroke-width="1" opacity="0.5"/>
+
+    <!-- Ground line -->
+    <line x1="0" y1="150" x2="320" y2="150" stroke="#3d2b1f" stroke-width="1.5" opacity="0.4"/>
+
+    <!-- Bottom fill -->
+    <rect x="0" y="218" width="320" height="4" fill="#2a1d14" rx="0"/>
+  </svg>
+
+  <h2>Ready to Calculate</h2>
+  <p>Enter your location, planting date, and field conditions, then click Calculate to see your emergence forecast.</p>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
+const GDU_TARGETS = {
+  corn: { base: 120, low: 100, high: 140 },
+  soy:  { base: 100, low: 90,  high: 130 }
+};
+
+// Soil type factor grounded in Nebraska CropWatch / ISU extension research.
+// Heavy clay soils documented to need 30-60 more GDU than coarse soils (Elmore & Mueller, UNL 2015).
+// Soil and tillage adjustments expressed as ADDITIVE GDU penalties added to the
+// emergence target — per UNL CropWatch (Elmore & Mueller 2015) and ISU ICM research.
+// The extension literature documents these as extra GDU needed, not daily multipliers.
+//
+// Soil type: heavy clay needs 30-60 more GDU than silt loam (UNL CropWatch)
+//            sandy soils warm faster, need ~10 fewer GDU
+const SOIL_GDU_ADJ = {
+  sandy:    -10,  // warms fast, slightly fewer GDU to emergence
+  siltloam:   0,  // baseline
+  clay:      45,  // +30-60 documented; 45 = midpoint
+};
+
+// Tillage: >75% residue cover adds 30-60 GDU (Nebraska CropWatch, Elmore & Mueller 2015)
+// No-till = ~40 GDU penalty; vertical = moderate; conventional = baseline
+const TILLAGE_GDU_ADJ = {
+  notill:       40,  // full residue — 30-45 GDU penalty documented
+  vertical:     15,  // partial residue, moderate
+  conventional:  0,  // baseline
+};
+
+// Keep these for the adj factor display in the UI (shows as GDU adjustment now)
+const SOIL_FACTOR    = { sandy: 1, siltloam: 1, clay: 1 };  // unused for calc, kept for compat
+const TILLAGE_FACTOR = { notill: 1, vertical: 1, conventional: 1 };
+
+const SOIL_LABELS = { sandy: 'Sandy/Loamy Sand', siltloam: 'Silt Loam/Loam', clay: 'Heavy Clay' };
+const TILL_LABELS  = { notill: 'No-Till/Strip-Till', vertical: 'Vertical Tillage', conventional: 'Conventional Till' };
+
+// ─── GEOCODE ─────────────────────────────────────────────────────────────────
+
+async function geocode(query) {
+  // This tool is US-only — always fetch multiple results and filter to US
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`;
+  const r = await fetch(url);
+  const d = await r.json();
+  if (!d.results || !d.results.length) throw new Error('Location not found. Try a city name, state, or ZIP code (e.g. "La Moille, IL" or "61330").');
+
+  const usResult = d.results.find(r => r.country_code === 'US');
+  if (!usResult) throw new Error('This tool is for US locations only. Try including the state (e.g. "61330" or "La Moille, IL").');
+  return usResult;
+}
+
+// ─── WEATHER ─────────────────────────────────────────────────────────────────
+
+async function fetchWeather(lat, lon, startDate, days) {
+  const endDt = new Date(startDate + 'T12:00:00');
+  endDt.setDate(endDt.getDate() + days + 10);
+  const endStr = endDt.toISOString().slice(0,10);
+  const today = new Date().toISOString().slice(0,10);
+
+  // soil_temperature_6cm is hourly-only in Open-Meteo — no daily aggregate available.
+  // Fetch hourly from forecast API (covers past 14d + next 16d) and archive for older dates.
+  let hourlyData = {};
+
+  let precipData = {}; // date -> mm precipitation
+
+  async function ingestHourly(d) {
+    if (!d.hourly || !d.hourly.time) return;
+    d.hourly.time.forEach((t, i) => {
+      const date = t.slice(0, 10);
+      if (!hourlyData[date]) hourlyData[date] = { soilTemps: [], airTemps: [] };
+      const st = d.hourly.soil_temperature_6cm[i];
+      const at = d.hourly.temperature_2m[i];
+      if (st !== null && st !== undefined) hourlyData[date].soilTemps.push(st);
+      if (at !== null && at !== undefined) hourlyData[date].airTemps.push(at);
+    });
+    // Also grab daily precip if present
+    if (d.daily && d.daily.time) {
+      d.daily.time.forEach((t, i) => {
+        const p = d.daily.precipitation_sum[i];
+        if (p !== null && p !== undefined) precipData[t] = p;
+      });
+    }
+  }
+
+  // Always fetch forecast window
+  const r1 = await fetch(
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&hourly=temperature_2m,soil_temperature_6cm&temperature_unit=fahrenheit` +
+    `&past_days=14&forecast_days=16&timezone=auto`
+  );
+  const d1 = await r1.json();
+  if (!d1.hourly) throw new Error('Weather data unavailable for this location. Check your location entry.');
+  await ingestHourly(d1);
+
+  // Also fetch archive if planting date is before forecast window
+  if (startDate < today) {
+    try {
+      const archEnd = endStr < today ? endStr : today;
+      const r2 = await fetch(
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+        `&hourly=temperature_2m,soil_temperature_6cm&temperature_unit=fahrenheit` +
+        `&start_date=${startDate}&end_date=${archEnd}&timezone=auto`
+      );
+      const d2 = await r2.json();
+      if (d2.hourly) await ingestHourly(d2);
+    } catch(e) { /* archive may not cover very recent dates, that's ok */ }
+  }
+
+  // Separate daily precip fetch — forecast API (past 14d + 16d forecast)
+  // This is a separate request because Open-Meteo doesn't mix hourly+daily in one call
+  try {
+    const rp = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&daily=precipitation_sum&timezone=auto&past_days=14&forecast_days=16`
+    );
+    const dp = await rp.json();
+    if (dp.daily && dp.daily.time) {
+      dp.daily.time.forEach((t, i) => {
+        const p = dp.daily.precipitation_sum[i];
+        if (p !== null && p !== undefined) precipData[t] = p;
+      });
+    }
+  } catch(e) { /* precip optional */ }
+
+  // Also fetch archive precip if planting date is in the past
+  if (startDate < today) {
+    try {
+      const archEnd = endStr < today ? endStr : today;
+      const rpa = await fetch(
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+        `&daily=precipitation_sum&timezone=auto` +
+        `&start_date=${startDate}&end_date=${archEnd}`
+      );
+      const dpa = await rpa.json();
+      if (dpa.daily && dpa.daily.time) {
+        dpa.daily.time.forEach((t, i) => {
+          const p = dpa.daily.precipitation_sum[i];
+          if (p !== null && p !== undefined && precipData[t] === undefined) precipData[t] = p;
+        });
+      }
+    } catch(e) { /* optional */ }
+  }
+
+  // Aggregate hourly -> daily min/max
+  // IMPORTANT: GDU is always calculated from AIR temperature (per UNL/ISU extension standard).
+  // Soil temp at 6cm runs 10-15°F colder than air in early spring — using it for GDU
+  // would severely undercount accumulation. Soil temp presence is tracked separately
+  // only to show the data source indicator in the UI.
+  const daily = { time: [], tmax: [], tmin: [], soilTmax: [], soilTmin: [], usedSoil: [], precip: [] };
+  let cur = new Date(startDate + 'T12:00:00');
+  const endDate = new Date(endStr + 'T12:00:00');
+
+  while (cur <= endDate) {
+    const ds = cur.toISOString().slice(0, 10);
+    const entry = hourlyData[ds];
+    if (entry && entry.airTemps.length > 0) {
+      const useSoil = entry.soilTemps.length >= 4;
+      daily.time.push(ds);
+      // Always air temp for GDU calculation
+      daily.tmax.push(Math.max(...entry.airTemps));
+      daily.tmin.push(Math.min(...entry.airTemps));
+      // Store soil temps separately for display/indicator only
+      daily.soilTmax.push(useSoil ? Math.max(...entry.soilTemps) : null);
+      daily.soilTmin.push(useSoil ? Math.min(...entry.soilTemps) : null);
+      daily.usedSoil.push(useSoil);
+      daily.precip.push(precipData[ds] !== undefined ? precipData[ds] : null);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if (daily.time.length === 0) throw new Error('No temperature data found for this location and date range.');
+  const soilDays = daily.usedSoil.filter(Boolean).length;
+  // Extract forecast metadata from Open-Meteo response
+  const forecastMeta = {
+    generationTime: d1.generationtime_ms ? Math.round(d1.generationtime_ms) : null,
+    timezone: d1.timezone || null,
+    // Open-Meteo updates their forecast models roughly every 6 hours
+    // The forecast API covers 16 days; confidence degrades significantly beyond day 7
+    model: 'Open-Meteo Best Match (GFS/ICON/ECMWF ensemble)',
+    fetchedAt: new Date().toISOString(),
+  };
+  return { daily, soilDays, totalDays: daily.time.length, precipData, forecastMeta };
+}
+
+// ─── CLIMATE NORMALS FALLBACK ─────────────────────────────────────────────────
+// Fetches 15-year ERA5-Land daily averages to extend forecast when live data runs out.
+// Returns an array of { date, tmax, tmin, isClimate: true } for dates after lastKnownDate.
+
+async function fetchClimateNormals(lat, lon, lastKnownDate, daysNeeded) {
+  // Fetch 15 years of the same calendar window (lastKnownDate + 90 days) from archive.
+  // Fetching per-year slices keeps each request small and fast.
+  const YEARS = [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023];
+
+  // Determine the month/day window we need: start = day after lastKnownDate, span 90 days
+  const windowStart = new Date(lastKnownDate + 'T12:00:00');
+  windowStart.setDate(windowStart.getDate() + 1);
+  const windowEnd = new Date(windowStart);
+  windowEnd.setDate(windowEnd.getDate() + 89);
+
+  const startMD = windowStart.toISOString().slice(5, 10); // "MM-DD"
+  const endMD   = windowEnd.toISOString().slice(5, 10);
+
+  // Fetch all years in parallel — each is ~90 days of daily data (tiny request)
+  const byDOY = {};
+
+  await Promise.all(YEARS.map(async (yr) => {
+    // Handle year boundary (e.g. Dec->Jan window)
+    const s = `${yr}-${startMD}`;
+    let eYr = yr;
+    let eDate = new Date(`${yr}-${endMD}T12:00:00`);
+    if (eDate < new Date(`${yr}-${startMD}T12:00:00`)) { eYr = yr + 1; }
+    const e = `${eYr}-${endMD}`;
+
+    try {
+      const r = await fetch(
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+        `&start_date=${s}&end_date=${e}` +
+        `&daily=temperature_2m_max,temperature_2m_min` +
+        `&temperature_unit=fahrenheit&timezone=auto`
+      );
+      const d = await r.json();
+      if (!d.daily || !d.daily.time) return;
+      d.daily.time.forEach((t, i) => {
+        const mmdd = t.slice(5);
+        if (!byDOY[mmdd]) byDOY[mmdd] = { tmaxSum: 0, tminSum: 0, count: 0 };
+        const tx = d.daily.temperature_2m_max[i];
+        const tn = d.daily.temperature_2m_min[i];
+        if (tx !== null && tn !== null && tx !== undefined && tn !== undefined) {
+          byDOY[mmdd].tmaxSum += tx;
+          byDOY[mmdd].tminSum += tn;
+          byDOY[mmdd].count++;
+        }
+      });
+    } catch(e) { /* skip this year on error */ }
+  }));
+
+  if (Object.keys(byDOY).length === 0) throw new Error('Climate normals unavailable — all archive fetches failed.');
+
+  // Build result array from averaged DOY data
+  const result = [];
+  const cur = new Date(lastKnownDate + 'T12:00:00');
+  cur.setDate(cur.getDate() + 1);
+
+  for (let i = 0; i < daysNeeded + 30; i++) {
+    const ds = cur.toISOString().slice(0, 10);
+    const mmdd = ds.slice(5);
+    const entry = byDOY[mmdd];
+    if (entry && entry.count > 0) {
+      result.push({
+        date: ds,
+        tmax: entry.tmaxSum / entry.count,
+        tmin: entry.tminSum / entry.count,
+        usedSoilTemp: false,
+        isClimate: true
+      });
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if (result.length === 0) throw new Error('No climate normal dates matched the needed window.');
+  return result;
+}
+
+// ─── GDU CALC ────────────────────────────────────────────────────────────────
+
+function dailyGDU(tmax, tmin, crop) {
+  if (crop === 'corn') {
+    const hi = Math.min(tmax, 86);
+    const lo = Math.max(tmin, 50);
+    if (hi <= lo) return 0;
+    return ((hi + lo) / 2) - 50;
+  } else {
+    // Soybean: base 50, no ceiling
+    const hi = Math.min(tmax, 86);
+    const lo = Math.max(tmin, 50);
+    if (hi <= lo) return 0;
+    return ((hi + lo) / 2) - 50;
+  }
+}
+
+function calcEmergence(dailyTemps, plantIdx, plantTimeFactor, gduAdj, crop) {
+  const base = GDU_TARGETS[crop].base;
+  const target = { ...GDU_TARGETS[crop], base: base + gduAdj, low: GDU_TARGETS[crop].low + gduAdj, high: GDU_TARGETS[crop].high + gduAdj };
+  let accumulated = 0;
+  const rows = [];
+
+  for (let i = plantIdx; i < dailyTemps.length; i++) {
+    const { date, tmax, tmin } = dailyTemps[i];
+    let raw = dailyGDU(tmax, tmin, crop);
+
+    // Planting day adjustment
+    if (i === plantIdx) raw *= plantTimeFactor;
+
+    const adj = raw;  // no daily multiplier — adjustment is on the target, not daily GDU
+    accumulated += adj;
+
+    rows.push({
+      date,
+      tmax: Math.round(tmax),
+      tmin: Math.round(tmin),
+      rawGDU: raw.toFixed(1),
+      adjGDU: adj.toFixed(1),
+      cumGDU: accumulated.toFixed(1),
+      pct: Math.min(100, (accumulated / target.base) * 100),
+      isClimate: dailyTemps[i].isClimate || false,
+      precip: dailyTemps[i].precip !== undefined ? dailyTemps[i].precip : null,
+      soilTmax: dailyTemps[i].soilTmax !== undefined ? dailyTemps[i].soilTmax : null,
+      soilTmin: dailyTemps[i].soilTmin !== undefined ? dailyTemps[i].soilTmin : null
+    });
+
+    if (accumulated >= target.base) break;
+  }
+
+  return { rows, finalGDU: accumulated, emerged: accumulated >= target.base };
+}
+
+// ─── MAIN CALC ───────────────────────────────────────────────────────────────
+
+async function calculate() {
+  const locationVal = document.getElementById('locationInput').value.trim();
+  const plantDateVal = document.getElementById('plantDate').value;
+  const crop = 'both';
+  const plantTime = document.querySelector('input[name=plantTime]:checked').value;
+  const soilType = document.getElementById('soilType').value;
+  const tillageType = document.getElementById('tillageType').value;
+
+  const plantTimeFactor = { full: 1.0, half: 0.5, skip: 0.0 }[plantTime];
+  const soilGDUadj = SOIL_GDU_ADJ[soilType] || 0;
+  const tillGDUadj = TILLAGE_GDU_ADJ[tillageType] || 0;
+  const totalGDUadj = soilGDUadj + tillGDUadj;  // total additive penalty on target
+  // Keep soilF/tillF as 1.0 — no longer used as multipliers
+  const soilF = 1.0;
+  const tillF = 1.0;
+
+  if (!locationVal) return showStatus('Please enter a location.', 'error');
+  if (!plantDateVal) return showStatus('Please select a planting date.', 'error');
+
+  showStatus('<span class="spinner"></span>Fetching location & weather…', 'info', true);
+
+  try {
+    const loc = await geocode(locationVal);
+    showStatus('<span class="spinner"></span>Fetching weather data…', 'info', true);
+
+    const weather = await fetchWeather(loc.latitude, loc.longitude, plantDateVal, 60);
+
+    // Map aggregated daily data — air temps drive GDU, soil temps shown separately
+    const dailyTemps = weather.daily.time.map((d, i) => ({
+      date: d,
+      tmax: weather.daily.tmax[i],          // air temp max — used for GDU
+      tmin: weather.daily.tmin[i],          // air temp min — used for GDU
+      soilTmax: weather.daily.soilTmax[i],  // soil 6cm max — display only
+      soilTmin: weather.daily.soilTmin[i],  // soil 6cm min — display only
+      usedSoilTemp: weather.daily.usedSoil[i],
+      precip: weather.daily.precip[i]       // mm
+    }));
+    const plantIdx = dailyTemps.findIndex(d => d.date === plantDateVal);
+    if (plantIdx < 0) throw new Error('Planting date not found in weather data.');
+
+    const crops = ['corn', 'soy'];
+    const results = {};
+    let climateNormals = null; // lazy-loaded if needed
+    let usedClimate = false;
+
+    for (const c of crops) {
+      results[c] = calcEmergence(dailyTemps, plantIdx, plantTimeFactor, totalGDUadj, c);
+
+      // If crop hasn't emerged yet, extend with 15-year climate normals
+      if (!results[c].emerged) {
+        try {
+          if (!climateNormals) {
+            showStatus('<span class="spinner"></span>Fetching 15-yr climate normals…', 'info', true);
+            const lastDate = dailyTemps[dailyTemps.length - 1].date;
+            climateNormals = await fetchClimateNormals(loc.latitude, loc.longitude, lastDate, 60);
+          }
+          if (climateNormals && climateNormals.length > 0) {
+            const extendedTemps = [...dailyTemps, ...climateNormals];
+            results[c] = calcEmergence(extendedTemps, plantIdx, plantTimeFactor, totalGDUadj, c);
+            results[c].usedClimate = true;
+            usedClimate = true;
+          }
+        } catch(e) {
+          showStatus('⚠ Climate normals fetch failed: ' + e.message, 'error');
+        }
+      }
+    }
+
+    const soilPct = Math.round((weather.soilDays / weather.totalDays) * 100);
+    const tempSrc = weather.soilDays > 0 ? `🌱 ${soilPct}% soil temp data` : '🌡 Air temp (soil unavailable)';
+    showStatus(`✓ ${loc.name}, ${loc.admin1 || ''} — ${tempSrc}`, 'success');
+    renderResults(results, loc, plantDateVal, soilType, tillageType, dailyTemps, plantIdx, totalGDUadj, tempSrc, weather.soilDays, weather.totalDays, weather.forecastMeta);
+
+  } catch(e) {
+    showStatus('Error: ' + e.message, 'error');
+  }
+}
+
+function showStatus(msg, type, raw = false) {
+  const el = document.getElementById('statusMsg');
+  el.style.display = 'block';
+  el.className = 'status-msg ' + type;
+  if (raw) el.innerHTML = msg;
+  else el.textContent = msg;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+
+function renderResults(results, loc, plantDate, soilType, tillageType, dailyTemps, plantIdx, adjF, tempSrc, soilDays, totalDays, forecastMeta) {
+  const content = document.getElementById('contentArea');
+  const crops = Object.keys(results);
+
+  // ── Forecast metadata block ───────────────────────────────────────────────
+  let forecastMetaHTML = '';
+  if (forecastMeta) {
+    const fetchedAt = new Date(forecastMeta.fetchedAt);
+    const fetchFmt  = fetchedAt.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+
+    // Open-Meteo updates every ~6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    const nowUTC  = new Date();
+    const hUTC    = nowUTC.getUTCHours();
+    const nextRun = new Date(nowUTC);
+    nextRun.setUTCMinutes(0, 0, 0);
+    nextRun.setUTCHours(Math.ceil((hUTC + 0.01) / 6) * 6);
+    if (nextRun <= nowUTC) nextRun.setUTCHours(nextRun.getUTCHours() + 6);
+    const nextFmt = nextRun.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', timeZoneName:'short' });
+
+    // Confidence bands: days 1-3 high, 4-7 good, 8-10 moderate, 11-16 low
+    // Visualised as a segmented bar
+    const confSegs = [
+      { days:'Days 1–3',  label:'High',     color:'#4a8c35', width: 3 },
+      { days:'Days 4–7',  label:'Good',     color:'#88c040', width: 4 },
+      { days:'Days 8–10', label:'Moderate', color:'#d4a853', width: 3 },
+      { days:'11–16',     label:'Low',      color:'#c07030', width: 6 },
+    ];
+    const totalW = confSegs.reduce((s,c) => s + c.width, 0);
+    const segHTML = confSegs.map(s =>
+      `<div class="conf-segment" style="background:${s.color};flex:${s.width}" title="${s.days}: ${s.label}"></div>`
+    ).join('');
+
+    forecastMetaHTML = `
+      <div class="forecast-meta">
+        <div class="forecast-meta-item">
+          <span class="forecast-meta-label">Data fetched</span>
+          <span class="forecast-meta-val">${fetchFmt}</span>
+        </div>
+        <div class="forecast-meta-item">
+          <span class="forecast-meta-label">Next model run ~</span>
+          <span class="forecast-meta-val">${nextFmt}</span>
+        </div>
+        <div class="forecast-meta-item">
+          <span class="forecast-meta-label">Source</span>
+          <span class="forecast-meta-val">Open-Meteo · GFS / ICON / ECMWF</span>
+        </div>
+        <div class="forecast-meta-item" style="flex-basis:100%">
+          <span class="forecast-meta-label">Forecast confidence (16-day window)</span>
+          <div class="conf-bar-wrap">${segHTML}</div>
+          <div style="display:flex;justify-content:space-between;font-size:0.6rem;opacity:0.65;margin-top:2px">
+            <span>High</span><span>Good</span><span>Moderate</span><span>Low</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const plantDateFmt = new Date(plantDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+  const today = new Date().toISOString().slice(0, 10);
+  let cropPanelsHTML = '';
+  for (const c of crops) {
+    cropPanelsHTML += buildCropPanel(c, results[c], adjF, plantDate, today, soilDays, totalDays);
+  }
+
+  const chartData = buildChartData(results, dailyTemps, plantIdx);
+  const tableHTML = buildTable(results, crops);
+
+  content.innerHTML = `
+    <div class="results">
+      <div class="result-header">
+        <div>
+          <div class="result-title">📍 ${loc.name}${loc.admin1 ? ', ' + loc.admin1 : ''}</div>
+          <div class="result-subtitle">
+            PLANTED ${plantDateFmt} &nbsp;|&nbsp; ${SOIL_LABELS[soilType]} &nbsp;|&nbsp; ${TILL_LABELS[tillageType]}
+          </div>
+        </div>
+        <div class="weather-badge">${tempSrc || "🌱 Soil Temp Data"}</div>
+      </div>
+
+      ${forecastMetaHTML}
+
+      <div class="crop-panels">
+        ${cropPanelsHTML}
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-title">GDU Accumulation Toward Emergence</div>
+        <div class="chart-canvas-wrap"><canvas id="gduChart"></canvas></div>
+      </div>
+
+      <div class="table-section">
+        <div class="table-header">
+          <h3>Daily GDU Log</h3>
+        </div>
+        <div class="table-scroll">${tableHTML}</div>
+      </div>
+    </div>
+  `;
+
+  // Animate stats + attach tooltips
+  const todayStr = new Date().toISOString().slice(0, 10);
+  setTimeout(() => animateStats(results, todayStr), 80);
+  setTimeout(() => attachCalTooltips(), 150);
+
+  // Draw chart
+  setTimeout(() => drawChart(chartData, crops), 100);
+}
+
+// ─── RAINFALL HELPERS ────────────────────────────────────────────────────────
+
+const MM_TO_IN = 0.0393701;
+
+// 7-day rolling precip total in inches ending on row idx
+function rollingPrecip(rows, idx) {
+  // Only count real forecast rows — skip climate-average rows (no precip data)
+  let total = 0;
+  let realCount = 0;
+  for (let i = Math.max(0, idx - 6); i <= idx; i++) {
+    if (rows[i].isClimate) continue;
+    if (rows[i].precip !== null && rows[i].precip !== undefined) {
+      total += rows[i].precip;
+      realCount++;
+    }
+  }
+  // If we have no real precip data at all, return null to signal unknown
+  return realCount > 0 ? total * MM_TO_IN : null;
+}
+
+// Icon to overlay on cell — null = nothing shown
+// dry/wet icons only; no color bar
+function precipIcon(rows, idx, cumGDU, targetBase) {
+  const inches = rollingPrecip(rows, idx);
+  if (inches === null) return null; // no precip data — don't flag anything
+  const pct = cumGDU / targetBase;
+
+  if (inches >= 2.0)               return '🌊'; // saturated
+  if (inches >= 1.25)              return '💧'; // wet
+  if (inches < 0.1 && pct >= 0.70) return '⚠️'; // crust risk — last 30% only
+  return null;
+}
+
+// Alert callouts
+function buildRainfallAlerts(rows, plantDate, plantTmin, targetBase) {
+  const alerts = [];
+
+  // Imbibitional chilling: rain at planting + tmin < 50°F
+  const plantRow = rows[0];
+  if (plantRow) {
+    const p = (plantRow.precip || 0) * MM_TO_IN;
+    if (p > 0.1 && plantTmin < 50) {
+      alerts.push({ type: 'cold',
+        msg: '🥶 Imbibitional chilling risk — rain near planting with temps below 50°F. Cold water imbibition can reduce germination rates.'
+      });
+    }
+  }
+
+  // Saturation: peak 7-day rolling total (real rows only)
+  let maxWet = 0, maxWetDate = null;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].isClimate) continue;
+    const in7 = rollingPrecip(rows, i);
+    if (in7 !== null && in7 > maxWet) { maxWet = in7; maxWetDate = rows[i].date; }
+  }
+  if (maxWet >= 2.0) {
+    const fmt = new Date(maxWetDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    alerts.push({ type: 'wet',
+      msg: `💧 Saturated soil — ${maxWet.toFixed(1)}" accumulated by ${fmt}. Poor aeration may slow germination and increase seedling disease risk.`
+    });
+  } else if (maxWet >= 1.25) {
+    alerts.push({ type: 'wet',
+      msg: `💧 Wet conditions — ${maxWet.toFixed(1)}" in 7 days. Monitor for aeration stress, especially on clay soils.`
+    });
+  }
+
+  // Crusting: dry streak (5+ days < 0.05") in last 30% of GDU window — real rows only
+  let dryStreak = 0, dryStart = null;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].isClimate) continue; // can't know future precip from climate normals
+    const pct = parseFloat(rows[i].cumGDU) / targetBase;
+    const p   = rows[i].precip !== null && rows[i].precip !== undefined ? rows[i].precip * MM_TO_IN : null;
+    if (p === null) { dryStreak = 0; dryStart = null; continue; } // unknown = reset streak
+    if (p < 0.05) {
+      if (dryStreak === 0) dryStart = rows[i].date;
+      dryStreak++;
+    } else {
+      dryStreak = 0; dryStart = null;
+    }
+    if (dryStreak >= 5 && dryStart && pct >= 0.70) {
+      const fmt = new Date(dryStart + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      alerts.push({ type: 'dry',
+        msg: `⚠️ Crusting risk — dry streak from ${fmt} during final emergence push. Physical barrier possible on silt loam and clay soils.`
+      });
+      break;
+    }
+  }
+
+  return alerts;
+}
+
+// ─── GDU INTENSITY BAND (0-5) ─────────────────────────────────────────────
+function gduBand(adjGDU) {
+  // Bands calibrated to spring GDU range (base 50°F):
+  // A 50/34°F day = 0 GDU. A 65/45°F day = 5 GDU. A 75/52°F day = 13.5 GDU. A 86/60°F day = 23 GDU.
+  if (adjGDU <= 0)   return 0;  // red      — no accumulation (too cold)
+  if (adjGDU < 5)    return 1;  // orange   — very little (<5 GDU, struggling)
+  if (adjGDU < 10)   return 2;  // yellow   — marginal (5–10 GDU)
+  if (adjGDU < 16)   return 3;  // lt green — good (10–16 GDU)
+  return 4;                     // green    — excellent (16+ GDU)
+}
+
+// ─── BUILD CROP PANEL ─────────────────────────────────────────────────────
+function buildCropPanel(crop, result, adjF, plantDate, today, soilDays, totalDays) {
+  const isCorn   = crop === 'corn';
+  const target   = GDU_TARGETS[crop];
+  const label    = isCorn ? 'Corn' : 'Soybeans';
+  const emoji    = isCorn ? '🌽' : '🌱';
+  const cls      = isCorn ? 'corn' : 'soy';
+  const color    = isCorn ? '#c49a2a' : '#4a8c35';
+  const pct      = Math.min(100, (result.finalGDU / target.base) * 100);
+  const lastRow  = result.rows[result.rows.length - 1];
+  const emergeDate = (result.emerged && lastRow) ? lastRow.date : null;
+
+  // ── Climate callout ──────────────────────────────────────────────────────
+  const climateNote = result.usedClimate
+    ? `<div class="climate-note">📊 Projected using 15-yr climate avg<br>(ERA5, 2009–2023) after forecast window</div>`
+    : '';
+
+  // ── Adj note ─────────────────────────────────────────────────────────────
+  const adjLabel = adjF === 0 ? 'No soil/tillage adjustment' : adjF > 0 ? `+${adjF} GDU added to target (soil/tillage delay)` : `${adjF} GDU removed from target (fast soil)`;
+
+  // ── Status bar ───────────────────────────────────────────────────────────
+  // GDU as of today (only real forecast rows, not climate)
+  const todayRows = result.rows.filter(r => !r.isClimate && r.date <= today);
+  const gduToday  = todayRows.length > 0 ? parseFloat(todayRows[todayRows.length - 1].cumGDU) : 0;
+  const pctToday  = Math.min(100, (gduToday / target.base) * 100);
+  const pctFinal  = Math.min(100, (result.finalGDU / target.base) * 100);
+
+  const plantFmt  = new Date(plantDate + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const todayFmt  = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+  // Emergence callout
+  let emergeCallout = '';
+  if (result.emerged && emergeDate) {
+    const eFmt = new Date(emergeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const lowD = new Date(emergeDate + 'T12:00:00'); lowD.setDate(lowD.getDate() - 1);
+    const hiD  = new Date(emergeDate + 'T12:00:00'); hiD.setDate(hiD.getDate() + 2);
+    const fmtLow = lowD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const fmtHi  = hiD.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const alreadyEmerged = emergeDate <= today;
+    if (alreadyEmerged) {
+      emergeCallout = `<div class="status-emerge-callout emerged"><span class="callout-main">✅ Emerged &nbsp;${eFmt}</span><span class="callout-sub">Range: ${fmtLow} – ${fmtHi}</span></div>`;
+    } else {
+      const daysOut = Math.round((new Date(emergeDate + 'T12:00:00') - new Date(today + 'T12:00:00')) / 86400000);
+      const daysLabel = daysOut === 1 ? '1 day away' : `${daysOut} days away`;
+      emergeCallout = `<div class="status-emerge-callout projected"><span class="callout-main">🌱 Projected emergence &nbsp;${eFmt}</span><span class="callout-sub">${daysLabel} &nbsp;·&nbsp; Range: ${fmtLow}–${fmtHi}${result.usedClimate ? ' · 15-yr avg' : ''}</span></div>`;
+    }
+  } else {
+    emergeCallout = `<div class="status-emerge-callout pending">⏳ Still accumulating GDUs — check back as temperatures warm</div>`;
+  }
+
+  // ── Soil temp source callout ─────────────────────────────────────────────
+  let soilTempNote = '';
+  if (soilDays && totalDays) {
+    const soilPct = Math.round((soilDays / totalDays) * 100);
+    if (soilPct >= 80) {
+      soilTempNote = `<div class="soil-temp-note full">🌡 Using 6cm soil temperature data</div>`;
+    } else if (soilPct > 0) {
+      soilTempNote = `<div class="soil-temp-note partial">🌡 ${soilPct}% soil temp · ${100 - soilPct}% air temp</div>`;
+    } else {
+      soilTempNote = `<div class="soil-temp-note air">🌬 Using air temperature (soil data unavailable)</div>`;
+    }
+  }
+
+  // ── Days in soil ─────────────────────────────────────────────────────────
+  // Total days planting → emergence (if emerged)
+  let totalDaysInSoil = null;
+  if (result.emerged && emergeDate) {
+    const p = new Date(plantDate + 'T12:00:00');
+    const e = new Date(emergeDate + 'T12:00:00');
+    totalDaysInSoil = Math.round((e - p) / 86400000);
+  }
+
+  // Days since planted (up to today)
+  const plantDt = new Date(plantDate + 'T12:00:00');
+  const todayDt = new Date(today  + 'T12:00:00');
+  const daysSincePlanted = Math.max(0, Math.round((todayDt - plantDt) / 86400000));
+
+  // Right column: total days in soil (projected/actual) | left side gets days-since counter
+  const rightColHTML = totalDaysInSoil !== null ? `
+    <div class="days-in-soil">
+      <div class="days-in-soil-val" style="color:${color}">${totalDaysInSoil}</div>
+      <div class="days-in-soil-label">total days in soil</div>
+    </div>` : '';
+
+  const statusBarHTML = `
+    <div class="status-bar-wrap">
+      <div class="status-bar-header">
+        <div>
+          <div class="status-bar-gdu" style="color:${color}" id="gdu-stat-${crop}">0</div>
+          <div class="status-bar-sub">GDU as of today &nbsp;/&nbsp; ${target.base} needed</div>
+        </div>
+        ${rightColHTML}
+      </div>
+      <div class="status-bar-track" style="margin-top:8px">
+        <div class="status-bar-fill" id="prog-${crop}" style="background:${color}"></div>
+      </div>
+      <div class="status-bar-dates">
+        <span>🌱 ${plantFmt} &nbsp;<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:600;color:${color}">(day ${daysSincePlanted})</span></span>
+        <span id="pct-stat-${crop}" style="color:${color};font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:600">0%</span>
+        <span>Today ${todayFmt}</span>
+      </div>
+      ${emergeCallout}
+      ${soilTempNote}
+    </div>
+    ${climateNote}`;
+
+  // ── Rainfall alerts ──────────────────────────────────────────────────────
+  const rainfallAlerts = buildRainfallAlerts(result.rows, plantDate, result.rows[0] ? result.rows[0].tmin : 60, target.base);
+  const rainfallAlertsHTML = rainfallAlerts.map(a =>
+    `<div class="rainfall-alert alert-${a.type}">${a.msg}</div>`
+  ).join('');
+
+  // ── Calendar heatmap ─────────────────────────────────────────────────────
+  // Group rows by month, build full calendar grids
+  const calHTML = buildCalendarHeatmap(result.rows, crop, color);
+
+  return `
+    <div class="crop-panel">
+      <div class="crop-header ${cls}">
+        <span class="crop-emoji">${emoji}</span>
+        <h3>${label}</h3>
+      </div>
+      <div class="crop-body">
+
+        ${statusBarHTML}
+
+        <div class="cal-wrap" id="cal-${crop}">
+          ${calHTML}
+        </div>
+
+        <div class="rain-legend">⚠️ Crust risk (last 30%) &nbsp;·&nbsp; 💧 Wet &nbsp;·&nbsp; 🌊 Saturated</div>
+
+        ${rainfallAlertsHTML}
+
+        <div class="cal-legend">
+          <div class="cal-legend-cell" style="background:#f0b8b0;border-color:#d89080"></div><span>0 GDU</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#f5cfa0;border-color:#e0a860"></div><span>&lt;5</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#f5e8a0;border-color:#d8cc70"></div><span>5–10</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#c8e8a8;border-color:#88c878"></div><span>10–16</span>
+          &nbsp;
+          <div class="cal-legend-cell" style="background:#88c860;border-color:#58a030"></div><span>16+</span>
+          &nbsp;·&nbsp;
+          <span style="font-style:italic;opacity:0.7">Avg = 15-yr climate avg</span>
+        </div>
+
+        <div class="adj-note" style="margin-top:10px">${adjLabel}<br>Adjusted target: ${target.low}–${target.high} GDU<br><span style='opacity:0.7;font-size:0.65rem'>Sources: UNL CropWatch, ISU ICM</span></div>
+      </div>
+    </div>`;
+}
+
+// ─── CALENDAR HEATMAP BUILDER ─────────────────────────────────────────────
+function buildCalendarHeatmap(rows, crop, color) {
+  if (!rows || rows.length === 0) return '';
+
+  const isEmerged  = rows[rows.length - 1] && parseFloat(rows[rows.length - 1].cumGDU) >= GDU_TARGETS[crop].base;
+  const emergeDate = isEmerged ? rows[rows.length - 1].date : null;
+
+  // Window: planting day → emergence day + 1 trailing day (to show "the day after")
+  const plantDate = rows[0].date;
+  const lastDate  = (() => {
+    if (!emergeDate) return rows[rows.length - 1].date;
+    const d = new Date(emergeDate + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  // Build lookup by date for all rows
+  const byDate = {};
+  rows.forEach(r => { byDate[r.date] = r; });
+
+  // Collect only the dates in our window
+  const windowDates = [];
+  const cur = new Date(plantDate + 'T12:00:00');
+  const end = new Date(lastDate  + 'T12:00:00');
+  while (cur <= end) {
+    windowDates.push(cur.toISOString().slice(0, 10));
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  // Group into weeks (rows of 7, starting from planting day's DOW)
+  const startDow = new Date(plantDate + 'T12:00:00').getDay();
+  const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const headerLabels = DOW_LABELS; // always fixed Sun–Sat
+
+  // Pad start so planting day aligns to col 0
+  const cells = [];
+  for (let i = 0; i < windowDates.length; i++) {
+    cells.push(windowDates[i]);
+  }
+
+  // Pad from Sunday before planting day so weeks always start on Sunday
+  const sundayPad = startDow; // days of week offset from Sunday
+  const paddedCells = [...Array(sundayPad).fill(null), ...cells];
+
+  // Chunk into weeks of 7
+  const weeks = [];
+  for (let i = 0; i < paddedCells.length; i += 7) {
+    weeks.push(paddedCells.slice(i, i + 7));
+  }
+
+  // ── Month label(s) spanning the window ───────────────────────────────────
+  const months = [...new Set(windowDates.map(d => d.slice(0,7)))];
+  const monthLabel = months.map(ym => {
+    const [yr, mo] = ym.split('-').map(Number);
+    return new Date(yr, mo-1, 1).toLocaleDateString('en-US', { month:'short', year:'numeric' });
+  }).join(' – ');
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  let html = `<div class="cal-month-label">${monthLabel}</div>`;
+  html += `<div class="cal-dow-row">${headerLabels.map(d => `<div class="cal-dow">${d}</div>`).join('')}</div>`;
+
+  weeks.forEach(wk => {
+    html += `<div class="cal-grid">`;
+    wk.forEach(ds => {
+      if (ds === null) { html += `<div class="cal-cell empty"></div>`; return; }
+      const row = byDate[ds];
+      const d   = new Date(ds + 'T12:00:00');
+      const dayNum = d.getDate();
+
+      if (!row) {
+        html += `<div class="cal-cell pre-plant">${dayNum}</div>`;
+      } else {
+        const band      = gduBand(parseFloat(row.adjGDU));
+        const isEmerg   = isEmerged && ds === emergeDate;
+        const climClass = row.isClimate ? ' climate' : '';
+        const isPlant   = ds === plantDate;
+        const plantStyle = isPlant ? 'box-shadow:0 0 0 2px #8b6347;' : '';
+        const title     = `${ds}: ${row.adjGDU} adj GDU | ${row.cumGDU} total${row.isClimate ? ' [15-yr avg]' : ''}`;
+
+        const avgTag = row.isClimate ? `<span style="display:block;font-size:0.6rem;line-height:1;opacity:0.75;letter-spacing:0.02em">avg</span>` : '';
+        const rowIdx    = rows.indexOf(row);
+        const cumGDUval = parseFloat(row.cumGDU);
+        // No rainfall icons on climate-average rows — we don't know future precip
+        const rainIcon  = row.isClimate ? null : precipIcon(rows, rowIdx, cumGDUval, GDU_TARGETS[crop].base);
+        const iconTag   = rainIcon ? `<span style="position:absolute;bottom:2px;right:2px;font-size:0.55rem;line-height:1">${rainIcon}</span>` : '';
+        const pStatus   = (() => { const i = rollingPrecip(rows, rowIdx); return i >= 2 ? 'saturated' : i >= 1.25 ? 'wet' : i < 0.1 ? 'dry' : i < 0.5 ? 'light' : 'adequate'; })();
+        const dataAttrs = `data-date="${ds}" data-tmax="${row.tmax}" data-tmin="${row.tmin}" data-soiltmax="${row.soilTmax !== null && row.soilTmax !== undefined ? Math.round(row.soilTmax) : ''}" data-soiltmin="${row.soilTmin !== null && row.soilTmin !== undefined ? Math.round(row.soilTmin) : ''}" data-gdu="${row.adjGDU}" data-cum="${row.cumGDU}" data-climate="${row.isClimate ? '1' : '0'}" data-precip="${row.precip !== null ? (row.precip * 0.0393701).toFixed(2) : '?'}" data-pstatus="${pStatus}"`;
+        if (isEmerg) {
+          html += `<div class="cal-cell gdu-${band}${climClass} emergence" ${dataAttrs} style="${plantStyle};overflow:hidden">🌱${iconTag}</div>`;
+        } else {
+          html += `<div class="cal-cell gdu-${band}${climClass}" ${dataAttrs} style="${plantStyle};flex-direction:column;gap:0;overflow:hidden">${dayNum}${avgTag}${iconTag}</div>`;
+        }
+      }
+    });
+    // Pad last week to full 7
+    const rem = 7 - wk.length;
+    for (let p = 0; p < rem; p++) html += `<div class="cal-cell empty"></div>`;
+    html += `</div>`;
+  });
+
+  return html;
+}
+
+// ─── ANIMATE STATS ────────────────────────────────────────────────────────
+function animateStats(results, today) {
+  for (const [crop, result] of Object.entries(results)) {
+    const target = GDU_TARGETS[crop];
+
+    // Use GDU accumulated only up to today for the status bar
+    const todayRows = result.rows.filter(r => !r.isClimate && r.date <= today);
+    const gduToday  = todayRows.length > 0 ? parseFloat(todayRows[todayRows.length - 1].cumGDU) : 0;
+    const pctToday  = Math.min(100, (gduToday / target.base) * 100);
+
+    // Progress bar fills to today's GDU pct
+    const progEl = document.getElementById('prog-' + crop);
+    if (progEl) setTimeout(() => { progEl.style.width = pctToday + '%'; }, 60);
+
+    // Counter animates to today's GDU
+    const statEl = document.getElementById('gdu-stat-' + crop);
+    const pctEl  = document.getElementById('pct-stat-' + crop);
+    if (statEl) {
+      let frame = 0;
+      const frames = 50;
+      const timer = setInterval(() => {
+        frame++;
+        const t = Math.min(1, frame / frames);
+        const ease = 1 - Math.pow(1 - t, 3);
+        statEl.textContent = Math.round(ease * gduToday);
+        if (pctEl) pctEl.textContent = Math.round(ease * pctToday) + '%';
+        if (frame >= frames) clearInterval(timer);
+      }, 18);
+    }
+  }
+}
+
+
+function buildChartData(results, dailyTemps, plantIdx) {
+  const labels = [];
+  const datasets = {};
+
+  for (const [crop, result] of Object.entries(results)) {
+    datasets[crop] = [];
+    for (let i = 0; i < result.rows.length; i++) {
+      const row = result.rows[i];
+      if (i === 0) labels.push('Day 0');
+      labels[i] = `Day ${i}`;
+      datasets[crop].push(parseFloat(row.cumGDU));
+    }
+  }
+
+  return { labels: labels.slice(0, Math.max(...Object.values(datasets).map(d=>d.length))), datasets };
+}
+
+function drawChart(chartData, crops) {
+  const canvas = document.getElementById('gduChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+
+  const pad = { top: 16, right: 24, bottom: 36, left: 52 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const allVals = Object.values(chartData.datasets).flat();
+  const maxVal = Math.max(...allVals, GDU_TARGETS.corn.high, GDU_TARGETS.soy.high);
+
+  const colors = { corn: '#c49a2a', soy: '#4a8c35' };
+  const lightColors = { corn: 'rgba(196,154,42,0.12)', soy: 'rgba(74,124,63,0.12)' };
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#d4c090';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 5; g++) {
+    const y = pad.top + cH - (g / 5) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+    ctx.fillStyle = '#8b6347';
+    ctx.font = '600 13px Barlow Condensed, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round((g / 5) * maxVal), pad.left - 6, y + 4);
+  }
+
+  // Target lines
+  for (const c of crops) {
+    const t = GDU_TARGETS[c];
+    const yLow = pad.top + cH - (t.low / maxVal) * cH;
+    const yHigh = pad.top + cH - (t.high / maxVal) * cH;
+    ctx.strokeStyle = colors[c];
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.moveTo(pad.left, yLow); ctx.lineTo(pad.left + cW, yLow); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.left, yHigh); ctx.lineTo(pad.left + cW, yHigh); ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([]);
+  }
+
+  // Lines & fills
+  for (const c of crops) {
+    const vals = chartData.datasets[c];
+    if (!vals || vals.length < 2) continue;
+    const step = cW / (vals.length - 1 || 1);
+
+    ctx.beginPath();
+    for (let i = 0; i < vals.length; i++) {
+      const x = pad.left + i * step;
+      const y = pad.top + cH - (vals[i] / maxVal) * cH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    // Fill
+    ctx.lineTo(pad.left + (vals.length - 1) * step, pad.top + cH);
+    ctx.lineTo(pad.left, pad.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = lightColors[c];
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    for (let i = 0; i < vals.length; i++) {
+      const x = pad.left + i * step;
+      const y = pad.top + cH - (vals[i] / maxVal) * cH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = colors[c];
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Dots
+    for (let i = 0; i < vals.length; i++) {
+      const x = pad.left + i * step;
+      const y = pad.top + cH - (vals[i] / maxVal) * cH;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = colors[c];
+      ctx.fill();
+    }
+  }
+
+  // X axis labels
+  ctx.fillStyle = '#8b6347';
+  ctx.font = '600 13px Barlow Condensed, sans-serif';
+  ctx.textAlign = 'center';
+  const maxLen = Math.max(...Object.values(chartData.datasets).map(d => d.length));
+  const step = cW / (maxLen - 1 || 1);
+  for (let i = 0; i < maxLen; i += Math.ceil(maxLen / 8)) {
+    const x = pad.left + i * step;
+    ctx.fillText(chartData.labels[i] || ('Day ' + i), x, pad.top + cH + 16);
+  }
+
+  // Legend
+  let lx = pad.left;
+  for (const c of crops) {
+    ctx.fillStyle = colors[c];
+    ctx.fillRect(lx, 2, 20, 4);
+    ctx.fillStyle = '#3d2b1f';
+    ctx.font = '600 13px Barlow Condensed, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(c === 'corn' ? 'Corn' : 'Soybeans', lx + 24, 8);
+    lx += 100;
+  }
+}
+
+function buildTable(results, crops) {
+  const rows = [];
+  const maxRows = Math.max(...crops.map(c => results[c].rows.length));
+  for (let i = 0; i < maxRows; i++) {
+    rows.push(crops.map(c => results[c].rows[i] || null));
+  }
+
+  let html = `<table><thead><tr>
+    <th>Date</th>
+    <th>Hi°F</th><th>Lo°F</th>`;
+  for (const c of crops) {
+    const lbl = c === 'corn' ? 'Corn' : 'Soy';
+    html += `<th>${lbl} GDU</th><th>${lbl} Adj</th><th>${lbl} Total</th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  for (const rowSet of rows) {
+    const ref = rowSet.find(r => r !== null);
+    if (!ref) continue;
+    const d = new Date(ref.date + 'T12:00:00');
+    const fmt = d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const isClimRow = ref.isClimate || false;
+    const climClass = isClimRow ? ' class="td-climate"' : '';
+    const climTag = isClimRow ? '<span class="climate-row-label">avg</span>' : '';
+    html += `<tr${isClimRow ? ' style="background:#f0f7fc"' : ''}><td${climClass}>${fmt}${climTag}</td><td${climClass}>${ref.tmax}</td><td${climClass}>${ref.tmin}</td>`;
+    for (let ci = 0; ci < crops.length; ci++) {
+      const row = rowSet[ci];
+      const c = crops[ci];
+      const cls = c === 'corn' ? 'td-corn' : 'td-soy';
+      if (!row) { html += `<td>—</td><td>—</td><td>—</td>`; continue; }
+      const emerged = parseFloat(row.cumGDU) >= GDU_TARGETS[c].base;
+      html += `<td class="${cls}">${row.rawGDU}</td><td class="${cls}">${row.adjGDU}</td><td class="${cls} ${emerged ? 'td-emerged' : ''}">${row.cumGDU}${emerged ? ' ✓' : ''}</td>`;
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  return html;
+}
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'emergence_gdu_last_entry';
+
+function saveEntry() {
+  const entry = {
+    location:  document.getElementById('locationInput').value,
+    plantDate: document.getElementById('plantDate').value,
+    plantTime: document.querySelector('input[name=plantTime]:checked')?.value || 'full',
+    soilType:  document.getElementById('soilType').value,
+    tillage:   document.getElementById('tillageType').value,
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entry)); } catch(e) {}
+}
+
+function restoreEntry() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const e = JSON.parse(raw);
+    if (e.location)  document.getElementById('locationInput').value = e.location;
+    if (e.plantDate) document.getElementById('plantDate').value = e.plantDate;
+    if (e.plantTime) {
+      const r = document.querySelector(`input[name=plantTime][value="${e.plantTime}"]`);
+      if (r) r.checked = true;
+    }
+    if (e.soilType)  document.getElementById('soilType').value = e.soilType;
+    if (e.tillage)   document.getElementById('tillageType').value = e.tillage;
+    return true;
+  } catch(e) { return false; }
+}
+
+// Wrap calculate to save on each run
+const _origCalc = calculate;
+window.calculate = async function() {
+  saveEntry();
+  await _origCalc();
+};
+
+// ─── CALENDAR TOOLTIP ────────────────────────────────────────────────────────
+function attachCalTooltips() {
+  const tip = document.getElementById('calTooltip');
+  if (!tip) return;
+
+  document.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('mouseenter', function() {
+      const ds       = this.dataset.date;
+      const tmax     = this.dataset.tmax;
+      const tmin     = this.dataset.tmin;
+      const soilTmax = this.dataset.soiltmax;
+      const soilTmin = this.dataset.soiltmin;
+      const gdu     = parseFloat(this.dataset.gdu).toFixed(1);
+      const cum     = parseFloat(this.dataset.cum).toFixed(1);
+      const isClim  = this.dataset.climate === '1';
+      const precip  = this.dataset.precip;
+      const pstatus = this.dataset.pstatus;
+      const d       = new Date(ds + 'T12:00:00');
+      const fmt     = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      const pLabel  = { dry:'Dry / crust risk', light:'Light rain', adequate:'Adequate', wet:'Wet', saturated:'Saturated' }[pstatus] || '';
+      const pColor  = { dry:'#e8a020', light:'#60b8e0', adequate:'#4a7c3f', wet:'#2878c8', saturated:'#1050a8' }[pstatus] || 'transparent';
+
+      tip.innerHTML =
+        '<div class="cal-tooltip-date">' + fmt + (isClim ? ' <span style="font-weight:400;opacity:0.65;font-size:0.8rem">(15-yr avg)</span>' : '') + '</div>' +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Air High</span><span class="cal-tooltip-val">' + tmax + '°F</span></div>' +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Air Low</span><span class="cal-tooltip-val">' + tmin + '°F</span></div>' +
+        (soilTmax ? '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Soil High (6cm)</span><span class="cal-tooltip-val">' + soilTmax + '°F</span></div>' : '') +
+        (soilTmin ? '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Soil Low (6cm)</span><span class="cal-tooltip-val">' + soilTmin + '°F</span></div>' : '') +
+        '<div class="cal-tooltip-row"><span class="cal-tooltip-label">Daily GDU</span><span class="cal-tooltip-val">' + gdu + '</span></div>' +
+        '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">Cumulative GDU</span><span class="cal-tooltip-val">' + cum + '</span></div>' +
+        (precip && precip !== '?' ? '<div class="cal-tooltip-row" style="border-top:1px solid rgba(212,168,83,0.3);margin-top:5px;padding-top:5px"><span class="cal-tooltip-label">7-day rain</span><span class="cal-tooltip-val">' + precip + '"</span></div>' : '') +
+        (pLabel && pstatus !== 'adequate' ? '<div style="margin-top:5px;padding:3px 7px;border-radius:4px;font-size:0.8rem;font-weight:600;background:' + pColor + ';color:white">' + pLabel + '</div>' : '');
+
+            tip.style.display = 'block';
+
+      const r  = this.getBoundingClientRect();
+      const tr = tip.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+
+      let x = r.right  + scrollX + 8;
+      let y = r.top    + scrollY;
+
+      if (x + tr.width  > window.innerWidth  + scrollX - 8) x = r.left + scrollX - tr.width - 8;
+      if (y + tr.height > window.innerHeight + scrollY - 8) y = r.bottom + scrollY - tr.height;
+
+      tip.style.left = x + 'px';
+      tip.style.top  = y + 'px';
+    });
+
+    cell.addEventListener('mouseleave', function() {
+      const tip = document.getElementById('calTooltip');
+      if (tip) tip.style.display = 'none';
+    });
+  });
+}
+
+// Default date to today, then restore saved entry (overrides today if saved)
+const today = new Date().toISOString().slice(0,10);
+document.getElementById('plantDate').value = today;
+const restored = restoreEntry();
+if (restored) {
+  showStatus('✓ Last entry restored', 'success');
+  setTimeout(() => { const el = document.getElementById('statusMsg'); if(el) el.style.display = 'none'; }, 2500);
+}
+</script>
+
+<div id="calTooltip" class="cal-tooltip"></div>
+</body>
+</html>
