@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#F7F6F2"/>
+
+  <!-- Subtle grain texture overlay via pattern -->
+  <defs>
+    <pattern id="grain" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="1" height="1" x="0" y="0" fill="#1a1a18" opacity="0.03"/>
+      <rect width="1" height="1" x="2" y="2" fill="#1a1a18" opacity="0.02"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#grain)"/>
+
+  <!-- Corn stalk - center vertical -->
+  <line x1="256" y1="320" x2="256" y2="410" stroke="#3B6D11" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- Corn ear body -->
+  <ellipse cx="256" cy="230" rx="46" ry="70" fill="#BA7517" opacity="0.15" stroke="#BA7517" stroke-width="2.5"/>
+
+  <!-- Corn kernel rows - stylized dots -->
+  <circle cx="244" cy="200" r="5" fill="#BA7517" opacity="0.85"/>
+  <circle cx="256" cy="198" r="5" fill="#BA7517" opacity="0.85"/>
+  <circle cx="268" cy="200" r="5" fill="#BA7517" opacity="0.85"/>
+  <circle cx="240" cy="215" r="5" fill="#BA7517"/>
+  <circle cx="252" cy="213" r="5" fill="#BA7517"/>
+  <circle cx="264" cy="213" r="5" fill="#BA7517"/>
+  <circle cx="276" cy="215" r="5" fill="#BA7517" opacity="0.9"/>
+  <circle cx="238" cy="230" r="5" fill="#BA7517"/>
+  <circle cx="250" cy="228" r="5" fill="#BA7517"/>
+  <circle cx="262" cy="228" r="5" fill="#BA7517"/>
+  <circle cx="274" cy="230" r="5" fill="#BA7517"/>
+  <circle cx="240" cy="245" r="5" fill="#BA7517"/>
+  <circle cx="252" cy="243" r="5" fill="#BA7517"/>
+  <circle cx="264" cy="243" r="5" fill="#BA7517"/>
+  <circle cx="276" cy="245" r="5" fill="#BA7517" opacity="0.9"/>
+  <circle cx="244" cy="260" r="5" fill="#BA7517" opacity="0.85"/>
+  <circle cx="256" cy="258" r="5" fill="#BA7517" opacity="0.85"/>
+  <circle cx="268" cy="260" r="5" fill="#BA7517" opacity="0.85"/>
+
+  <!-- Husk leaves -->
+  <path d="M256 175 Q236 148 218 140" stroke="#3B6D11" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M256 175 Q276 148 294 140" stroke="#3B6D11" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M256 210 Q230 195 210 202" stroke="#3B6D11" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M256 210 Q282 195 302 202" stroke="#3B6D11" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- Silk tassel at top -->
+  <path d="M248 160 Q244 140 240 120" stroke="#FAC775" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M254 158 Q252 136 250 114" stroke="#FAC775" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <path d="M260 158 Q260 136 262 116" stroke="#FAC775" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <path d="M266 160 Q270 140 274 122" stroke="#FAC775" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/>
+
+  <!-- Ground line -->
+  <line x1="216" y1="410" x2="296" y2="410" stroke="#3B6D11" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- Roots -->
+  <path d="M256 410 Q244 422 236 432" stroke="#BA7517" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <path d="M256 410 Q268 422 276 432" stroke="#BA7517" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <path d="M256 412 Q256 424 256 436" stroke="#BA7517" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.4"/>
+</svg>
