@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rainfall Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f4f0;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b67;
+      --text-tertiary: #9b9b97;
+      --border: rgba(0,0,0,0.12);
+      --border-mid: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green: #1D9E75;
+      --orange: #D85A30;
+      --blue: #378ADD;
+      --amber: #EF9F27;
+      --font: -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-secondary: #282826;
+        --text-primary: #f0efe8;
+        --text-secondary: #9b9b97;
+        --text-tertiary: #6b6b67;
+        --border: rgba(255,255,255,0.10);
+        --border-mid: rgba(255,255,255,0.18);
+      }
+    }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 0; }
+
+    header { border-bottom: 0.5px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: baseline; gap: 12px; }
+    header h1 { font-size: 17px; font-weight: 500; color: var(--text-primary); }
+    header span { font-size: 13px; color: var(--text-secondary); }
+
+    main { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+
+    .search-row { display: flex; gap: 8px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .search-row label { font-size: 13px; color: var(--text-secondary); }
+
+    input[type="text"], select {
+      font-family: var(--font); font-size: 14px; color: var(--text-primary);
+      background: var(--bg); border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md); padding: 7px 10px; outline: none; transition: border-color 0.15s;
+    }
+    input[type="text"] { width: 120px; }
+    select { width: 180px; }
+    input[type="text"]:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(55,138,221,0.18); }
+
+    button {
+      font-family: var(--font); font-size: 14px; color: var(--text-primary);
+      background: transparent; border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md); padding: 7px 14px; cursor: pointer; transition: background 0.12s;
+    }
+    button:hover { background: var(--bg-secondary); }
+    button:active { transform: scale(0.98); }
+
+    .toggle-row { display: flex; gap: 8px; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .toggle-row label { font-size: 13px; color: var(--text-secondary); margin-right: 4px; }
+    .toggle-btn {
+      font-family: var(--font); font-size: 13px; padding: 5px 12px;
+      border-radius: var(--radius-md); border: 0.5px solid var(--border-mid);
+      cursor: pointer; transition: background 0.12s, color 0.12s; background: transparent; color: var(--text-primary);
+    }
+    .toggle-btn.active-5  { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+    .toggle-btn.active-10 { background: #EF9F27; border-color: #EF9F27; color: #fff; }
+    .toggle-btn.active-15 { background: #D85A30; border-color: #D85A30; color: #fff; }
+    .toggle-btn:hover:not(.active-5):not(.active-10):not(.active-15) { background: var(--bg-secondary); }
+
+    .event-note { font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; }
+
+    .month-toggle-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 1.25rem; }
+    .month-toggle-row label { font-size: 13px; color: var(--text-secondary); margin-right: 2px; }
+    .mbtn {
+      font-family: var(--font); font-size: 12px; padding: 4px 9px; border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-mid); cursor: pointer; transition: background 0.12s, color 0.12s;
+      background: var(--bg-secondary); color: var(--text-secondary);
+    }
+    .mbtn.mon-active { background: #378ADD; border-color: #378ADD; color: #fff; }
+    .mbtn:hover:not(.mon-active) { background: var(--border); }
+    .mbtn-all {
+      font-family: var(--font); font-size: 12px; padding: 4px 9px; border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-mid); cursor: pointer; background: transparent;
+      color: var(--text-secondary); margin-left: 4px;
+    }
+    .mbtn-all:hover { background: var(--bg-secondary); }
+
+    .src-badge {
+      display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 5px;
+      border-radius: 4px; vertical-align: middle; margin-left: 4px;
+      background: var(--bg-secondary); color: var(--text-tertiary);
+      border: 0.5px solid var(--border); white-space: nowrap;
+    }
+    .src-era5land { background: #E1F5EE; color: #0F6E56; border-color: #9FE1CB; }
+    .src-iem      { background: #E8F0FB; color: #1A56B0; border-color: #93BBF5; }
+    @media (prefers-color-scheme: dark) {
+      .src-era5land { background: #085041; color: #9FE1CB; border-color: #0F6E56; }
+      .src-iem      { background: #0D2A5C; color: #93BBF5; border-color: #1A56B0; }
+    }
+
+    .loc-name { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.25rem; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+    .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 0.875rem 1rem; }
+    .metric-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .metric-value { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+    .metric-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .ahead { color: var(--green); }
+    .behind { color: var(--orange); }
+
+    .avg-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+    .avg-legend span { display: flex; align-items: center; gap: 5px; }
+    .swatch { width: 20px; height: 3px; border-radius: 2px; display: inline-block; }
+
+    .chart-wrap { position: relative; width: 100%; height: 240px; margin-bottom: 1.75rem; }
+
+    .section-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+    .table-wrap { overflow-x: auto; margin-bottom: 1.75rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+    th { font-weight: 500; color: var(--text-secondary); text-align: right; padding: 6px 10px; border-bottom: 0.5px solid var(--border); font-size: 12px; white-space: nowrap; }
+    th:first-child { text-align: left; }
+    td { padding: 7px 10px; text-align: right; border-bottom: 0.5px solid var(--border); color: var(--text-primary); white-space: nowrap; }
+    td:first-child { text-align: left; font-weight: 500; }
+    tr:last-child td { border-bottom: none; font-weight: 500; background: var(--bg-secondary); }
+
+    .delta-pos { color: var(--green); font-weight: 500; }
+    .delta-neg { color: var(--orange); font-weight: 500; }
+    .delta-zero { color: var(--text-tertiary); }
+
+    .loading { text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 14px; }
+    .error-msg { color: var(--orange); font-size: 13px; padding: 0.5rem 0; }
+
+    footer { border-top: 0.5px solid var(--border); padding: 1rem 1.5rem; font-size: 12px; color: var(--text-tertiary); }
+    .src-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; font-size: 11px; }
+    .src-legend span { display: flex; align-items: center; gap: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Rainfall Tracker</h1>
+  <span>Monthly summary vs. 5, 10 &amp; 15-year averages</span>
+</header>
+
+<main>
+  <div class="search-row">
+    <label>ZIP code</label>
+    <input type="text" id="zipInput" placeholder="e.g. 61414" maxlength="5" value="61414" />
+    <label>Year</label>
+    <select id="yearSelect">
+      <option value="2026" selected>2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+      <option value="2021">2021</option>
+    </select>
+    <button onclick="loadData()">Load data</button>
+  </div>
+
+  <div id="content">
+    <p class="loading">Loading data for Altona, IL...</p>
+  </div>
+</main>
+
+<footer>
+  Data: Open-Meteo Archive API &amp; IEM IEMRE &bull; Geocoding: Zippopotam.us (cached) &bull; Rain event = day with &ge;0.01&quot; precipitation
+  <div class="src-legend">
+    <span><span class="src-badge src-iem">IEM</span> Iowa Environmental Mesonet — radar + gauge fusion, near-real-time</span>
+    <span><span class="src-badge src-era5land">ERA5-Land</span> Open-Meteo ERA5-Land reanalysis, 9 km grid</span>
+    <span><span class="src-badge">ERA5</span> Open-Meteo ERA5 reanalysis, 25 km grid</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const MONTHS  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const FMONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+let chartInstance = null;
+const GEO_CACHE_KEY = 'rainfall_zip_cache';
+
+function geoCache() {
+  try { return JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch { return {}; }
+}
+function geoCacheSave(zip, coords) {
+  try { const c = geoCache(); c[zip] = coords; localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(c)); } catch {}
+}
+
+async function getCoords(zip) {
+  const cached = geoCache()[zip];
+  if (cached) return cached;
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if (r.ok) {
+      const d = await r.json();
+      if (d.places && d.places.length > 0) {
+        const p = d.places[0];
+        const coords = { lat: parseFloat(p.latitude), lon: parseFloat(p.longitude), city: p['place name'] + ', ' + p['state abbreviation'] };
+        if (coords.lat >= 17 && coords.lat <= 72 && coords.lon >= -180 && coords.lon <= -65) { geoCacheSave(zip, coords); return coords; }
+      }
+    }
+  } catch {}
+  try {
+    const r2 = await fetch(`https://geocoding.geo.census.gov/geocoder/locations/address?street=&city=&state=&zip=${zip}&benchmark=Public_AR_Current&format=json`);
+    const d2 = await r2.json();
+    const matches = d2?.result?.addressMatches;
+    if (matches && matches.length > 0) {
+      const m = matches[0];
+      const lat = parseFloat(m.coordinates.y), lon = parseFloat(m.coordinates.x);
+      if (lat >= 17 && lat <= 72 && lon >= -180 && lon <= -65) {
+        const coords = { lat, lon, city: m.addressComponents.city ? m.addressComponents.city + ', ' + m.addressComponents.state : zip };
+        geoCacheSave(zip, coords); return coords;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+// ── Source scoring ─────────────────────────────────────────────────────────────
+function scoreVals(vals, expectedDays) {
+  if (!vals || vals.length === 0) return { score: 0, valid: false };
+  const nonNull = vals.filter(v => v !== null && v !== undefined && v >= 0);
+  const score = nonNull.length / expectedDays;
+  const total = nonNull.reduce((a,b) => a+b, 0);
+  const valid = score >= 0.5 && total <= 30;
+  return { score, valid, total };
+}
+
+function bestSource(results, expectedDays) {
+  let best = null;
+  for (const { key, vals } of results) {
+    const s = scoreVals(vals, expectedDays);
+    if (!s.valid) { console.warn(`Source ${key} skipped: score=${s.score.toFixed(2)} total=${s.total?.toFixed(2)}`); continue; }
+    if (!best || s.score > best.score) best = { key, vals, score: s.score };
+  }
+  if (!best) {
+    for (const { key, vals } of results) {
+      const s = scoreVals(vals, expectedDays);
+      if (!best || s.score > best.score) best = { key, vals, score: s.score };
+    }
+  }
+  return best || { key: 'none', vals: [], score: 0 };
+}
+
+// ── Open-Meteo fetchers ────────────────────────────────────────────────────────
+async function fetchOneSource(lat, lon, startDate, endDate, model) {
+  try {
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}`
+      + `&daily=precipitation_sum&start_date=${startDate}&end_date=${endDate}`
+      + `&timezone=America%2FChicago&precipitation_unit=inch${model}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) return [];
+    return d.daily ? d.daily.precipitation_sum : [];
+  } catch { return []; }
+}
+
+// ── IEM IEMRE fetcher ─────────────────────────────────────────────────────────
+// Uses IEM Reanalysis grid (IEMRE) — radar + gauge fusion, updated near-real-time.
+// Endpoint: /iemre/multiday/{date1}/{date2}/{lat}/{lon}/json
+// Field: p01d_in (daily precipitation in inches, null for missing)
+async function fetchIEM(lat, lon, startDate, endDate) {
+  try {
+    const url = `https://mesonet.agron.iastate.edu/iemre/multiday/${startDate}/${endDate}/${lat.toFixed(4)}/${lon.toFixed(4)}/json`;
+    const r = await fetch(url);
+    if (!r.ok) return [];
+    const d = await r.json();
+    if (!d.data || !Array.isArray(d.data)) return [];
+    return d.data.map(day => {
+      const v = day.p01d_in;
+      if (v === null || v === undefined || v === -999 || v < 0) return null;
+      return Math.round(v * 100) / 100;
+    });
+  } catch (e) {
+    console.warn('IEM fetch failed:', e);
+    return [];
+  }
+}
+
+async function fetchBest(lat, lon, startDate, endDate, expectedDays) {
+  const [era5Vals, era5LandVals, iemVals] = await Promise.all([
+    fetchOneSource(lat, lon, startDate, endDate, ''),
+    fetchOneSource(lat, lon, startDate, endDate, '&models=era5_land'),
+    fetchIEM(lat, lon, startDate, endDate),
+  ]);
+  const result = bestSource([
+    { key: 'ERA5',      vals: era5Vals },
+    { key: 'ERA5-Land', vals: era5LandVals },
+    { key: 'IEM',       vals: iemVals },
+  ], expectedDays);
+  return { vals: result.vals, source: result.key, score: result.score };
+}
+
+async function fetchPrecip(lat, lon, year, month) {
+  const pad = n => String(n).padStart(2,'0');
+  const days = new Date(year, month, 0).getDate();
+  const today = new Date();
+  const endDate = (year === today.getFullYear() && month === today.getMonth()+1)
+    ? today.toISOString().slice(0,10)
+    : `${year}-${pad(month)}-${days}`;
+  return fetchBest(lat, lon, `${year}-${pad(month)}-01`, endDate, days);
+}
+
+async function fetchHistorical(lat, lon, year, month) {
+  const pad = n => String(n).padStart(2,'0');
+  const days = new Date(year, month, 0).getDate();
+  const { vals } = await fetchBest(lat, lon, `${year}-${pad(month)}-01`, `${year}-${pad(month)}-${days}`, days);
+  return vals;
+}
+
+function calcStats(vals) {
+  const v = (vals || []).filter(x => x != null && x >= 0);
+  return { total: v.reduce((a,b)=>a+b,0), events: v.filter(x=>x>=0.01).length };
+}
+function avgStats(arr) {
+  if (!arr.length) return {total:0,events:0};
+  return { total: arr.reduce((a,b)=>a+b.total,0)/arr.length, events: arr.reduce((a,b)=>a+b.events,0)/arr.length };
+}
+function fmt(n, d=2)  { return Number(n).toFixed(d); }
+function fmtD(n, d=2) { return (n>=0?'+':'')+Number(n).toFixed(d); }
+function dc(v)        { return v>0.05?'delta-pos':v<-0.05?'delta-neg':'delta-zero'; }
+function srcBadgeClass(source) {
+  if (source === 'IEM')       return 'src-badge src-iem';
+  if (source === 'ERA5-Land') return 'src-badge src-era5land';
+  return 'src-badge';
+}
+
+async function loadData() {
+  const zip  = document.getElementById('zipInput').value.trim();
+  const year = parseInt(document.getElementById('yearSelect').value);
+  const el   = document.getElementById('content');
+  if (zip.length < 5) { el.innerHTML = `<p class="error-msg">Please enter a 5-digit ZIP code.</p>`; return; }
+
+  el.innerHTML = `<p class="loading">Looking up ZIP code ${zip}…</p>`;
+  const coords = await getCoords(zip);
+  if (!coords) { el.innerHTML = `<p class="error-msg">Could not locate ZIP code ${zip}.</p>`; return; }
+
+  el.innerHTML = `<p class="loading">Fetching data for ${coords.city}…</p>`;
+  const {lat, lon, city} = coords;
+  const today = new Date();
+  const maxMonth = (year === today.getFullYear()) ? today.getMonth() + 1 : 12;
+
+  try {
+    const monthData = [];
+    for (let m = 1; m <= maxMonth; m++) {
+      el.querySelector('.loading').textContent = `Loading ${MONTHS[m-1]} ${year}…`;
+      const { vals: targetVals, source: targetSource } = await fetchPrecip(lat, lon, year, m);
+      const target = calcStats(targetVals);
+      const refs5=[], refs10=[], refs15=[];
+      for (let ry = year-1; ry >= year-15; ry--) {
+        const hv = await fetchHistorical(lat, lon, ry, m);
+        const hs = calcStats(hv);
+        if (hs.total > 0 || hv.length > 0) {
+          if (ry >= year-5)  refs5.push(hs);
+          if (ry >= year-10) refs10.push(hs);
+          refs15.push(hs);
+        }
+      }
+      monthData.push({ month:m, target, source: targetSource, avg5:avgStats(refs5), avg10:avgStats(refs10), avg15:avgStats(refs15) });
+    }
+    render(el, city, zip, year, monthData);
+  } catch(e) {
+    el.innerHTML = `<p class="error-msg">Error: ${e.message}</p>`;
+  }
+}
+
+let _cachedData = null;
+let show5 = true, show10 = true, show15 = true;
+let hiddenMonths = new Set();
+
+function toggleMonth(m) {
+  if (hiddenMonths.has(m)) hiddenMonths.delete(m); else hiddenMonths.add(m);
+  document.getElementById('mbtn-'+m).className = 'mbtn' + (hiddenMonths.has(m) ? '' : ' mon-active');
+  applyMonthToggles();
+}
+function setAllMonths(show) {
+  document.querySelectorAll('.mbtn').forEach(b => {
+    const m = parseInt(b.dataset.month);
+    if (show) { hiddenMonths.delete(m); b.className = 'mbtn mon-active'; }
+    else       { hiddenMonths.add(m);   b.className = 'mbtn'; }
+  });
+  applyMonthToggles();
+}
+
+function applyMonthToggles() {
+  if (!_cachedData) return;
+  const visibleData = _cachedData.filter(d => !hiddenMonths.has(d.month));
+  const sum = arr => arr.reduce((a,b)=>a+b,0);
+  const totIn=sum(visibleData.map(d=>d.target.total)), totEvt=sum(visibleData.map(d=>d.target.events));
+  const totA5=sum(visibleData.map(d=>d.avg5.total)), totA10=sum(visibleData.map(d=>d.avg10.total)), totA15=sum(visibleData.map(d=>d.avg15.total));
+  const totE5=sum(visibleData.map(d=>d.avg5.events)), totE10=sum(visibleData.map(d=>d.avg10.events)), totE15=sum(visibleData.map(d=>d.avg15.events));
+  const d5=totIn-totA5, d10=totIn-totA10, d15=totIn-totA15;
+  const ee5=totEvt-totE5, ee10=totEvt-totE10, ee15=totEvt-totE15;
+
+  const grid = document.getElementById('summary-grid');
+  if (grid) {
+    grid.querySelector('.metric-value.main-total').textContent = fmt(totIn)+'"';
+    grid.querySelector('.metric-sub.main-events').textContent = totEvt+' rain events';
+    const c5v=grid.querySelector('.card-5 .metric-value'), c10v=grid.querySelector('.card-10 .metric-value'), c15v=grid.querySelector('.card-15 .metric-value');
+    const c5s=grid.querySelector('.card-5 .metric-sub'), c10s=grid.querySelector('.card-10 .metric-sub'), c15s=grid.querySelector('.card-15 .metric-sub');
+    if(c5v)  { c5v.textContent=fmtD(d5)+'"';  c5v.className='metric-value '+(d5>=0?'ahead':'behind'); }
+    if(c10v) { c10v.textContent=fmtD(d10)+'"'; c10v.className='metric-value '+(d10>=0?'ahead':'behind'); }
+    if(c15v) { c15v.textContent=fmtD(d15)+'"'; c15v.className='metric-value '+(d15>=0?'ahead':'behind'); }
+    if(c5s)  c5s.textContent=fmt(totA5)+'" avg total';
+    if(c10s) c10s.textContent=fmt(totA10)+'" avg total';
+    if(c15s) c15s.textContent=fmt(totA15)+'" avg total';
+  }
+
+  document.querySelectorAll('tr.month-row').forEach(tr => {
+    tr.style.display = hiddenMonths.has(parseInt(tr.dataset.month)) ? 'none' : '';
+  });
+
+  const ytdI=document.getElementById('ytd-inches'), ytdE=document.getElementById('ytd-events');
+  if(ytdI) {
+    ytdI.cells[1].textContent=fmt(totIn)+'"'; ytdI.cells[2].textContent=totEvt;
+    if(show5)  { ytdI.cells[3].textContent=fmt(totA5)+'"';  ytdI.cells[4].textContent=fmtD(d5)+'"';  ytdI.cells[4].className=dc(d5); }
+    if(show10) { ytdI.cells[5].textContent=fmt(totA10)+'"'; ytdI.cells[6].textContent=fmtD(d10)+'"'; ytdI.cells[6].className=dc(d10); }
+    if(show15) { ytdI.cells[7].textContent=fmt(totA15)+'"'; ytdI.cells[8].textContent=fmtD(d15)+'"'; ytdI.cells[8].className=dc(d15); }
+  }
+  if(ytdE) {
+    ytdE.cells[1].textContent=totEvt;
+    if(show5)  { ytdE.cells[2].textContent=fmt(totE5,1);  ytdE.cells[3].textContent=fmtD(ee5,1);  ytdE.cells[3].className=dc(ee5); }
+    if(show10) { ytdE.cells[4].textContent=fmt(totE10,1); ytdE.cells[5].textContent=fmtD(ee10,1); ytdE.cells[5].className=dc(ee10); }
+    if(show15) { ytdE.cells[6].textContent=fmt(totE15,1); ytdE.cells[7].textContent=fmtD(ee15,1); ytdE.cells[7].className=dc(ee15); }
+  }
+
+  if(chartInstance) {
+    chartInstance.data.labels = visibleData.map(d=>MONTHS[d.month-1]);
+    chartInstance.data.datasets[0].data = visibleData.map(d=>+fmt(d.target.total));
+    chartInstance.data.datasets[0].backgroundColor = barColors(visibleData, visibleData.map(d=>d.target.total));
+    chartInstance.data.datasets[1].data = visibleData.map(d=>+fmt(d.avg5.total));
+    chartInstance.data.datasets[2].data = visibleData.map(d=>+fmt(d.avg10.total));
+    chartInstance.data.datasets[3].data = visibleData.map(d=>+fmt(d.avg15.total));
+    chartInstance.update();
+  }
+}
+
+function toggleAvg(n) {
+  if(n===5) show5=!show5; if(n===10) show10=!show10; if(n===15) show15=!show15;
+  document.getElementById('btn5').className  = 'toggle-btn'+(show5  ?' active-5':'');
+  document.getElementById('btn10').className = 'toggle-btn'+(show10 ?' active-10':'');
+  document.getElementById('btn15').className = 'toggle-btn'+(show15 ?' active-15':'');
+  applyToggles();
+}
+
+function applyToggles() {
+  [5,10,15].forEach(n => {
+    document.querySelectorAll(`.col-${n}`).forEach(el => { el.style.display = ({5:show5,10:show10,15:show15})[n] ? '' : 'none'; });
+  });
+  if(!_cachedData) return;
+  const visibleData = _cachedData.filter(d=>!hiddenMonths.has(d.month));
+  const ds = chartInstance.data.datasets;
+  ds[1].hidden=!show5; ds[2].hidden=!show10; ds[3].hidden=!show15;
+  ds[0].backgroundColor = barColors(visibleData, visibleData.map(d=>d.target.total));
+  chartInstance.update();
+  const grid=document.getElementById('summary-grid');
+  if(grid) {
+    grid.querySelector('.card-5').style.display=show5?'':'none';
+    grid.querySelector('.card-10').style.display=show10?'':'none';
+    grid.querySelector('.card-15').style.display=show15?'':'none';
+  }
+}
+
+function barColors(monthDataArr, actuals) {
+  return monthDataArr.map((md,i) => {
+    const actual=actuals[i];
+    const ref=show5?md.avg5.total:show10?md.avg10.total:show15?md.avg15.total:null;
+    if(ref===null||ref===0) return '#888780';
+    const pct=(actual-ref)/ref;
+    if(pct>0.10)  return '#378ADD';
+    if(pct<-0.10) return '#E24B4A';
+    return '#888780';
+  });
+}
+
+function render(el, city, zip, year, data) {
+  _cachedData = data;
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  const totIn=sum(data.map(d=>d.target.total)), totEvt=sum(data.map(d=>d.target.events));
+  const totA5=sum(data.map(d=>d.avg5.total)), totA10=sum(data.map(d=>d.avg10.total)), totA15=sum(data.map(d=>d.avg15.total));
+  const totE5=sum(data.map(d=>d.avg5.events)), totE10=sum(data.map(d=>d.avg10.events)), totE15=sum(data.map(d=>d.avg15.events));
+  const d5=totIn-totA5, d10=totIn-totA10, d15=totIn-totA15;
+
+  el.innerHTML = `
+    <p class="loc-name">${city} &bull; ${zip} &bull; ${year} &bull; ${data.length} months tracked</p>
+    <div class="toggle-row">
+      <label>Show averages:</label>
+      <button id="btn5"  class="toggle-btn active-5"  onclick="toggleAvg(5)">5-year</button>
+      <button id="btn10" class="toggle-btn active-10" onclick="toggleAvg(10)">10-year</button>
+      <button id="btn15" class="toggle-btn active-15" onclick="toggleAvg(15)">15-year</button>
+    </div>
+    <div class="month-toggle-row" id="month-toggle-row">
+      <label>Show months:</label>
+      ${MONTHS.map((mn,i) => {
+        const m=i+1, tracked=data.map(d=>d.month);
+        if(!tracked.includes(m)) return '';
+        const isHidden=hiddenMonths.has(m);
+        return `<button id="mbtn-${m}" class="mbtn${isHidden?'':' mon-active'}" data-month="${m}" onclick="toggleMonth(${m})">${mn}</button>`;
+      }).join('')}
+      <button class="mbtn-all" onclick="setAllMonths(true)">All</button>
+      <button class="mbtn-all" onclick="setAllMonths(false)">None</button>
+    </div>
+    <div class="summary-grid" id="summary-grid">
+      <div class="metric">
+        <div class="metric-label">Total rainfall</div>
+        <div class="metric-value main-total">${fmt(totIn)}"</div>
+        <div class="metric-sub main-events">${totEvt} rain events</div>
+      </div>
+      <div class="metric card-5">
+        <div class="metric-label">vs 5-yr avg</div>
+        <div class="metric-value ${d5>=0?'ahead':'behind'}">${fmtD(d5)}"</div>
+        <div class="metric-sub">${fmt(totA5)}" avg total</div>
+      </div>
+      <div class="metric card-10">
+        <div class="metric-label">vs 10-yr avg</div>
+        <div class="metric-value ${d10>=0?'ahead':'behind'}">${fmtD(d10)}"</div>
+        <div class="metric-sub">${fmt(totA10)}" avg total</div>
+      </div>
+      <div class="metric card-15">
+        <div class="metric-label">vs 15-yr avg</div>
+        <div class="metric-value ${d15>=0?'ahead':'behind'}">${fmtD(d15)}"</div>
+        <div class="metric-sub">${fmt(totA15)}" avg total</div>
+      </div>
+    </div>
+    <div class="avg-legend">
+      <span><span class="swatch" style="background:#378ADD;height:8px;border-radius:2px;"></span>${year} actual</span>
+      <span class="col-5"><span class="swatch" style="background:#1D9E75;"></span>5-yr avg</span>
+      <span class="col-10"><span class="swatch" style="background:#EF9F27;"></span>10-yr avg</span>
+      <span class="col-15"><span class="swatch" style="background:#D85A30;"></span>15-yr avg</span>
+    </div>
+    <div class="chart-wrap"><canvas id="rc"></canvas></div>
+    <p class="section-label">Monthly inches</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Month</th><th>Actual</th><th>Events</th><th>Source</th>
+          <th class="col-5">5-yr avg</th><th class="col-5">vs 5-yr</th>
+          <th class="col-10">10-yr avg</th><th class="col-10">vs 10-yr</th>
+          <th class="col-15">15-yr avg</th><th class="col-15">vs 15-yr</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="section-label">Monthly rain events
+      <span class="event-note" style="font-weight:400;text-transform:none;letter-spacing:0;">&nbsp;&mdash;&nbsp;A rain event is any day with &ge;0.01&quot; of precipitation measured</span>
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Month</th><th>Events</th>
+          <th class="col-5">5-yr avg events</th><th class="col-5">vs 5-yr</th>
+          <th class="col-10">10-yr avg events</th><th class="col-10">vs 10-yr</th>
+          <th class="col-15">15-yr avg events</th><th class="col-15">vs 15-yr</th>
+        </tr></thead>
+        <tbody id="ebody"></tbody>
+      </table>
+    </div>
+  `;
+
+  const tbody=document.getElementById('tbody'), ebody=document.getElementById('ebody');
+  const labels=[], aIn=[], a5=[], a10=[], a15=[];
+
+  for (const md of data) {
+    const {month:m, target:t, avg5, avg10, avg15} = md;
+    const di5=t.total-avg5.total, di10=t.total-avg10.total, di15=t.total-avg15.total;
+    const de5=t.events-avg5.events, de10=t.events-avg10.events, de15=t.events-avg15.events;
+    labels.push(MONTHS[m-1]); aIn.push(+fmt(t.total)); a5.push(+fmt(avg5.total)); a10.push(+fmt(avg10.total)); a15.push(+fmt(avg15.total));
+    const srcClass = srcBadgeClass(md.source);
+    tbody.innerHTML += `<tr class="month-row" data-month="${m}">
+      <td>${FMONTHS[m-1]}</td><td>${fmt(t.total)}"</td><td>${t.events}</td>
+      <td><span class="${srcClass}">${md.source||'—'}</span></td>
+      <td class="col-5">${fmt(avg5.total)}"</td><td class="col-5 ${dc(di5)}">${fmtD(di5)}"</td>
+      <td class="col-10">${fmt(avg10.total)}"</td><td class="col-10 ${dc(di10)}">${fmtD(di10)}"</td>
+      <td class="col-15">${fmt(avg15.total)}"</td><td class="col-15 ${dc(di15)}">${fmtD(di15)}"</td>
+    </tr>`;
+    ebody.innerHTML += `<tr class="month-row" data-month="${m}">
+      <td>${FMONTHS[m-1]}</td><td>${t.events}</td>
+      <td class="col-5">${fmt(avg5.events,1)}</td><td class="col-5 ${dc(de5)}">${fmtD(de5,1)}</td>
+      <td class="col-10">${fmt(avg10.events,1)}</td><td class="col-10 ${dc(de10)}">${fmtD(de10,1)}</td>
+      <td class="col-15">${fmt(avg15.events,1)}</td><td class="col-15 ${dc(de15)}">${fmtD(de15,1)}</td>
+    </tr>`;
+  }
+
+  const d5t=totIn-totA5, d10t=totIn-totA10, d15t=totIn-totA15;
+  const ee5=totEvt-totE5, ee10=totEvt-totE10, ee15=totEvt-totE15;
+  tbody.innerHTML += `<tr id="ytd-inches">
+    <td>YTD total</td><td>${fmt(totIn)}"</td><td>${totEvt}</td><td></td>
+    <td class="col-5">${fmt(totA5)}"</td><td class="col-5 ${dc(d5t)}">${fmtD(d5t)}"</td>
+    <td class="col-10">${fmt(totA10)}"</td><td class="col-10 ${dc(d10t)}">${fmtD(d10t)}"</td>
+    <td class="col-15">${fmt(totA15)}"</td><td class="col-15 ${dc(d15t)}">${fmtD(d15t)}"</td>
+  </tr>`;
+  ebody.innerHTML += `<tr id="ytd-events">
+    <td>YTD total</td><td>${totEvt}</td>
+    <td class="col-5">${fmt(totE5,1)}</td><td class="col-5 ${dc(ee5)}">${fmtD(ee5,1)}</td>
+    <td class="col-10">${fmt(totE10,1)}</td><td class="col-10 ${dc(ee10)}">${fmtD(ee10,1)}</td>
+    <td class="col-15">${fmt(totE15,1)}</td><td class="col-15 ${dc(ee15)}">${fmtD(ee15,1)}</td>
+  </tr>`;
+
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(document.getElementById('rc'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:`${year}`, data:aIn, backgroundColor:barColors(data,data.map(d=>d.target.total)), borderRadius:3, order:1 },
+        { label:'5-yr avg', data:a5, type:'line', borderColor:'#1D9E75', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3, order:0, hidden:!show5 },
+        { label:'10-yr avg', data:a10, type:'line', borderColor:'#EF9F27', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3, order:0, hidden:!show10 },
+        { label:'15-yr avg', data:a15, type:'line', borderColor:'#D85A30', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3, order:0, hidden:!show15 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks:{ autoSkip:false, font:{size:11} }, grid:{ display:false } },
+        y: { title:{ display:true, text:'Inches', font:{size:11} }, ticks:{ callback:v=>v.toFixed(1)+'"', font:{size:11} }, grid:{ color:'rgba(128,128,128,0.12)' } }
+      }
+    }
+  });
+  applyToggles();
+}
+
+document.getElementById('zipInput').addEventListener('keydown', e => { if(e.key==='Enter') loadData(); });
+window.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
