@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDU & Rainfall Report — AgronomyINFO</title>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & ROOT ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–soil:    #141009;
+–earth:   #1e1608;
+–card:    #231c0a;
+–border:  #3a2e12;
+–border2: #50401a;
+–amber:   #d4943a;
+–amber2:  #f0b84a;
+–gold:    #e8c860;
+–green:   #5a9030;
+–green2:  #78b848;
+–blue:    #3878c0;
+–blue2:   #5898e0;
+–sky:     #90c8f0;
+–light:   #f0e8d0;
+–muted:   #9a8860;
+–red:     #c04030;
+–red2:    #e05840;
+–pos:     #5a9030;
+–neg:     #c04030;
+–radius:  8px;
+–shadow:  0 2px 16px rgba(0,0,0,0.45);
+}
+
+body {
+background: var(–soil);
+color: var(–light);
+font-family: ‘Titillium Web’, sans-serif;
+min-height: 100vh;
+padding: 0 0 60px;
+}
+
+/* ─── HEADER ───────────────────────────────────────────────────────────────── */
+.page-header {
+background: var(–earth);
+border-bottom: 2px solid var(–border2);
+padding: 22px 24px 18px;
+display: flex;
+align-items: center;
+gap: 14px;
+}
+.logo-mark {
+font-family: ‘Titillium Web’, sans-serif;
+font-weight: 700;
+font-size: 11px;
+letter-spacing: 0.12em;
+color: var(–amber2);
+border: 1.5px solid var(–amber);
+padding: 4px 8px;
+border-radius: 4px;
+white-space: nowrap;
+}
+.page-title {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: clamp(1.3rem, 3vw, 1.9rem);
+font-weight: 900;
+color: var(–light);
+line-height: 1;
+}
+.page-sub {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+color: var(–muted);
+margin-top: 3px;
+letter-spacing: 0.06em;
+}
+
+/* ─── LAYOUT ───────────────────────────────────────────────────────────────── */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 0; }
+
+/* ─── PANEL ────────────────────────────────────────────────────────────────── */
+.panel {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+margin-bottom: 18px;
+overflow: hidden;
+}
+.panel-head {
+background: var(–earth);
+border-bottom: 1px solid var(–border2);
+padding: 10px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+}
+.panel-title {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+font-weight: 700;
+letter-spacing: 0.1em;
+color: var(–amber2);
+text-transform: uppercase;
+}
+.panel-body { padding: 16px; }
+
+/* ─── FORM ELEMENTS ────────────────────────────────────────────────────────── */
+label {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.08em;
+color: var(–muted);
+text-transform: uppercase;
+display: block;
+margin-bottom: 5px;
+}
+input[type=“text”], input[type=“date”], input[type=“number”], select {
+width: 100%;
+background: var(–soil);
+border: 1px solid var(–border2);
+border-radius: 5px;
+color: var(–light);
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 12px;
+padding: 7px 10px;
+outline: none;
+transition: border-color 0.15s;
+}
+input:focus, select:focus { border-color: var(–amber2); }
+input::placeholder { color: var(–muted); opacity: 0.6; }
+
+/* ─── GRID HELPERS ─────────────────────────────────────────────────────────── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+/* ─── LOCATION ROWS ────────────────────────────────────────────────────────── */
+.location-row {
+display: grid;
+grid-template-columns: 28px 1fr 1fr auto;
+gap: 8px;
+align-items: end;
+padding: 8px 0;
+border-bottom: 1px solid var(–border);
+}
+.location-row:last-child { border-bottom: none; }
+.loc-num {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+font-weight: 700;
+color: var(–amber);
+text-align: center;
+padding-top: 22px;
+}
+.btn-remove {
+background: none;
+border: 1px solid var(–border2);
+border-radius: 4px;
+color: var(–muted);
+cursor: pointer;
+font-size: 14px;
+width: 28px; height: 28px;
+display: flex; align-items: center; justify-content: center;
+margin-bottom: 1px;
+transition: border-color 0.15s, color 0.15s;
+}
+.btn-remove:hover { border-color: var(–red); color: var(–red2); }
+
+/* ─── PLANTING DATE ROWS ────────────────────────────────────────────────────── */
+.date-row {
+display: grid;
+grid-template-columns: 28px 1fr 1fr auto;
+gap: 8px;
+align-items: end;
+padding: 8px 0;
+border-bottom: 1px solid var(–border);
+}
+.date-row:last-child { border-bottom: none; }
+.date-num {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+font-weight: 700;
+color: var(–green2);
+text-align: center;
+padding-top: 22px;
+}
+
+/* ─── BUTTONS ──────────────────────────────────────────────────────────────── */
+.btn {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+font-weight: 700;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+padding: 9px 16px;
+transition: opacity 0.15s, transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(–amber); color: var(–soil); }
+.btn-primary:hover { opacity: 0.88; }
+.btn-secondary { background: var(–earth); border: 1px solid var(–border2); color: var(–muted); }
+.btn-secondary:hover { border-color: var(–amber); color: var(–amber); }
+.btn-add {
+background: none;
+border: 1px dashed var(–border2);
+border-radius: 5px;
+color: var(–muted);
+cursor: pointer;
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+letter-spacing: 0.06em;
+padding: 7px 14px;
+width: 100%;
+margin-top: 8px;
+transition: border-color 0.15s, color 0.15s;
+}
+.btn-add:hover { border-color: var(–amber2); color: var(–amber2); }
+.btn-row { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+
+/* ─── STATUS / LOADING ─────────────────────────────────────────────────────── */
+.status-bar {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+padding: 10px 14px;
+border-radius: 5px;
+margin-bottom: 14px;
+display: none;
+}
+.status-bar.info  { background: rgba(56,120,192,0.15); border: 1px solid rgba(56,120,192,0.35); color: var(–sky); }
+.status-bar.error { background: rgba(192,64,48,0.15); border: 1px solid rgba(192,64,48,0.4); color: var(–red2); }
+.status-bar.show  { display: block; }
+
+.progress-wrap { height: 3px; background: var(–border); border-radius: 2px; margin-bottom: 16px; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar { height: 100%; background: var(–amber2); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+/* ─── RESULTS AREA ─────────────────────────────────────────────────────────── */
+#results { display: none; }
+#results.show { display: block; }
+
+/* ─── REPORT META ──────────────────────────────────────────────────────────── */
+.report-meta {
+display: flex; gap: 16px; flex-wrap: wrap;
+padding: 10px 16px;
+background: var(–earth);
+border-bottom: 1px solid var(–border);
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+color: var(–muted);
+}
+.report-meta strong { color: var(–amber2); }
+
+/* ─── SUMMARY CARDS ────────────────────────────────────────────────────────── */
+.cards-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+gap: 12px;
+padding: 16px;
+}
+.loc-card {
+background: var(–soil);
+border: 1px solid var(–border2);
+border-radius: var(–radius);
+overflow: hidden;
+}
+.loc-card-head {
+background: var(–earth);
+padding: 8px 12px;
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; gap: 8px;
+}
+.loc-badge {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+font-weight: 700;
+background: var(–amber);
+color: var(–soil);
+border-radius: 3px;
+padding: 2px 6px;
+}
+.loc-name-card {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+font-weight: 600;
+color: var(–light);
+}
+.loc-coord {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+color: var(–muted);
+margin-left: auto;
+}
+.card-metrics { padding: 10px 12px; display: flex; gap: 10px; }
+.metric-block {
+flex: 1;
+text-align: center;
+padding: 8px 6px;
+background: var(–card);
+border-radius: 5px;
+border: 1px solid var(–border);
+}
+.metric-icon { font-size: 14px; margin-bottom: 2px; }
+.metric-label {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 8px;
+font-weight: 700;
+letter-spacing: 0.08em;
+color: var(–muted);
+text-transform: uppercase;
+margin-bottom: 4px;
+}
+.metric-val {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 18px;
+font-weight: 700;
+line-height: 1;
+}
+.metric-val.gdu  { color: var(–amber2); }
+.metric-val.rain { color: var(–blue2); }
+.metric-diff {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+font-weight: 600;
+margin-top: 3px;
+}
+.metric-diff.pos { color: var(–pos); }
+.metric-diff.neg { color: var(–neg); }
+.metric-diff.neu { color: var(–muted); }
+
+/* planting date sub-rows inside card */
+.card-dates { padding: 0 12px 10px; }
+.card-date-row {
+display: flex; align-items: center; justify-content: space-between;
+padding: 5px 8px;
+border-radius: 4px;
+background: var(–card);
+border: 1px solid var(–border);
+margin-bottom: 5px;
+gap: 6px;
+}
+.card-date-row:last-child { margin-bottom: 0; }
+.card-date-label {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+color: var(–muted);
+white-space: nowrap;
+}
+.card-date-vals { display: flex; gap: 10px; }
+.card-date-val {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+font-weight: 600;
+text-align: right;
+}
+.card-date-val .unit { font-size: 8px; font-weight: 400; color: var(–muted); margin-left: 1px; }
+
+/* ─── DATA TABLE ───────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; padding: 0 16px 16px; }
+table {
+width: 100%;
+border-collapse: collapse;
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 11px;
+min-width: 600px;
+}
+thead tr {
+background: var(–earth);
+border-bottom: 2px solid var(–border2);
+}
+thead th {
+padding: 8px 10px;
+text-align: left;
+font-size: 9px;
+font-weight: 700;
+letter-spacing: 0.09em;
+text-transform: uppercase;
+color: var(–muted);
+white-space: nowrap;
+}
+thead th.num { text-align: right; }
+tbody tr { border-bottom: 1px solid var(–border); }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody tr.loc-header { background: rgba(212,148,58,0.08); }
+td { padding: 6px 10px; vertical-align: middle; }
+td.num { text-align: right; }
+.cell-loc {
+font-size: 9px;
+font-weight: 700;
+color: var(–amber2);
+letter-spacing: 0.06em;
+}
+.cell-date { color: var(–muted); font-size: 10px; }
+.cell-gdu { color: var(–amber2); font-weight: 600; }
+.cell-rain { color: var(–blue2); font-weight: 600; }
+.cell-diff-pos { color: var(–pos); font-weight: 600; }
+.cell-diff-neg { color: var(–neg); font-weight: 600; }
+.cell-diff-neu { color: var(–muted); }
+.tag-asof {
+font-size: 8px;
+background: rgba(90,144,48,0.2);
+border: 1px solid rgba(90,144,48,0.4);
+color: var(–green2);
+border-radius: 3px;
+padding: 1px 5px;
+margin-left: 4px;
+}
+
+/* ─── COPY BUTTON ──────────────────────────────────────────────────────────── */
+.copy-hint {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+color: var(–muted);
+padding: 8px 16px 4px;
+display: flex; align-items: center; gap: 8px;
+}
+.copy-hint button {
+background: var(–earth);
+border: 1px solid var(–border2);
+border-radius: 4px;
+color: var(–muted);
+cursor: pointer;
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+padding: 3px 8px;
+transition: border-color 0.15s, color 0.15s;
+}
+.copy-hint button:hover { border-color: var(–amber); color: var(–amber); }
+
+/* ─── SECTION TABS ─────────────────────────────────────────────────────────── */
+.tabs { display: flex; gap: 2px; padding: 12px 16px 0; }
+.tab {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+padding: 6px 14px;
+border-radius: 5px 5px 0 0;
+border: 1px solid transparent;
+cursor: pointer;
+color: var(–muted);
+background: none;
+border-bottom: none;
+transition: color 0.15s;
+}
+.tab.active {
+background: var(–card);
+border-color: var(–border2);
+border-bottom-color: var(–card);
+color: var(–amber2);
+}
+.tab:not(.active):hover { color: var(–light); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.tab-border {
+border: 1px solid var(–border2);
+border-radius: 0 var(–radius) var(–radius) var(–radius);
+overflow: hidden;
+}
+
+/* ─── FOOTNOTE ─────────────────────────────────────────────────────────────── */
+.footnote {
+font-family: ‘Titillium Web’, sans-serif;
+font-size: 9px;
+color: var(–muted);
+padding: 12px 16px;
+border-top: 1px solid var(–border);
+line-height: 1.7;
+}
+
+/* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+.location-row { grid-template-columns: 24px 1fr 1fr 28px; }
+.date-row { grid-template-columns: 24px 1fr 1fr 28px; }
+.grid2 { grid-template-columns: 1fr; }
+.cards-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- HEADER -->
+
+<div class="page-header">
+  <div class="logo-mark">[ AGRONOMY<span style="color:var(--green2)">INFO</span> ]</div>
+  <div>
+    <div class="page-title">GDU &amp; Rainfall Report</div>
+    <div class="page-sub">MULTI-LOCATION · SEASONAL SUMMARY · NEWSLETTER READY</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ── LOCATIONS ── -->
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">📍 Locations</span>
+    <span style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted)">1–8 locations · ZIP code or city name</span>
+  </div>
+  <div class="panel-body">
+    <div id="locRows"></div>
+    <button class="btn-add" id="btnAddLoc" onclick="addLocation()">+ Add Location</button>
+  </div>
+</div>
+
+<!-- ── PLANTING DATES ── -->
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">🌱 Planting Dates</span>
+    <span style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted)">Up to 5 dates — GDUs tracked from each</span>
+  </div>
+  <div class="panel-body">
+    <div id="dateRows"></div>
+    <button class="btn-add" id="btnAddDate" onclick="addPlantDate()">+ Add Planting Date</button>
+  </div>
+</div>
+
+<!-- ── OPTIONS ── -->
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">⚙️ Options</span>
+  </div>
+  <div class="panel-body">
+    <div class="grid3">
+      <div>
+        <label>GDU Base Temp</label>
+        <select id="gduBase">
+          <option value="50">50°F — Corn standard</option>
+          <option value="50_86">50°/86°F — Corn (capped)</option>
+        </select>
+      </div>
+      <div>
+        <label>Historical Baseline</label>
+        <select id="histYears">
+          <option value="15">15-year (2010–2024)</option>
+          <option value="10">10-year (2015–2024)</option>
+        </select>
+      </div>
+      <div>
+        <label>Report As-Of Date</label>
+        <input type="date" id="asOfDate" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RUN ── -->
+
+<div style="margin-bottom:18px;">
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="runReport()">▶ Generate Report</button>
+    <button class="btn btn-secondary" onclick="resetAll()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- STATUS -->
+
+<div class="status-bar" id="statusBar"></div>
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- RESULTS -->
+
+<div id="results">
+
+  <div class="panel">
+    <div class="report-meta" id="reportMeta"></div>
+
+```
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('cards', this)">Summary Cards</button>
+  <button class="tab" onclick="switchTab('table', this)">Data Table</button>
+</div>
+
+<div class="tab-border">
+  <!-- CARDS TAB -->
+  <div class="tab-content active" id="tab-cards">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+
+  <!-- TABLE TAB -->
+  <div class="tab-content" id="tab-table">
+    <div class="copy-hint">
+      Tabular data — copy to paste into newsletter editors
+      <button onclick="copyTable()">Copy as TSV</button>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th>Planting Date</th>
+            <th class="num">GDU Actual</th>
+            <th class="num">GDU Normal</th>
+            <th class="num">GDU Diff</th>
+            <th class="num">Rain Actual</th>
+            <th class="num">Rain Normal</th>
+            <th class="num">Rain Diff</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="footnote" id="tableFootnote"></div>
+  </div>
+</div>
+```
+
+  </div>
+
+</div><!-- /results -->
+</div><!-- /main -->
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+const MAX_LOCS  = 8;
+const MAX_DATES = 5;
+let locations   = [];
+let plantDates  = [];
+let locIdCtr    = 0;
+let dateIdCtr   = 0;
+let tableData   = []; // for TSV copy
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  document.getElementById('asOfDate').value = today.toISOString().slice(0,10);
+  addLocation();
+  addLocation();
+  addPlantDate();
+});
+
+// ─── LOCATION MANAGEMENT ─────────────────────────────────────────────────────
+function addLocation() {
+  if (locations.length >= MAX_LOCS) return;
+  const id = ++locIdCtr;
+  locations.push({ id });
+  renderLocations();
+  checkAddButtons();
+}
+
+function removeLocation(id) {
+  if (locations.length <= 1) return;
+  locations = locations.filter(l => l.id !== id);
+  renderLocations();
+  checkAddButtons();
+}
+
+function renderLocations() {
+  const container = document.getElementById('locRows');
+  container.innerHTML = '';
+  locations.forEach((loc, i) => {
+    const row = document.createElement('div');
+    row.className = 'location-row';
+    row.innerHTML = `
+      <div class="loc-num">${i+1}</div>
+      <div>
+        <label>Location Name</label>
+        <input type="text" id="locName_${loc.id}" placeholder="e.g. Galesburg" value="${loc.name||''}" oninput="updateLoc(${loc.id},'name',this.value)">
+      </div>
+      <div>
+        <label>ZIP Code or City, State</label>
+        <input type="text" id="locZip_${loc.id}" placeholder="e.g. 61401 or Galesburg, IL" value="${loc.zip||''}" oninput="updateLoc(${loc.id},'zip',this.value)">
+      </div>
+      <button class="btn-remove" onclick="removeLocation(${loc.id})" title="Remove">×</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateLoc(id, field, val) {
+  const l = locations.find(x => x.id === id);
+  if (l) l[field] = val;
+}
+
+// ─── PLANTING DATE MANAGEMENT ─────────────────────────────────────────────────
+function addPlantDate() {
+  if (plantDates.length >= MAX_DATES) return;
+  const id = ++dateIdCtr;
+  const year = new Date().getFullYear();
+  const defaultDates = ['05-01','05-10','05-20','06-01','06-10'];
+  const def = `${year}-${defaultDates[plantDates.length] || '05-01'}`;
+  plantDates.push({ id, date: def, label: '' });
+  renderDates();
+  checkAddButtons();
+}
+
+function removePlantDate(id) {
+  if (plantDates.length <= 1) return;
+  plantDates = plantDates.filter(d => d.id !== id);
+  renderDates();
+  checkAddButtons();
+}
+
+function renderDates() {
+  const container = document.getElementById('dateRows');
+  container.innerHTML = '';
+  plantDates.forEach((pd, i) => {
+    const row = document.createElement('div');
+    row.className = 'date-row';
+    row.innerHTML = `
+      <div class="date-num">${i+1}</div>
+      <div>
+        <label>Planting Date</label>
+        <input type="date" id="pd_${pd.id}" value="${pd.date}" oninput="updateDate(${pd.id},'date',this.value)">
+      </div>
+      <div>
+        <label>Label (optional)</label>
+        <input type="text" id="pdLabel_${pd.id}" placeholder="e.g. Early planted, Field 3…" value="${pd.label||''}" oninput="updateDate(${pd.id},'label',this.value)">
+      </div>
+      <button class="btn-remove" onclick="removePlantDate(${pd.id})" title="Remove">×</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateDate(id, field, val) {
+  const d = plantDates.find(x => x.id === id);
+  if (d) d[field] = val;
+}
+
+function checkAddButtons() {
+  document.getElementById('btnAddLoc').style.display  = locations.length  >= MAX_LOCS  ? 'none' : '';
+  document.getElementById('btnAddDate').style.display = plantDates.length >= MAX_DATES ? 'none' : '';
+}
+
+// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+function setStatus(msg, type='info') {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = `status-bar ${type} show`;
+}
+function clearStatus() {
+  document.getElementById('statusBar').className = 'status-bar';
+}
+function setProgress(pct) {
+  const w = document.getElementById('progressWrap');
+  const b = document.getElementById('progressBar');
+  if (pct === null) { w.className = 'progress-wrap'; return; }
+  w.className = 'progress-wrap show';
+  b.style.width = pct + '%';
+}
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+function resetAll() {
+  locations  = [];
+  plantDates = [];
+  locIdCtr   = 0;
+  dateIdCtr  = 0;
+  tableData  = [];
+  document.getElementById('results').classList.remove('show');
+  clearStatus();
+  setProgress(null);
+  addLocation();
+  addLocation();
+  addPlantDate();
+}
+
+// ─── GEOCODING ───────────────────────────────────────────────────────────────
+async function geocode(query) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+  const r = await fetch(url);
+  const d = await r.json();
+  if (!d.results || d.results.length === 0) throw new Error(`Location not found: "${query}"`);
+  const res = d.results[0];
+  return {
+    lat:  res.latitude,
+    lon:  res.longitude,
+    name: res.name + (res.admin1 ? ', ' + res.admin1 : ''),
+  };
+}
+
+// ─── WEATHER FETCH ────────────────────────────────────────────────────────────
+// Returns daily temps + precip from planting date to asOf
+async function fetchWeather(lat, lon, startDate, endDate) {
+  const today = new Date().toISOString().slice(0,10);
+  const archiveEnd = endDate < today ? endDate : (
+    new Date(Date.now() - 86400000).toISOString().slice(0,10)
+  );
+
+  const results = { dates: [], tmax: [], tmin: [], precip: [] };
+
+  // Archive (historical actuals)
+  if (startDate <= archiveEnd) {
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+      `&start_date=${startDate}&end_date=${archiveEnd}` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+      `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.daily && d.daily.time) {
+      d.daily.time.forEach((t, i) => {
+        results.dates.push(t);
+        results.tmax.push(d.daily.temperature_2m_max[i]);
+        results.tmin.push(d.daily.temperature_2m_min[i]);
+        results.precip.push(d.daily.precipitation_sum[i]);
+      });
+    }
+  }
+
+  // Forecast (today → endDate if needed)
+  const fcastStart = new Date(archiveEnd);
+  fcastStart.setDate(fcastStart.getDate() + 1);
+  const fcastStartStr = fcastStart.toISOString().slice(0,10);
+  if (fcastStartStr <= endDate) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+      `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto&forecast_days=16`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.daily && d.daily.time) {
+      d.daily.time.forEach((t, i) => {
+        if (t >= fcastStartStr && t <= endDate) {
+          results.dates.push(t);
+          results.tmax.push(d.daily.temperature_2m_max[i]);
+          results.tmin.push(d.daily.temperature_2m_min[i]);
+          results.precip.push(d.daily.precipitation_sum[i]);
+        }
+      });
+    }
+  }
+
+  return results;
+}
+
+// ─── CLIMATE NORMALS ──────────────────────────────────────────────────────────
+async function fetchNormals(lat, lon, startDate, endDate, nYears) {
+  const YEARS = nYears === 10
+    ? [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024]
+    : [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+
+  const byMMDD = {}; // { 'MM-DD': { gduSum, precipSum, cnt } }
+
+  const BATCH = 4;
+  for (let b = 0; b < YEARS.length; b += BATCH) {
+    const batch = YEARS.slice(b, b + BATCH);
+    await Promise.all(batch.map(async yr => {
+      // Shift the planting date to the historical year
+      const s = startDate.slice(5); // MM-DD
+      const e = endDate.slice(5);
+      const yrStart = `${yr}-${s}`;
+      // Handle year rollover (planting in Dec → harvest next year)
+      const eYr = e < s ? yr + 1 : yr;
+      const yrEnd = `${eYr}-${e}`;
+      try {
+        const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+          `&start_date=${yrStart}&end_date=${yrEnd}` +
+          `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+          `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (!d.daily || !d.daily.time) return;
+        d.daily.time.forEach((t, i) => {
+          const mmdd = t.slice(5);
+          if (!byMMDD[mmdd]) byMMDD[mmdd] = { tmaxSum:0, tminSum:0, precipSum:0, cnt:0 };
+          const tx = d.daily.temperature_2m_max[i];
+          const tn = d.daily.temperature_2m_min[i];
+          const pr = d.daily.precipitation_sum[i];
+          if (tx != null && tn != null) {
+            byMMDD[mmdd].tmaxSum  += tx;
+            byMMDD[mmdd].tminSum  += tn;
+            byMMDD[mmdd].precipSum += (pr ?? 0);
+            byMMDD[mmdd].cnt++;
+          }
+        });
+      } catch(e) { /* silently skip failed year */ }
+    }));
+  }
+  return byMMDD;
+}
+
+// ─── GDU CALCULATION ─────────────────────────────────────────────────────────
+function calcGDU(tmax, tmin, capped) {
+  if (tmax == null || tmin == null) return null;
+  const hi = capped ? Math.min(tmax, 86) : tmax;
+  const lo = Math.max(tmin, 50);
+  const avg = (hi + lo) / 2;
+  return Math.max(0, avg - 50);
+}
+
+// ─── MAIN REPORT LOGIC ───────────────────────────────────────────────────────
+async function runReport() {
+  clearStatus();
+  setProgress(0);
+
+  // Validate inputs
+  const locs = locations.filter(l => (l.zip||'').trim());
+  if (locs.length === 0) { setStatus('Please enter at least one location.', 'error'); return; }
+  const dates = plantDates.filter(d => d.date);
+  if (dates.length === 0) { setStatus('Please enter at least one planting date.', 'error'); return; }
+
+  const asOf   = document.getElementById('asOfDate').value;
+  const gduOpt = document.getElementById('gduBase').value;
+  const capped = gduOpt === '50_86';
+  const nYears = parseInt(document.getElementById('histYears').value);
+
+  setStatus(`Geocoding ${locs.length} location(s)…`, 'info');
+  setProgress(5);
+
+  // Geocode all locations
+  const geoResults = [];
+  for (let i = 0; i < locs.length; i++) {
+    const loc = locs[i];
+    try {
+      const geo = await geocode((loc.zip || '').trim());
+      geoResults.push({ ...loc, ...geo, displayName: (loc.name||'').trim() || geo.name });
+    } catch(err) {
+      setStatus(`Could not find location: "${(loc.zip||'').trim()}" — ${err.message}`, 'error');
+      setProgress(null);
+      return;
+    }
+    setProgress(5 + (i+1)/locs.length * 15);
+  }
+
+  // For each location × planting date: fetch weather + normals
+  const results = []; // { locName, lat, lon, plantDate, plantLabel, gduActual, gduNormal, rainActual, rainNormal }
+  const total = geoResults.length * dates.length;
+  let done = 0;
+
+  for (const geo of geoResults) {
+    for (const pd of dates) {
+      setStatus(`Fetching data: ${geo.displayName} · planted ${pd.date}…`, 'info');
+
+      try {
+        // Actual weather from planting to asOf
+        const wx = await fetchWeather(geo.lat, geo.lon, pd.date, asOf);
+
+        // Compute actual GDU + rain
+        let gduActual = 0, rainActual = 0;
+        wx.dates.forEach((_, i) => {
+          const g = calcGDU(wx.tmax[i], wx.tmin[i], capped);
+          if (g !== null) gduActual += g;
+          if (wx.precip[i] != null) rainActual += wx.precip[i];
+        });
+
+        // Climate normals
+        const normals = await fetchNormals(geo.lat, geo.lon, pd.date, asOf, nYears);
+
+        // Compute normal GDU + rain (average per MMDD × number of years with data)
+        let gduNormal = 0, rainNormal = 0;
+        wx.dates.forEach(dt => {
+          const mmdd = dt.slice(5);
+          const n = normals[mmdd];
+          if (n && n.cnt > 0) {
+            const avgTmax = n.tmaxSum / n.cnt;
+            const avgTmin = n.tminSum / n.cnt;
+            const g = calcGDU(avgTmax, avgTmin, capped);
+            if (g !== null) gduNormal += g;
+            rainNormal += n.precipSum / n.cnt;
+          }
+        });
+
+        results.push({
+          locId:       geo.id,
+          locName:     geo.displayName,
+          lat:         geo.lat,
+          lon:         geo.lon,
+          plantDate:   pd.date,
+          plantLabel:  pd.label || pd.date,
+          gduActual:   Math.round(gduActual),
+          gduNormal:   Math.round(gduNormal),
+          rainActual:  +rainActual.toFixed(2),
+          rainNormal:  +rainNormal.toFixed(2),
+        });
+
+      } catch(err) {
+        console.warn('Data error:', geo.displayName, pd.date, err);
+        results.push({
+          locId:      geo.id,
+          locName:    geo.displayName,
+          lat:        geo.lat,
+          lon:        geo.lon,
+          plantDate:  pd.date,
+          plantLabel: pd.label || pd.date,
+          error:      err.message,
+        });
+      }
+
+      done++;
+      setProgress(20 + (done / total) * 78);
+    }
+  }
+
+  setProgress(100);
+  setTimeout(() => setProgress(null), 600);
+  clearStatus();
+
+  renderResults(results, geoResults, dates, asOf, nYears, capped);
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────────
+function renderResults(results, geoResults, dates, asOf, nYears, capped) {
+  // Report meta
+  const yLabel = nYears === 10 ? '10-yr (2015–2024)' : '15-yr (2010–2024)';
+  const gLabel = capped ? 'GDU base 50°/86°F' : 'GDU base 50°F';
+  document.getElementById('reportMeta').innerHTML = `
+    <span>As of: <strong>${asOf}</strong></span>
+    <span>Locations: <strong>${geoResults.length}</strong></span>
+    <span>Planting dates: <strong>${dates.length}</strong></span>
+    <span>Normal: <strong>${yLabel}</strong></span>
+    <span>Method: <strong>${gLabel}</strong></span>
+    <span>Data: <strong>Open-Meteo ERA5 + Forecast</strong></span>
+  `;
+
+  // ── CARDS ──
+  const cardsGrid = document.getElementById('cardsGrid');
+  cardsGrid.innerHTML = '';
+
+  geoResults.forEach(geo => {
+    const locResults = results.filter(r => r.locId === geo.id);
+    const card = document.createElement('div');
+    card.className = 'loc-card';
+
+    // Aggregate totals across all dates for top-level summary
+    const validResults = locResults.filter(r => !r.error);
+
+    // Header
+    card.innerHTML = `
+      <div class="loc-card-head">
+        <span class="loc-badge">${geo.id || '?'}</span>
+        <span class="loc-name-card">${geo.displayName}</span>
+        <span class="loc-coord">${geo.lat.toFixed(2)}°N ${Math.abs(geo.lon).toFixed(2)}°W</span>
+      </div>
+    `;
+
+    // Planting date rows
+    const datesDiv = document.createElement('div');
+    datesDiv.className = 'card-dates';
+    datesDiv.style.paddingTop = '8px';
+
+    locResults.forEach(r => {
+      if (r.error) {
+        datesDiv.innerHTML += `<div class="card-date-row" style="color:var(--red2);font-size:9px;">
+          ${r.plantLabel} — Error: ${r.error}</div>`;
+        return;
+      }
+      const gduDiff   = r.gduActual  - r.gduNormal;
+      const rainDiff  = r.rainActual - r.rainNormal;
+      const gduCls    = gduDiff  > 0 ? 'pos' : gduDiff  < 0 ? 'neg' : 'neu';
+      const rainCls   = rainDiff > 0 ? 'pos' : rainDiff < 0 ? 'neg' : 'neu';
+      const gduSign   = gduDiff  >= 0 ? '+' : '';
+      const rainSign  = rainDiff >= 0 ? '+' : '';
+
+      datesDiv.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-bottom:5px;padding-left:2px;">
+            🌱 Planted ${r.plantDate}${r.plantLabel !== r.plantDate ? ' — ' + r.plantLabel : ''}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div class="metric-block">
+              <div class="metric-icon">🌡️</div>
+              <div class="metric-label">GDU Accum.</div>
+              <div class="metric-val gdu">${r.gduActual.toLocaleString()}</div>
+              <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-top:1px;">Normal: ${r.gduNormal.toLocaleString()}</div>
+              <div class="metric-diff ${gduCls}">${gduSign}${gduDiff} GDU</div>
+            </div>
+            <div class="metric-block">
+              <div class="metric-icon">🌧️</div>
+              <div class="metric-label">Rainfall</div>
+              <div class="metric-val rain">${r.rainActual.toFixed(2)}"</div>
+              <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-top:1px;">Normal: ${r.rainNormal.toFixed(2)}"</div>
+              <div class="metric-diff ${rainCls}">${rainSign}${rainDiff.toFixed(2)}"</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    card.appendChild(datesDiv);
+    cardsGrid.appendChild(card);
+  });
+
+  // ── TABLE ──
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  tableData = [];
+
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.error) {
+      tr.innerHTML = `<td class="cell-loc">${r.locName}</td><td class="cell-date">${r.plantDate}</td>
+        <td colspan="6" style="color:var(--red2);font-size:10px;">Error: ${r.error}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    const gduDiff  = r.gduActual  - r.gduNormal;
+    const rainDiff = r.rainActual - r.rainNormal;
+    const gSign    = gduDiff  >= 0 ? '+' : '';
+    const rSign    = rainDiff >= 0 ? '+' : '';
+    const gCls     = gduDiff  > 0 ? 'cell-diff-pos' : gduDiff  < 0 ? 'cell-diff-neg' : 'cell-diff-neu';
+    const rCls     = rainDiff > 0 ? 'cell-diff-pos' : rainDiff < 0 ? 'cell-diff-neg' : 'cell-diff-neu';
+
+    tr.innerHTML = `
+      <td class="cell-loc">${r.locName}</td>
+      <td class="cell-date">${r.plantDate}${r.plantLabel && r.plantLabel !== r.plantDate ? ' <span style="color:var(--muted);font-size:9px;">'+r.plantLabel+'</span>' : ''}</td>
+      <td class="num cell-gdu">${r.gduActual.toLocaleString()}</td>
+      <td class="num" style="color:var(--muted)">${r.gduNormal.toLocaleString()}</td>
+      <td class="num ${gCls}">${gSign}${gduDiff}</td>
+      <td class="num cell-rain">${r.rainActual.toFixed(2)}"</td>
+      <td class="num" style="color:var(--muted)">${r.rainNormal.toFixed(2)}"</td>
+      <td class="num ${rCls}">${rSign}${rainDiff.toFixed(2)}"</td>
+    `;
+    tbody.appendChild(tr);
+
+    tableData.push([r.locName, r.plantDate, r.gduActual, r.gduNormal, gduDiff, r.rainActual.toFixed(2), r.rainNormal.toFixed(2), rainDiff.toFixed(2)]);
+  });
+
+  document.getElementById('tableFootnote').innerHTML =
+    `GDUs: ${capped ? 'Corn base 50°F / ceiling 86°F' : 'Corn base 50°F'} · Rainfall in inches · ` +
+    `Normal: ${nYears}-year ERA5 archive average · ` +
+    `Source: Open-Meteo · As of ${asOf} · AgronomyINFO`;
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── COPY TABLE AS TSV ────────────────────────────────────────────────────────
+function copyTable() {
+  const header = ['Location','Planting Date','GDU Actual','GDU Normal','GDU Diff','Rain Actual (in)','Rain Normal (in)','Rain Diff (in)'];
+  const rows = [header, ...tableData];
+  const tsv = rows.map(r => r.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(() => {
+    const btn = document.querySelector('.copy-hint button');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy as TSV', 1800);
+  });
+}
+</script>
+
+</body>
+</html>
