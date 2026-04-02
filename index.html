@@ -451,14 +451,17 @@
     // Visitor Counter using CounterAPI
     (function() {
       const visitorCountEl = document.getElementById('visitor-count');
-      const counterId = 'agronomy-info'; // Unique identifier for your site
-      const apiUrl = `https://api.countapi.xyz/hit/${counterId}`;
+      const namespace = 'agronomy-info';
+      const key = 'visitors';
+      const apiUrl = `https://api.countapi.xyz/hit/${namespace}/${key}`;
       
       // Fetch and increment the counter
       fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-          visitorCountEl.textContent = data.value.toLocaleString();
+          if (data.value) {
+            visitorCountEl.textContent = data.value.toLocaleString();
+          }
         })
         .catch(error => {
           console.error('Counter API error:', error);
