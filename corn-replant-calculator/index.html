@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corn Replant Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&family=Titillium+Web:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --soil:#1a1208; --earth:#2c1f0a; --stalk:#4a7c2f; --leaf:#6aab40;
+      --tassel:#c8a84b; --silk:#e8d080; --kernel:#f5c842; --sky:#d4e8b8;
+      --ash:#8a9478; --light:#f0ecd8; --card:#231a08; --border:#3d2e10;
+      --chart-actual:#6aab40; --chart-forecast:#c8a84b; --chart-normal:#5ab8d4;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background-color:var(--soil); color:var(--light); font-family:'Titillium Web', 'IBM Plex Mono', monospace; min-height:100vh; overflow-x:hidden; transition:background-color 0.35s,color 0.35s; font-size:15px; }
+    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(106,171,64,0.03) 60px,rgba(106,171,64,0.03) 62px),radial-gradient(ellipse at 50% 100%,rgba(74,124,47,0.1) 0%,transparent 70%); pointer-events:none; z-index:0; }
+    .container { max-width:969px; margin:0 auto; padding:36px 48px 80px; position:relative; z-index:1; overflow-x:hidden; }
+    @media(max-width:1020px){ .container{ padding:24px 16px 60px; max-width:100%; } }
+    .header { text-align:center; margin-bottom:36px; }
+    .header-eyebrow { font-size:13px; letter-spacing:0.3em; color:var(--tassel); text-transform:uppercase; margin-bottom:10px; }
+    .header h1 { font-family:'Titillium Web', 'Playfair Display', serif; font-size:clamp(38px,6vw,64px); font-weight:900; line-height:1; color:var(--silk); letter-spacing:-1px; }
+    .header h1 span { color:var(--leaf); }
+    .header-sub { margin-top:12px; font-size:14px; color:var(--ash); letter-spacing:0.08em; }
+    .input-panel { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:28px 30px; margin-bottom:26px; position:relative; overflow:hidden; }
+    .input-panel::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:linear-gradient(90deg,var(--stalk),var(--tassel),var(--stalk)); }
+    .input-grid { display:grid; grid-template-columns:1fr 1.2fr 1fr auto; gap:14px; align-items:end; }
+    @media(max-width:820px){ .input-grid{grid-template-columns:1fr 1fr; } }
+    @media(max-width:420px){ .input-grid{grid-template-columns:1fr; } }
+    .field-group { display:flex; flex-direction:column; gap:7px; }
+    .field-label { font-size:12px; letter-spacing:0.25em; text-transform:uppercase; color:var(--tassel); }
+    .field-input {
+      background:var(--soil); border:1px solid var(--border); border-radius:2px;
+      color:var(--light); font-family:'Titillium Web', 'IBM Plex Mono', monospace; font-size:16px;
+      padding:12px 14px; width:100%; transition:border-color 0.2s,box-shadow 0.2s;
+      -webkit-appearance:none; appearance:none;
+      -webkit-text-fill-color:var(--light);
+      opacity:1;
+    }
+    .field-input:focus { outline:none; border-color:var(--leaf); box-shadow:0 0 0 2px rgba(106,171,64,0.12); }
+    .field-input::placeholder { color:var(--ash); opacity:0.6; -webkit-text-fill-color:var(--ash); }
+    input[type="date"] { -webkit-text-fill-color:var(--light); color:var(--light); }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.6) sepia(1) hue-rotate(60deg); cursor:pointer; opacity:0.8; }
+    select.field-input { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9478' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:34px; }
+    .btn-calc { background:var(--stalk); border:none; border-radius:2px; color:var(--light); font-family:'Titillium Web', 'IBM Plex Mono', monospace; font-size:15px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; padding:15px 32px; cursor:pointer; transition:background 0.2s,transform 0.1s; white-space:nowrap; width:100%; }
+    @media(min-width:601px){ .btn-calc { width:auto; } }
+    .btn-calc:hover { background:var(--leaf); }
+    .btn-calc:active { transform:scale(0.98); }
+    .status-msg { font-size:14px; margin-top:12px; padding:11px 16px; border-radius:2px; display:none; }
+    .status-msg.error { background:rgba(180,50,30,0.18); color:#e07060; border:1px solid rgba(180,50,30,0.3); display:block; }
+    .status-msg.loading { background:rgba(74,124,47,0.07); color:var(--ash); border:1px solid var(--border); display:block; }
+    .results { margin-top:32px; }
+  </style>
+</head>
+<body>
+  <div class="container" style="left: -1px;">
+    <div class="header">
+      <div class="header-eyebrow">Corn Replant Decision Tool <span class="agro-link">[<a href="/index.html" style="color:var(--leaf);text-decoration:none;font-weight:600;letter-spacing:0.04em;">agronomy.info</a>]</span></div>
+      <h1>Corn <span>Replant</span> Calculator</h1>
+      <div class="header-sub">Estimate yield and economic outcomes for replanting corn under various scenarios. Enter your stand count, planting dates, and costs to compare options.</div>
+    </div>
+    <div class="input-panel">
+      <form id="replant-form">
+        <div class="input-grid">
+          <div class="field-group">
+            <label class="field-label" for="original-date">Original Planting Date</label>
+            <input class="field-input" type="date" id="original-date" required="">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="replant-date">Replant Date</label>
+            <input class="field-input" type="date" id="replant-date" required="">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="stand-count">Current Stand (plants/acre)</label>
+            <input class="field-input" type="number" id="stand-count" min="0" max="50000" step="100" required="" placeholder="e.g. 18000">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="target-stand">Target Stand (plants/acre)</label>
+            <input class="field-input" type="number" id="target-stand" min="0" max="50000" step="100" required="" placeholder="e.g. 32000">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="corn-price">Corn Price ($/bu)</label>
+            <input class="field-input" type="number" id="corn-price" min="1" max="20" step="0.01" required="" placeholder="e.g. 4.50" value="4.50">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="replant-cost">Replant Cost ($/acre)</label>
+            <input class="field-input" type="number" id="replant-cost" min="0" max="500" step="1" required="" placeholder="e.g. 60">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="expected-yield">Expected Full Stand Yield (bu/acre)</label>
+            <input class="field-input" type="number" id="expected-yield" min="50" max="350" step="1" required="" placeholder="e.g. 220">
+          </div>
+          <div style="align-self:stretch;display:flex;align-items:end;">
+            <button class="btn-calc" type="submit">Calculate</button>
+          </div>
+        </div>
+      </form>
+      <div id="status-msg" class="status-msg"></div>
+    </div>
+    <div class="results" id="results"></div>
+      <footer style="margin-top:32px; text-align:center; color:var(--ash); font-size:13px;">
+        <div style="margin-bottom:8px;">
+          <a href="/index.html" style="color:var(--stalk);font-weight:600;text-decoration:none;letter-spacing:0.04em;">&larr; Back to agronomy.info</a>
+        </div>
+        Data source: University of Illinois Extension — <a href="https://farmdoc.illinois.edu/field-crop-production/uncategorized/replanting-corn-and-soybeans.html" target="_blank" style="color:var(--tassel);text-decoration:underline;">Corn Replant Decision Guide</a>
+      </footer>
+  <style>
+    .result-card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px 28px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      color: var(--soil);
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 16px;
+      text-align: left;
+      transition: background 0.3s, color 0.3s;
+    }
+    .result-card strong {
+      color: var(--stalk);
+      font-size: 17px;
+      letter-spacing: 0.04em;
+    }
+    .result-card b {
+      color: var(--stalk);
+    }
+    .result-diff {
+      background: var(--sky);
+      border: 1px solid var(--stalk);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 10px;
+      color: var(--stalk);
+      font-size: 17px;
+      text-align: center;
+      font-weight: 600;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      transition: background 0.3s, color 0.3s;
+    }
+  </style>
+  </div>
+  <script>
+        // Persist form data in localStorage
+        const formFields = [
+          'original-date', 'replant-date', 'stand-count', 'target-stand', 'corn-price', 'replant-cost', 'expected-yield'
+        ];
+        // Load saved values
+        window.addEventListener('DOMContentLoaded', () => {
+          formFields.forEach(id => {
+            const saved = localStorage.getItem('corn-replant-' + id);
+            if (saved !== null) {
+              document.getElementById(id).value = saved;
+            }
+          });
+        });
+
+        // Save on input
+        formFields.forEach(id => {
+          document.getElementById(id).addEventListener('input', e => {
+            localStorage.setItem('corn-replant-' + id, e.target.value);
+          });
+        });
+    // University of Illinois yield loss table
+    const yieldTable = [
+      { range: 'Apr 1-10', stands: [84, 88, 91, 94, 97, 98, 99] },
+      { range: 'Apr 11-20', stands: [84, 89, 92, 95, 97, 99, 100] },
+      { range: 'Apr 21-30', stands: [83, 88, 92, 95, 97, 99, 99] },
+      { range: 'May 1-10', stands: [83, 87, 90, 93, 95, 97, 98] },
+      { range: 'May 11-15', stands: [81, 85, 89, 91, 93, 95, 96] },
+      { range: 'May 16-20', stands: [79, 83, 87, 90, 92, 93, 94] },
+      { range: 'May 21-25', stands: [78, 82, 85, 89, 91, 92, 92] },
+      { range: 'May 26-31', stands: [75, 79, 82, 87, 88, 89, 89] },
+      { range: 'June 1-5', stands: [73, 76, 79, 82, 84, 85, 86] },
+    ];
+    const standValues = [20000, 23000, 26000, 29000, 32000, 35000, 38000];
+    const dateRanges = [
+      { label: 'Apr 1-10', start: [4,1], end: [4,10] },
+      { label: 'Apr 11-20', start: [4,11], end: [4,20] },
+      { label: 'Apr 21-30', start: [4,21], end: [4,30] },
+      { label: 'May 1-10', start: [5,1], end: [5,10] },
+      { label: 'May 11-15', start: [5,11], end: [5,15] },
+      { label: 'May 16-20', start: [5,16], end: [5,20] },
+      { label: 'May 21-25', start: [5,21], end: [5,25] },
+      { label: 'May 26-31', start: [5,26], end: [5,31] },
+      { label: 'June 1-5', start: [6,1], end: [6,5] },
+    ];
+
+    function getYieldPercent(plantingDate, stand) {
+      // plantingDate: Date object, stand: integer (plants/acre)
+      // Find the closest date range
+      const m = plantingDate.getMonth() + 1;
+      const d = plantingDate.getDate();
+      let idx = dateRanges.findIndex(r => (
+        (m > r.start[0] || (m === r.start[0] && d >= r.start[1])) &&
+        (m < r.end[0] || (m === r.end[0] && d <= r.end[1]))
+      ));
+      if (idx === -1) idx = dateRanges.length - 1; // fallback to last
+      // Find closest stand
+      let standIdx = standValues.reduce((prev, curr, i) => Math.abs(curr-stand) < Math.abs(standValues[prev]-stand) ? i : prev, 0);
+      return yieldTable[idx].stands[standIdx];
+    }
+
+    document.getElementById('replant-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      document.getElementById('status-msg').style.display = 'none';
+      // Parse date as local date (not UTC)
+      function parseLocalDate(input) {
+        const [year, month, day] = input.split('-').map(Number);
+        return new Date(year, month - 1, day);
+      }
+      const origDate = parseLocalDate(document.getElementById('original-date').value);
+      const replantDate = parseLocalDate(document.getElementById('replant-date').value);
+      const stand = parseInt(document.getElementById('stand-count').value, 10);
+      const targetStand = parseInt(document.getElementById('target-stand').value, 10);
+      const cornPrice = parseFloat(document.getElementById('corn-price').value);
+      const replantCost = parseFloat(document.getElementById('replant-cost').value);
+      const expectedYield = parseFloat(document.getElementById('expected-yield').value);
+
+      // Calculate yield %
+      const origYieldPct = getYieldPercent(origDate, stand);
+      const replantYieldPct = getYieldPercent(replantDate, targetStand);
+      // Calculate yields
+      const origYield = expectedYield * (origYieldPct/100);
+      const replantYield = expectedYield * (replantYieldPct/100);
+      // Calculate gross returns
+      const origReturn = origYield * cornPrice;
+      const replantReturn = replantYield * cornPrice - replantCost;
+
+      // Output
+      document.getElementById('results').innerHTML = `
+        <div class="result-card">
+          <strong>Original Stand</strong><br>
+          <span style="color:var(--ash);">${stand.toLocaleString()} plants/acre, planted ${origDate.toLocaleDateString()}<br>
+          Yield potential: <b>${origYieldPct}%</b> (${origYield.toFixed(1)} bu/acre)<br>
+          Gross return: <b>$${origReturn.toFixed(2)}/acre</b></span>
+        </div>
+        <div class="result-card">
+          <strong>Replant Scenario</strong><br>
+          <span style="color:var(--ash);">${targetStand.toLocaleString()} plants/acre, planted ${replantDate.toLocaleDateString()}<br>
+          Yield potential: <b>${replantYieldPct}%</b> (${replantYield.toFixed(1)} bu/acre)<br>
+          Gross return (after replant cost): <b>$${replantReturn.toFixed(2)}/acre</b></span>
+        </div>
+        <div class="result-diff">Difference (Replant - Original): $${(replantReturn-origReturn).toFixed(2)}/acre</div>
+      `;
+    });
+  </script>
+</body>
+</html>
