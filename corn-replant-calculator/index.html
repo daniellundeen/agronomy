@@ -152,6 +152,11 @@
         ];
         // Load saved values
         window.addEventListener('DOMContentLoaded', () => {
+          // Default replant date to today
+          const today = new Date().toISOString().slice(0, 10);
+          if (!localStorage.getItem('corn-replant-replant-date')) {
+            document.getElementById('replant-date').value = today;
+          }
           formFields.forEach(id => {
             const saved = localStorage.getItem('corn-replant-' + id);
             if (saved !== null) {
