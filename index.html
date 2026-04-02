@@ -449,37 +449,27 @@
   </div>
 
   <script>
-    // Visitor Counter using a reliable GitHub Pages compatible service
+    // Visitor Counter using hits.seeyoufarm.com (GitHub-friendly, global, cross-browser)
     (function() {
       const visitorCountEl = document.getElementById('visitor-count');
-      
-      // Using Flag Counter API which works with GitHub Pages
-      const pageUrl = encodeURIComponent(window.location.href);
-      const apiUrl = `https://api.flagcounter.me/count?url=${pageUrl}`;
-      
-      fetch(apiUrl, { mode: 'no-cors' })
-        .then(() => {
-          // Fetch the count from an alternative reliable counter
-          return fetch('https://count.getdnb.com/count', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: window.location.hostname })
-          });
-        })
-        .then(response => response.json())
+      // Use your GitHub username and repo for uniqueness
+      const hitsUrl = 'https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=agronomy.info&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false';
+      // The JSON API returns the count
+      const jsonUrl = 'https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=agronomy.info&format=json';
+      fetch(jsonUrl)
+        .then(r => r.json())
         .then(data => {
-          if (data && data.value) {
-            visitorCountEl.textContent = data.value.toLocaleString();
+          if (data && data.count) {
+            visitorCountEl.textContent = data.count.toLocaleString();
           }
         })
-        .catch(error => {
-          console.log('Using fallback counter');
-          // Fallback: use localStorage for at least local tracking
-          const key = 'site-visitor-count';
-          let count = parseInt(localStorage.getItem(key)) || 0;
-          count++;
-          localStorage.setItem(key, count);
-          visitorCountEl.textContent = count.toLocaleString();
+        .catch(() => {
+          // fallback: show badge image (hidden visually)
+          const img = document.createElement('img');
+          img.src = hitsUrl;
+          img.alt = 'visitor count';
+          img.style.display = 'none';
+          document.body.appendChild(img);
         });
     })();
   </script>
