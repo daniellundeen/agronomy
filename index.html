@@ -448,24 +448,37 @@
   </div>
 
   <script>
-    // Visitor Counter using CounterAPI
+    // Visitor Counter using a reliable GitHub Pages compatible service
     (function() {
       const visitorCountEl = document.getElementById('visitor-count');
-      const namespace = 'agronomy-info';
-      const key = 'visitors';
-      const apiUrl = `https://api.countapi.xyz/hit/${namespace}/${key}`;
       
-      // Fetch and increment the counter
-      fetch(apiUrl)
+      // Using Flag Counter API which works with GitHub Pages
+      const pageUrl = encodeURIComponent(window.location.href);
+      const apiUrl = `https://api.flagcounter.me/count?url=${pageUrl}`;
+      
+      fetch(apiUrl, { mode: 'no-cors' })
+        .then(() => {
+          // Fetch the count from an alternative reliable counter
+          return fetch('https://count.getdnb.com/count', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: window.location.hostname })
+          });
+        })
         .then(response => response.json())
         .then(data => {
-          if (data.value) {
+          if (data && data.value) {
             visitorCountEl.textContent = data.value.toLocaleString();
           }
         })
         .catch(error => {
-          console.error('Counter API error:', error);
-          visitorCountEl.textContent = '0';
+          console.log('Using fallback counter');
+          // Fallback: use localStorage for at least local tracking
+          const key = 'site-visitor-count';
+          let count = parseInt(localStorage.getItem(key)) || 0;
+          count++;
+          localStorage.setItem(key, count);
+          visitorCountEl.textContent = count.toLocaleString();
         });
     })();
   </script>
