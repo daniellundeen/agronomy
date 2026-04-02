@@ -251,7 +251,7 @@
           Yield potential: <b>${replantYieldPct}%</b> (${replantYield.toFixed(1)} bu/acre)<br>
           Gross return (after replant cost): <b>$${replantReturn.toFixed(2)}/acre</b></span>
         </div>
-        <div class="result-diff">Difference (Replant - Original): $${(replantReturn-origReturn).toFixed(2)}/acre</div>
+        <div class="result-diff" style="background:${(replantReturn-origReturn) >= 0 ? 'rgba(106,171,64,0.15)' : 'rgba(180,50,30,0.15)'};border-color:${(replantReturn-origReturn) >= 0 ? 'var(--stalk)' : '#b4321e'};color:${(replantReturn-origReturn) >= 0 ? 'var(--stalk)' : '#e07060'}">Difference (Replant - Original): $${(replantReturn-origReturn).toFixed(2)}/acre</div>
       `;
     });
   </script>
