@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDU & Rainfall Report — AgronomyINFO</title>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & ROOT ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --soil:    #141009;
+  --earth:   #1e1608;
+  --card:    #231c0a;
+  --border:  #3a2e12;
+  --border2: #50401a;
+  --amber:   #d4943a;
+  --amber2:  #f0b84a;
+  --gold:    #e8c860;
+  --green:   #5a9030;
+  --green2:  #78b848;
+  --blue:    #3878c0;
+  --blue2:   #5898e0;
+  --sky:     #90c8f0;
+  --light:   #f0e8d0;
+  --muted:   #9a8860;
+  --red:     #c04030;
+  --red2:    #e05840;
+  --pos:     #5a9030;
+  --neg:     #c04030;
+  --radius:  8px;
+  --shadow:  0 2px 16px rgba(0,0,0,0.45);
+}
+
+body {
+  background: var(--soil);
+  color: var(--light);
+  font-family: 'Titillium Web', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+
+/* ─── HEADER ───────────────────────────────────────────────────────────────── */
+.page-header {
+  background: var(--earth);
+  border-bottom: 2px solid var(--border2);
+  padding: 22px 24px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-mark {
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--amber2);
+  border: 1.5px solid var(--amber);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.page-title {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  font-weight: 900;
+  color: var(--light);
+  line-height: 1;
+}
+.page-sub {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 0.06em;
+}
+
+/* ─── LAYOUT ───────────────────────────────────────────────────────────────── */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 0; }
+
+/* ─── PANEL ────────────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.panel-head {
+  background: var(--earth);
+  border-bottom: 1px solid var(--border2);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.panel-title {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--amber2);
+  text-transform: uppercase;
+}
+.panel-body { padding: 16px; }
+
+/* ─── FORM ELEMENTS ────────────────────────────────────────────────────────── */
+label {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+input[type="text"], input[type="date"], input[type="number"], select {
+  width: 100%;
+  background: var(--soil);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  color: var(--light);
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus { border-color: var(--amber2); }
+input::placeholder { color: var(--muted); opacity: 0.6; }
+
+/* ─── GRID HELPERS ─────────────────────────────────────────────────────────── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+/* ─── LOCATION ROWS ────────────────────────────────────────────────────────── */
+.location-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.location-row:last-child { border-bottom: none; }
+.loc-num {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--amber);
+  text-align: center;
+  padding-top: 22px;
+}
+.btn-remove {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-remove:hover { border-color: var(--red); color: var(--red2); }
+
+/* ─── PLANTING DATE ROWS ────────────────────────────────────────────────────── */
+.date-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.date-row:last-child { border-bottom: none; }
+.date-num {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green2);
+  text-align: center;
+  padding-top: 22px;
+}
+
+/* ─── BUTTONS ──────────────────────────────────────────────────────────────── */
+.btn {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 9px 16px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--amber); color: var(--soil); }
+.btn-primary:hover { opacity: 0.88; }
+.btn-secondary { background: var(--earth); border: 1px solid var(--border2); color: var(--muted); }
+.btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+.btn-add {
+  background: none;
+  border: 1px dashed var(--border2);
+  border-radius: 5px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 7px 14px;
+  width: 100%;
+  margin-top: 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-add:hover { border-color: var(--amber2); color: var(--amber2); }
+.btn-row { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+
+/* ─── STATUS / LOADING ─────────────────────────────────────────────────────── */
+.status-bar {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  padding: 10px 14px;
+  border-radius: 5px;
+  margin-bottom: 14px;
+  display: none;
+}
+.status-bar.info  { background: rgba(56,120,192,0.15); border: 1px solid rgba(56,120,192,0.35); color: var(--sky); }
+.status-bar.error { background: rgba(192,64,48,0.15); border: 1px solid rgba(192,64,48,0.4); color: var(--red2); }
+.status-bar.show  { display: block; }
+
+.progress-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 16px; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar { height: 100%; background: var(--amber2); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+/* ─── RESULTS AREA ─────────────────────────────────────────────────────────── */
+#results { display: none; }
+#results.show { display: block; }
+
+/* ─── REPORT META ──────────────────────────────────────────────────────────── */
+.report-meta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--earth);
+  border-bottom: 1px solid var(--border);
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  color: var(--muted);
+}
+.report-meta strong { color: var(--amber2); }
+
+/* ─── SUMMARY CARDS ────────────────────────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+.loc-card {
+  background: var(--soil);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.loc-card-head {
+  background: var(--earth);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.loc-badge {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  background: var(--amber);
+  color: var(--soil);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+.loc-name-card {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+}
+.loc-coord {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  color: var(--muted);
+  margin-left: auto;
+}
+.card-metrics { padding: 10px 12px; display: flex; gap: 10px; }
+.metric-block {
+  flex: 1;
+  text-align: center;
+  padding: 8px 6px;
+  background: var(--card);
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.metric-icon { font-size: 14px; margin-bottom: 2px; }
+.metric-label {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.metric-val {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+.metric-val.gdu  { color: var(--amber2); }
+.metric-val.rain { color: var(--blue2); }
+.metric-diff {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.metric-diff.pos { color: var(--pos); }
+.metric-diff.neg { color: var(--neg); }
+.metric-diff.neu { color: var(--muted); }
+
+/* planting date sub-rows inside card */
+.card-dates { padding: 0 12px 10px; }
+.card-date-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  margin-bottom: 5px;
+  gap: 6px;
+}
+.card-date-row:last-child { margin-bottom: 0; }
+.card-date-label {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.card-date-vals { display: flex; gap: 10px; }
+.card-date-val {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+}
+.card-date-val .unit { font-size: 8px; font-weight: 400; color: var(--muted); margin-left: 1px; }
+
+/* ─── DATA TABLE ───────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; padding: 0 16px 16px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  min-width: 600px;
+}
+thead tr {
+  background: var(--earth);
+  border-bottom: 2px solid var(--border2);
+}
+thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+thead th.num { text-align: right; }
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody tr.loc-header { background: rgba(212,148,58,0.08); }
+td { padding: 6px 10px; vertical-align: middle; }
+td.num { text-align: right; }
+.cell-loc {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--amber2);
+  letter-spacing: 0.06em;
+}
+.cell-date { color: var(--muted); font-size: 10px; }
+.cell-gdu { color: var(--amber2); font-weight: 600; }
+.cell-rain { color: var(--blue2); font-weight: 600; }
+.cell-diff-pos { color: var(--pos); font-weight: 600; }
+.cell-diff-neg { color: var(--neg); font-weight: 600; }
+.cell-diff-neu { color: var(--muted); }
+.tag-asof {
+  font-size: 8px;
+  background: rgba(90,144,48,0.2);
+  border: 1px solid rgba(90,144,48,0.4);
+  color: var(--green2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 4px;
+}
+
+/* ─── COPY BUTTON ──────────────────────────────────────────────────────────── */
+.copy-hint {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 8px 16px 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.copy-hint button {
+  background: var(--earth);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  padding: 3px 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.copy-hint button:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ─── SECTION TABS ─────────────────────────────────────────────────────────── */
+.tabs { display: flex; gap: 2px; padding: 12px 16px 0; }
+.tab {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 5px 5px 0 0;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--muted);
+  background: none;
+  border-bottom: none;
+  transition: color 0.15s;
+}
+.tab.active {
+  background: var(--card);
+  border-color: var(--border2);
+  border-bottom-color: var(--card);
+  color: var(--amber2);
+}
+.tab:not(.active):hover { color: var(--light); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.tab-border {
+  border: 1px solid var(--border2);
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  overflow: hidden;
+}
+
+/* ─── FOOTNOTE ─────────────────────────────────────────────────────────────── */
+.footnote {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  line-height: 1.7;
+}
+
+/* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .location-row { grid-template-columns: 24px 1fr 1fr 28px; }
+  .date-row { grid-template-columns: 24px 1fr 1fr 28px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .cards-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="logo-mark">[ AGRONOMY<span style="color:var(--green2)">INFO</span> ]</div>
+  <div>
+    <div class="page-title">GDU &amp; Rainfall Report</div>
+    <div class="page-sub">MULTI-LOCATION · SEASONAL SUMMARY · NEWSLETTER READY</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ── LOCATIONS ── -->
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">📍 Locations</span>
+    <span style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted)">1–8 locations · ZIP code or City, State</span>
+  </div>
+  <div class="panel-body">
+    <div id="locRows"></div>
+    <button class="btn-add" id="btnAddLoc" onclick="addLocation()">+ Add Location</button>
+  </div>
+</div>
+
+<!-- ── PLANTING DATES ── -->
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">🌱 Planting Dates</span>
+    <span style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted)">Up to 5 dates — GDUs tracked from each</span>
+  </div>
+  <div class="panel-body">
+    <div id="dateRows"></div>
+    <button class="btn-add" id="btnAddDate" onclick="addPlantDate()">+ Add Planting Date</button>
+  </div>
+</div>
+
+<!-- ── OPTIONS ── -->
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">⚙️ Options</span>
+  </div>
+  <div class="panel-body">
+    <div class="grid3">
+      <div>
+        <label>GDU Base Temp</label>
+        <select id="gduBase">
+          <option value="50">50°F — Corn standard</option>
+          <option value="50_86">50°/86°F — Corn (capped)</option>
+        </select>
+      </div>
+      <div>
+        <label>Historical Baseline</label>
+        <select id="histYears">
+          <option value="15">15-year (2010–2024)</option>
+          <option value="10">10-year (2015–2024)</option>
+        </select>
+      </div>
+      <div>
+        <label>Report As-Of Date</label>
+        <input type="date" id="asOfDate" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RUN ── -->
+<div style="margin-bottom:18px;">
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="runReport()">▶ Generate Report</button>
+    <button class="btn btn-secondary" onclick="resetAll()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="status-bar" id="statusBar"></div>
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+
+  <div class="panel">
+    <div class="report-meta" id="reportMeta"></div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('cards', this)">Summary Cards</button>
+      <button class="tab" onclick="switchTab('table', this)">Data Table</button>
+    </div>
+
+    <div class="tab-border">
+      <!-- CARDS TAB -->
+      <div class="tab-content active" id="tab-cards">
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+
+      <!-- TABLE TAB -->
+      <div class="tab-content" id="tab-table">
+        <div class="copy-hint">
+          Tabular data — copy to paste into newsletter editors
+          <button onclick="copyTable()">Copy as TSV</button>
+        </div>
+        <div class="table-wrap">
+          <table id="dataTable">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Planting Date</th>
+                <th class="num">GDU Actual</th>
+                <th class="num">GDU Normal</th>
+                <th class="num">GDU Diff</th>
+                <th class="num">Rain Actual</th>
+                <th class="num">Rain Normal</th>
+                <th class="num">Rain Diff</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="footnote" id="tableFootnote"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /results -->
+</div><!-- /main -->
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+const MAX_LOCS  = 8;
+const MAX_DATES = 5;
+let locations   = [];
+let plantDates  = [];
+let locIdCtr    = 0;
+let dateIdCtr   = 0;
+let tableData   = []; // for TSV copy
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'agronomyinfo_report_v1';
+
+function saveState() {
+  try {
+    const state = {
+      locations,
+      plantDates,
+      locIdCtr,
+      dateIdCtr,
+      asOf:     document.getElementById('asOfDate').value,
+      gduBase:  document.getElementById('gduBase').value,
+      histYears: document.getElementById('histYears').value,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s.locations || !s.plantDates) return false;
+    locations  = s.locations;
+    plantDates = s.plantDates;
+    locIdCtr   = s.locIdCtr  || locations.length;
+    dateIdCtr  = s.dateIdCtr || plantDates.length;
+    if (s.asOf)      document.getElementById('asOfDate').value  = s.asOf;
+    if (s.gduBase)   document.getElementById('gduBase').value   = s.gduBase;
+    if (s.histYears) document.getElementById('histYears').value = s.histYears;
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  document.getElementById('asOfDate').value = today.toISOString().slice(0,10);
+
+  // Wire options inputs to save on change
+  document.getElementById('asOfDate').addEventListener('change', saveState);
+  document.getElementById('gduBase').addEventListener('change', saveState);
+  document.getElementById('histYears').addEventListener('change', saveState);
+
+  const restored = loadState();
+  if (restored) {
+    renderLocations();
+    renderDates();
+    checkAddButtons();
+  } else {
+    addLocation();
+    addLocation();
+    addPlantDate();
+  }
+});
+
+// ─── LOCATION MANAGEMENT ─────────────────────────────────────────────────────
+function addLocation() {
+  if (locations.length >= MAX_LOCS) return;
+  const id = ++locIdCtr;
+  locations.push({ id });
+  renderLocations();
+  checkAddButtons();
+  saveState();
+}
+
+function removeLocation(id) {
+  if (locations.length <= 1) return;
+  locations = locations.filter(l => l.id !== id);
+  renderLocations();
+  checkAddButtons();
+  saveState();
+}
+
+function renderLocations() {
+  const container = document.getElementById('locRows');
+  container.innerHTML = '';
+  locations.forEach((loc, i) => {
+    const row = document.createElement('div');
+    row.className = 'location-row';
+    row.innerHTML = `
+      <div class="loc-num">${i+1}</div>
+      <div>
+        <label>Location Name</label>
+        <input type="text" id="locName_${loc.id}" placeholder="e.g. Galesburg" value="${loc.name||''}" oninput="updateLoc(${loc.id},'name',this.value)">
+      </div>
+      <div>
+        <label>ZIP Code or City, State</label>
+        <input type="text" id="locZip_${loc.id}" placeholder="e.g. 61483 or Toulon, IL" value="${loc.zip||''}" oninput="updateLoc(${loc.id},'zip',this.value)">
+      </div>
+      <button class="btn-remove" onclick="removeLocation(${loc.id})" title="Remove">×</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateLoc(id, field, val) {
+  const l = locations.find(x => x.id === id);
+  if (l) { l[field] = val; saveState(); }
+}
+
+// ─── PLANTING DATE MANAGEMENT ─────────────────────────────────────────────────
+function addPlantDate() {
+  if (plantDates.length >= MAX_DATES) return;
+  const id = ++dateIdCtr;
+  const year = new Date().getFullYear();
+  const defaultDates = ['05-01','05-10','05-20','06-01','06-10'];
+  const def = `${year}-${defaultDates[plantDates.length] || '05-01'}`;
+  plantDates.push({ id, date: def, label: '' });
+  renderDates();
+  checkAddButtons();
+  saveState();
+}
+
+function removePlantDate(id) {
+  if (plantDates.length <= 1) return;
+  plantDates = plantDates.filter(d => d.id !== id);
+  renderDates();
+  checkAddButtons();
+  saveState();
+}
+
+function renderDates() {
+  const container = document.getElementById('dateRows');
+  container.innerHTML = '';
+  plantDates.forEach((pd, i) => {
+    const row = document.createElement('div');
+    row.className = 'date-row';
+    row.innerHTML = `
+      <div class="date-num">${i+1}</div>
+      <div>
+        <label>Planting Date</label>
+        <input type="date" id="pd_${pd.id}" value="${pd.date}" oninput="updateDate(${pd.id},'date',this.value)">
+      </div>
+      <div>
+        <label>Label (optional)</label>
+        <input type="text" id="pdLabel_${pd.id}" placeholder="e.g. Early planted, Field 3…" value="${pd.label||''}" oninput="updateDate(${pd.id},'label',this.value)">
+      </div>
+      <button class="btn-remove" onclick="removePlantDate(${pd.id})" title="Remove">×</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateDate(id, field, val) {
+  const d = plantDates.find(x => x.id === id);
+  if (d) { d[field] = val; saveState(); }
+}
+
+function checkAddButtons() {
+  document.getElementById('btnAddLoc').style.display  = locations.length  >= MAX_LOCS  ? 'none' : '';
+  document.getElementById('btnAddDate').style.display = plantDates.length >= MAX_DATES ? 'none' : '';
+}
+
+// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+function setStatus(msg, type='info') {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = `status-bar ${type} show`;
+}
+function clearStatus() {
+  document.getElementById('statusBar').className = 'status-bar';
+}
+function setProgress(pct) {
+  const w = document.getElementById('progressWrap');
+  const b = document.getElementById('progressBar');
+  if (pct === null) { w.className = 'progress-wrap'; return; }
+  w.className = 'progress-wrap show';
+  b.style.width = pct + '%';
+}
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+function resetAll() {
+  locations  = [];
+  plantDates = [];
+  locIdCtr   = 0;
+  dateIdCtr  = 0;
+  tableData  = [];
+  clearState();
+  document.getElementById('results').classList.remove('show');
+  clearStatus();
+  setProgress(null);
+  addLocation();
+  addLocation();
+  addPlantDate();
+}
+
+// ─── GEOCODING ───────────────────────────────────────────────────────────────
+// Hardcoded lookup table for Midwest ZIPs and towns — no CORS issues, instant.
+// Covers Knox, Stark, Warren, Henry, Mercer, Bureau, Peoria, Fulton, McDonough
+// counties plus surrounding IL region. Falls back to Open-Meteo for unknowns.
+
+const GEO_TABLE = {
+  // ── Knox County, IL ──────────────────────────────────────────────────────
+  '61401': { lat: 40.9478, lon: -90.3712, name: 'Galesburg, IL' },
+  '61402': { lat: 40.9478, lon: -90.3712, name: 'Galesburg, IL' },
+  '61410': { lat: 40.8606, lon: -90.4615, name: 'Abingdon, IL' },
+  '61414': { lat: 41.1017, lon: -90.1731, name: 'Altona, IL' },
+  '61422': { lat: 40.6592, lon: -90.4537, name: 'Blandinsville, IL' },
+  '61427': { lat: 40.7467, lon: -90.3744, name: 'Cameron, IL' },
+  '61430': { lat: 40.9259, lon: -90.6189, name: 'Dahinda, IL' },
+  '61436': { lat: 40.9742, lon: -90.2289, name: 'Galva, IL' },
+  '61437': { lat: 40.8314, lon: -90.7139, name: 'Gerlaw, IL' },
+  '61438': { lat: 40.7703, lon: -90.6331, name: 'Good Hope, IL' },
+  '61440': { lat: 40.5550, lon: -90.6581, name: 'Industry, IL' },
+  '61441': { lat: 40.4878, lon: -90.3728, name: 'Ipava, IL' },
+  '61451': { lat: 41.0217, lon: -90.0311, name: 'Elmwood (Hanna City), IL' },
+  '61459': { lat: 40.5597, lon: -90.3228, name: 'Lewistown, IL' },
+  '61462': { lat: 40.9225, lon: -90.7303, name: 'Macomb, IL' },
+  '61468': { lat: 41.1803, lon: -90.2936, name: 'Oneida, IL' },
+  '61470': { lat: 40.7556, lon: -90.5497, name: 'Prairie City, IL' },
+  '61474': { lat: 41.0867, lon: -90.3736, name: 'Rio, IL' },
+  '61475': { lat: 40.7978, lon: -90.5997, name: 'Roseville, IL' },
+  '61476': { lat: 40.9042, lon: -90.8406, name: 'Seaton, IL' },
+  '61477': { lat: 40.6817, lon: -90.3453, name: 'Smithfield, IL' },
+  '61478': { lat: 40.7733, lon: -90.8042, name: 'Stronghurst, IL' },
+  '61480': { lat: 40.8536, lon: -90.6519, name: 'Tennessee, IL' },
+  '61482': { lat: 40.5536, lon: -90.4428, name: 'Table Grove, IL' },
+  '61484': { lat: 40.5028, lon: -90.4572, name: 'Vermont, IL' },
+  '61485': { lat: 41.0047, lon: -90.1411, name: 'Victoria, IL' },
+  '61488': { lat: 41.1094, lon: -90.1367, name: 'Wataga, IL' },
+  '61489': { lat: 40.9753, lon: -90.0769, name: 'Williamsfield, IL' },
+  '61491': { lat: 41.0447, lon: -89.9547, name: 'Wyoming, IL' },
+  // ── Stark County, IL ─────────────────────────────────────────────────────
+  '61412': { lat: 41.1886, lon: -90.0536, name: 'Annawan, IL' },
+  '61420': { lat: 41.2939, lon: -90.2322, name: 'Buda, IL' },
+  '61421': { lat: 41.2317, lon: -89.8514, name: 'Camp Grove, IL' },
+  '61432': { lat: 41.1506, lon: -90.0264, name: 'Elmwood, IL' },
+  '61483': { lat: 41.0983, lon: -89.8597, name: 'Toulon, IL' },
+  '61486': { lat: 41.2383, lon: -90.1733, name: 'Viola, IL' },
+  // ── Henry County, IL ─────────────────────────────────────────────────────
+  '61231': { lat: 41.4406, lon: -90.3789, name: 'Aledo, IL' },
+  '61234': { lat: 41.4025, lon: -89.9681, name: 'Annawan, IL' },
+  '61235': { lat: 41.3339, lon: -90.1094, name: 'Atkinson, IL' },
+  '61238': { lat: 41.2994, lon: -90.0181, name: 'Cambridge, IL' },
+  '61240': { lat: 41.4933, lon: -90.4211, name: 'Coal Valley, IL' },
+  '61241': { lat: 41.5025, lon: -90.2897, name: 'Colona, IL' },
+  '61242': { lat: 41.4706, lon: -90.1778, name: 'Cordova, IL' },
+  '61243': { lat: 41.5581, lon: -89.9194, name: 'Dalzell, IL' },
+  '61244': { lat: 41.4978, lon: -90.4314, name: 'East Moline, IL' },
+  '61250': { lat: 41.5386, lon: -90.1597, name: 'Erie, IL' },
+  '61252': { lat: 41.5869, lon: -90.1517, name: 'Fulton, IL' },
+  '61254': { lat: 41.3508, lon: -90.1400, name: 'Geneseo, IL' },
+  '61256': { lat: 41.4339, lon: -90.3264, name: 'Hampton, IL' },
+  '61257': { lat: 41.4547, lon: -90.2028, name: 'Hillsdale, IL' },
+  '61258': { lat: 41.3667, lon: -89.9125, name: 'Hooppole, IL' },
+  '61259': { lat: 41.4489, lon: -90.3847, name: 'Illinois City, IL' },
+  '61260': { lat: 41.3636, lon: -90.6125, name: 'Joy, IL' },
+  '61261': { lat: 41.5411, lon: -89.9817, name: 'Lyndon, IL' },
+  '61262': { lat: 41.4528, lon: -90.4928, name: 'Milan, IL' },
+  '61263': { lat: 41.2706, lon: -90.5469, name: 'Matherville, IL' },
+  '61264': { lat: 41.4739, lon: -90.4031, name: 'Milan, IL' },
+  '61265': { lat: 41.4978, lon: -90.5156, name: 'Moline, IL' },
+  '61270': { lat: 41.5339, lon: -89.9339, name: 'Morrison, IL' },
+  '61272': { lat: 41.3436, lon: -90.5864, name: 'New Boston, IL' },
+  '61273': { lat: 41.2028, lon: -90.3244, name: 'Orion, IL' },
+  '61274': { lat: 41.2972, lon: -90.0975, name: 'Osco, IL' },
+  '61275': { lat: 41.4297, lon: -90.3156, name: 'Port Byron, IL' },
+  '61276': { lat: 41.3514, lon: -90.3408, name: 'Preemption, IL' },
+  '61277': { lat: 41.4933, lon: -89.8833, name: 'Prophetstown, IL' },
+  '61278': { lat: 41.4733, lon: -90.2256, name: 'Rapids City, IL' },
+  '61279': { lat: 41.3722, lon: -90.5667, name: 'Reynolds, IL' },
+  '61281': { lat: 41.2933, lon: -90.6333, name: 'Sherrard, IL' },
+  '61282': { lat: 41.4697, lon: -90.3378, name: 'Silvis, IL' },
+  '61283': { lat: 41.5142, lon: -89.8481, name: 'Tampico, IL' },
+  '61284': { lat: 41.4214, lon: -90.4869, name: 'Taylor Ridge, IL' },
+  '61285': { lat: 41.5558, lon: -90.1758, name: 'Thomson, IL' },
+  // ── Mercer County, IL ────────────────────────────────────────────────────
+  '61233': { lat: 41.2689, lon: -90.4136, name: 'Aledo, IL' },
+  '61415': { lat: 41.0394, lon: -90.4703, name: 'Biggsville, IL' },
+  '61416': { lat: 41.1928, lon: -90.4508, name: 'Bishop Hill, IL' },
+  '61418': { lat: 41.1708, lon: -90.6319, name: 'Carman, IL' },
+  '61419': { lat: 41.2042, lon: -90.4211, name: 'Aledo (Bishop Hill area), IL' },
+  '61423': { lat: 41.1336, lon: -90.5911, name: 'Alexis, IL' },
+  '61428': { lat: 41.0961, lon: -90.5644, name: 'Castleton, IL' },
+  '61431': { lat: 40.9931, lon: -90.5175, name: 'Dahinda, IL' },
+  '61433': { lat: 41.2503, lon: -90.5692, name: 'Fenton, IL' },
+  '61434': { lat: 41.2819, lon: -90.2414, name: 'Galva, IL' },
+  '61435': { lat: 41.2147, lon: -90.6642, name: 'Keithsburg, IL' },
+  '61442': { lat: 41.2131, lon: -90.7181, name: 'Keithsburg, IL' },
+  '61443': { lat: 41.3322, lon: -90.2344, name: 'Kewanee, IL' },
+  '61447': { lat: 41.0081, lon: -90.6339, name: 'Kirkwood, IL' },
+  '61448': { lat: 41.0817, lon: -90.4197, name: 'Knoxville, IL' },
+  '61449': { lat: 41.2631, lon: -90.1561, name: 'La Fayette, IL' },
+  '61450': { lat: 40.9706, lon: -90.9703, name: 'La Harpe, IL' },
+  '61452': { lat: 40.4272, lon: -90.5703, name: 'Littleton, IL' },
+  '61453': { lat: 41.2514, lon: -90.8947, name: 'New Windsor, IL' },
+  '61454': { lat: 40.9831, lon: -90.9769, name: 'Nauvoo, IL' },
+  '61460': { lat: 41.1053, lon: -90.6786, name: 'Maquon, IL' },
+  '61465': { lat: 41.3661, lon: -90.4736, name: 'New Windsor, IL' },
+  '61466': { lat: 41.2872, lon: -90.6208, name: 'North Henderson, IL' },
+  '61467': { lat: 41.0892, lon: -90.3289, name: 'Oneida, IL' },
+  '61469': { lat: 41.3208, lon: -90.9169, name: 'Oquawka, IL' },
+  '61471': { lat: 41.0019, lon: -90.9011, name: 'Raritan, IL' },
+  '61472': { lat: 41.1503, lon: -90.4003, name: 'Rio, IL' },
+  '61473': { lat: 41.0881, lon: -90.7367, name: 'Roseville, IL' },
+  '61490': { lat: 41.2856, lon: -90.4256, name: 'Woodhull, IL' },
+  // ── Bureau County, IL ────────────────────────────────────────────────────
+  '61301': { lat: 41.3281, lon: -89.0969, name: 'La Salle, IL' },
+  '61312': { lat: 41.3894, lon: -89.3358, name: 'Arlington, IL' },
+  '61313': { lat: 41.1769, lon: -88.9711, name: 'Blackstone, IL' },
+  '61314': { lat: 41.4447, lon: -89.6328, name: 'Buda, IL' },
+  '61315': { lat: 41.3689, lon: -89.3189, name: 'Bureau, IL' },
+  '61316': { lat: 41.2861, lon: -89.1281, name: 'Cedar Point, IL' },
+  '61317': { lat: 41.4058, lon: -89.4647, name: 'Cherry, IL' },
+  '61318': { lat: 41.5761, lon: -88.9317, name: 'Compton, IL' },
+  '61319': { lat: 41.1514, lon: -88.8294, name: 'Cornell, IL' },
+  '61320': { lat: 41.3889, lon: -89.3256, name: 'Dalzell, IL' },
+  '61321': { lat: 41.1572, lon: -89.0633, name: 'Dana, IL' },
+  '61322': { lat: 41.3683, lon: -89.1786, name: 'Depue, IL' },
+  '61323': { lat: 41.4197, lon: -89.4069, name: 'Dover, IL' },
+  '61324': { lat: 41.4781, lon: -89.2906, name: 'East Brooklyn, IL' },
+  '61325': { lat: 41.3364, lon: -88.9878, name: 'Grand Ridge, IL' },
+  '61326': { lat: 41.4069, lon: -89.3436, name: 'Hennepin, IL' },
+  '61327': { lat: 41.3631, lon: -89.3022, name: 'Hollowayville, IL' },
+  '61328': { lat: 41.3828, lon: -89.4706, name: 'Kasbeer, IL' },
+  '61329': { lat: 41.3492, lon: -89.1878, name: 'Ladd, IL' },
+  '61330': { lat: 41.5364, lon: -89.2358, name: 'La Moille, IL' },
+  '61331': { lat: 41.5328, lon: -89.5533, name: 'Lee, IL' },
+  '61332': { lat: 41.3408, lon: -89.0978, name: 'Lostant, IL' },
+  '61333': { lat: 41.1914, lon: -88.9294, name: 'Long Point, IL' },
+  '61334': { lat: 41.3478, lon: -89.0700, name: 'Lostant, IL' },
+  '61335': { lat: 41.2564, lon: -89.0928, name: 'McNabb, IL' },
+  '61336': { lat: 41.2783, lon: -89.2119, name: 'Magnolia, IL' },
+  '61337': { lat: 41.4614, lon: -89.4028, name: 'Malden, IL' },
+  '61338': { lat: 41.4028, lon: -89.6253, name: 'Manlius, IL' },
+  '61340': { lat: 41.3353, lon: -89.2136, name: 'Mark, IL' },
+  '61341': { lat: 41.3214, lon: -88.9853, name: 'Marseilles, IL' },
+  '61342': { lat: 41.3628, lon: -89.0567, name: 'Mendota, IL' },
+  '61344': { lat: 41.4011, lon: -89.7003, name: 'Mineral, IL' },
+  '61345': { lat: 41.3711, lon: -89.8483, name: 'Neponset, IL' },
+  '61346': { lat: 41.4714, lon: -89.2917, name: 'New Bedford, IL' },
+  '61348': { lat: 41.3483, lon: -89.0383, name: 'Oglesby, IL' },
+  '61349': { lat: 41.4714, lon: -89.7728, name: 'Ohio, IL' },
+  '61350': { lat: 41.3433, lon: -88.9853, name: 'Ottawa, IL' },
+  '61354': { lat: 41.3281, lon: -89.0969, name: 'Peru, IL' },
+  '61356': { lat: 41.3939, lon: -89.3547, name: 'Princeton, IL' },
+  '61358': { lat: 41.1967, lon: -89.1383, name: 'Rutland, IL' },
+  '61359': { lat: 41.4281, lon: -89.2708, name: 'Seatonville, IL' },
+  '61360': { lat: 41.3297, lon: -88.8736, name: 'Seneca, IL' },
+  '61361': { lat: 41.3858, lon: -89.4786, name: 'Sheffield, IL' },
+  '61362': { lat: 41.3586, lon: -89.1178, name: 'Spring Valley, IL' },
+  '61363': { lat: 41.3836, lon: -89.0939, name: 'Standard, IL' },
+  '61364': { lat: 41.3197, lon: -88.9042, name: 'Streator, IL' },
+  '61367': { lat: 41.5186, lon: -89.4414, name: 'Sublette, IL' },
+  '61368': { lat: 41.4019, lon: -89.6836, name: 'Tiskilwa, IL' },
+  '61369': { lat: 41.2853, lon: -89.2406, name: 'Toluca, IL' },
+  '61370': { lat: 41.3483, lon: -88.9339, name: 'Tonica, IL' },
+  '61371': { lat: 41.4572, lon: -89.0775, name: 'Triumph, IL' },
+  '61372': { lat: 41.3419, lon: -89.0853, name: 'Troy Grove, IL' },
+  '61373': { lat: 41.3436, lon: -88.9878, name: 'Utica, IL' },
+  '61374': { lat: 41.4369, lon: -89.7392, name: 'Van Orin, IL' },
+  '61375': { lat: 41.2517, lon: -89.1644, name: 'Varna, IL' },
+  '61376': { lat: 41.4358, lon: -89.7706, name: 'Walnut, IL' },
+  '61377': { lat: 41.2583, lon: -89.0783, name: 'Wenona, IL' },
+  '61378': { lat: 41.5025, lon: -89.1403, name: 'West Brooklyn, IL' },
+  '61379': { lat: 41.3986, lon: -89.8022, name: 'Wyanet, IL' },
+  // ── Peoria County, IL ────────────────────────────────────────────────────
+  '61525': { lat: 40.9644, lon: -89.7728, name: 'Dunlap, IL' },
+  '61526': { lat: 40.9756, lon: -89.6514, name: 'Edelstein, IL' },
+  '61528': { lat: 40.7833, lon: -89.7197, name: 'Edwards, IL' },
+  '61529': { lat: 40.9317, lon: -89.8219, name: 'Elmwood, IL' },
+  '61530': { lat: 40.8536, lon: -89.3736, name: 'Eureka, IL' },
+  '61531': { lat: 40.5989, lon: -90.0442, name: 'Farmington, IL' },
+  '61532': { lat: 40.5839, lon: -89.8581, name: 'Forest City, IL' },
+  '61533': { lat: 40.7056, lon: -89.9056, name: 'Glasford, IL' },
+  '61534': { lat: 40.5381, lon: -89.7672, name: 'Green Valley, IL' },
+  '61535': { lat: 40.7614, lon: -89.7853, name: 'Groveland, IL' },
+  '61536': { lat: 40.7436, lon: -89.9311, name: 'Hanna City, IL' },
+  '61537': { lat: 40.6025, lon: -89.9947, name: 'Henry, IL' },
+  '61539': { lat: 40.6536, lon: -89.8428, name: 'Kingston Mines, IL' },
+  '61540': { lat: 40.7453, lon: -89.9803, name: 'Lacon, IL' },
+  '61541': { lat: 40.6319, lon: -89.8103, name: 'La Rose, IL' },
+  '61542': { lat: 40.5875, lon: -90.1131, name: 'Lewistown, IL' },
+  '61543': { lat: 40.4856, lon: -90.0197, name: 'Liverpool, IL' },
+  '61544': { lat: 40.6997, lon: -90.0878, name: 'London Mills, IL' },
+  '61545': { lat: 40.9286, lon: -89.5069, name: 'Lowpoint, IL' },
+  '61546': { lat: 40.6044, lon: -89.8256, name: 'Manito, IL' },
+  '61547': { lat: 40.7111, lon: -89.7458, name: 'Mapleton, IL' },
+  '61548': { lat: 40.8442, lon: -89.4811, name: 'Metamora, IL' },
+  '61550': { lat: 40.6664, lon: -89.4744, name: 'Morton, IL' },
+  '61552': { lat: 40.7853, lon: -89.6814, name: 'Mossville, IL' },
+  '61553': { lat: 40.6681, lon: -90.0256, name: 'Norris, IL' },
+  '61554': { lat: 40.5892, lon: -89.6436, name: 'Pekin, IL' },
+  '61558': { lat: 40.5897, lon: -89.6525, name: 'Pekin, IL' },
+  '61559': { lat: 40.8825, lon: -89.8736, name: 'Princeville, IL' },
+  '61560': { lat: 41.1758, lon: -89.4736, name: 'Princeton, IL' },
+  '61561': { lat: 40.7981, lon: -89.3772, name: 'Roanoke, IL' },
+  '61562': { lat: 40.8647, lon: -89.6681, name: 'Rome, IL' },
+  '61563': { lat: 40.5342, lon: -90.0453, name: 'Saint David, IL' },
+  '61564': { lat: 40.5542, lon: -89.6794, name: 'South Pekin, IL' },
+  '61565': { lat: 40.9517, lon: -89.7217, name: 'Sparland, IL' },
+  '61567': { lat: 40.5439, lon: -89.8131, name: 'Topeka, IL' },
+  '61568': { lat: 40.6169, lon: -89.4636, name: 'Tremont, IL' },
+  '61569': { lat: 40.7072, lon: -89.9703, name: 'Trivoli, IL' },
+  '61570': { lat: 40.9211, lon: -89.6011, name: 'Washburn, IL' },
+  '61571': { lat: 40.7339, lon: -89.4736, name: 'Washington, IL' },
+  '61572': { lat: 40.9239, lon: -90.0122, name: 'Yates City, IL' },
+  // Peoria city ZIPs
+  '61601': { lat: 40.6936, lon: -89.5889, name: 'Peoria, IL' },
+  '61602': { lat: 40.6936, lon: -89.5889, name: 'Peoria, IL' },
+  '61603': { lat: 40.7097, lon: -89.5756, name: 'Peoria, IL' },
+  '61604': { lat: 40.7114, lon: -89.6139, name: 'Peoria, IL' },
+  '61605': { lat: 40.6903, lon: -89.6297, name: 'Peoria, IL' },
+  '61606': { lat: 40.7036, lon: -89.6036, name: 'Peoria, IL' },
+  '61607': { lat: 40.6678, lon: -89.6636, name: 'Peoria, IL' },
+  '61610': { lat: 40.6703, lon: -89.6114, name: 'Creve Coeur, IL' },
+  '61611': { lat: 40.6764, lon: -89.5378, name: 'East Peoria, IL' },
+  '61614': { lat: 40.7497, lon: -89.6122, name: 'Peoria, IL' },
+  '61615': { lat: 40.7686, lon: -89.6375, name: 'Peoria, IL' },
+  '61616': { lat: 40.7314, lon: -89.5736, name: 'Peoria Heights, IL' },
+  '61625': { lat: 40.6936, lon: -89.5889, name: 'Peoria, IL' },
+  // ── Warren County, IL ────────────────────────────────────────────────────
+  '61411': { lat: 40.7186, lon: -90.3328, name: 'Avon, IL' },
+  '61413': { lat: 40.9053, lon: -90.5028, name: 'Alexis, IL' },
+  '61417': { lat: 40.8153, lon: -90.3739, name: 'Berwick, IL' },
+  '61424': { lat: 41.0614, lon: -90.1417, name: 'Bradford, IL' },
+  '61425': { lat: 40.8383, lon: -91.0503, name: 'Oquawka, IL' },
+  '61426': { lat: 41.0317, lon: -89.9011, name: 'Brimfield, IL' },
+  '61455': { lat: 40.4592, lon: -90.6514, name: 'Macomb, IL' },
+  '61456': { lat: 40.6503, lon: -90.6317, name: 'Macomb, IL' },
+  '61457': { lat: 40.6247, lon: -90.7658, name: 'Kirkwood, IL' },
+  '61458': { lat: 40.9531, lon: -90.2558, name: 'Knoxville, IL' },
+  '61461': { lat: 40.9617, lon: -90.6828, name: 'La Harpe, IL' },
+  '61463': { lat: 40.7019, lon: -90.4328, name: 'Macomb, IL' },
+  '61464': { lat: 41.1281, lon: -90.5297, name: 'Kewanee, IL' },
+  '61479': { lat: 41.0072, lon: -90.0225, name: 'Speer, IL' },
+  '61492': { lat: 40.8931, lon: -90.1342, name: 'Yates City, IL' },
+  // ── McDonough County, IL ──────────────────────────────────────────────────
+  '61422': { lat: 40.6592, lon: -90.4537, name: 'Blandinsville, IL' },
+  '61462': { lat: 40.4592, lon: -90.6514, name: 'Macomb, IL' },
+  '61431': { lat: 40.5867, lon: -90.8636, name: 'Colchester, IL' },
+  // ── Fulton County, IL ────────────────────────────────────────────────────
+  '61529': { lat: 40.9317, lon: -89.8219, name: 'Elmwood, IL' },
+};
+
+// City name aliases (lowercase, stripped of punctuation) → lat/lon
+const CITY_TABLE = {
+  // Knox County
+  'galesburg':       { lat: 40.9478, lon: -90.3712, name: 'Galesburg, IL' },
+  'galesburg il':    { lat: 40.9478, lon: -90.3712, name: 'Galesburg, IL' },
+  'abingdon':        { lat: 40.8606, lon: -90.4615, name: 'Abingdon, IL' },
+  'altona':          { lat: 41.1017, lon: -90.1731, name: 'Altona, IL' },
+  'galva':           { lat: 41.1803, lon: -90.2936, name: 'Galva, IL' },
+  'victoria':        { lat: 41.0047, lon: -90.1411, name: 'Victoria, IL' },
+  'wataga':          { lat: 41.1094, lon: -90.1367, name: 'Wataga, IL' },
+  'williamsfield':   { lat: 40.9753, lon: -90.0769, name: 'Williamsfield, IL' },
+  'wyoming':         { lat: 41.0447, lon: -89.9547, name: 'Wyoming, IL' },
+  'knoxville':       { lat: 40.9083, lon: -90.2833, name: 'Knoxville, IL' },
+  'oneida':          { lat: 41.0867, lon: -90.3736, name: 'Oneida, IL' },
+  'rio':             { lat: 41.1503, lon: -90.4003, name: 'Rio, IL' },
+  'roseville':       { lat: 40.7978, lon: -90.5997, name: 'Roseville, IL' },
+  'cameron':         { lat: 40.7467, lon: -90.3744, name: 'Cameron, IL' },
+  'good hope':       { lat: 40.7703, lon: -90.6331, name: 'Good Hope, IL' },
+  'dahinda':         { lat: 40.9259, lon: -90.6189, name: 'Dahinda, IL' },
+  'tennessee':       { lat: 40.8536, lon: -90.6519, name: 'Tennessee, IL' },
+  'table grove':     { lat: 40.5536, lon: -90.4428, name: 'Table Grove, IL' },
+  'hanna city':      { lat: 40.7436, lon: -89.9311, name: 'Hanna City, IL' },
+  // Stark County
+  'toulon':          { lat: 41.0983, lon: -89.8597, name: 'Toulon, IL' },
+  'wyoming stark':   { lat: 41.0447, lon: -89.9547, name: 'Wyoming, IL' },
+  'elmwood':         { lat: 40.9317, lon: -89.8219, name: 'Elmwood, IL' },
+  'bradford':        { lat: 41.1733, lon: -89.6614, name: 'Bradford, IL' },
+  'kewanee':         { lat: 41.2322, lon: -89.9250, name: 'Kewanee, IL' },
+  'annawan':         { lat: 41.3886, lon: -89.9069, name: 'Annawan, IL' },
+  '교 camp grove':   { lat: 41.2317, lon: -89.8514, name: 'Camp Grove, IL' },
+  'camp grove':      { lat: 41.2317, lon: -89.8514, name: 'Camp Grove, IL' },
+  // Mercer County
+  'north henderson': { lat: 41.2872, lon: -90.6208, name: 'North Henderson, IL' },
+  'aledo':           { lat: 41.2006, lon: -90.7486, name: 'Aledo, IL' },
+  'alexis':          { lat: 41.0617, lon: -90.5550, name: 'Alexis, IL' },
+  'woodhull':        { lat: 41.1839, lon: -90.3158, name: 'Woodhull, IL' },
+  'viola':           { lat: 41.2003, lon: -90.5856, name: 'Viola, IL' },
+  'bishop hill':     { lat: 41.1986, lon: -89.9150, name: 'Bishop Hill, IL' },
+  'new windsor':     { lat: 41.3303, lon: -90.1403, name: 'New Windsor, IL' },
+  'matherville':     { lat: 41.2706, lon: -90.5469, name: 'Matherville, IL' },
+  'keithsburg':      { lat: 41.1003, lon: -90.9406, name: 'Keithsburg, IL' },
+  'oquawka':         { lat: 40.9339, lon: -90.9408, name: 'Oquawka, IL' },
+  'stronghurst':     { lat: 40.7733, lon: -90.8042, name: 'Stronghurst, IL' },
+  'kirkwood':        { lat: 40.8636, lon: -90.7714, name: 'Kirkwood, IL' },
+  // Henry County
+  'geneseo':         { lat: 41.4508, lon: -90.1533, name: 'Geneseo, IL' },
+  'cambridge':       { lat: 41.3003, lon: -90.2006, name: 'Cambridge, IL' },
+  'orion':           { lat: 41.3525, lon: -90.3808, name: 'Orion, IL' },
+  // Warren County
+  'monmouth':        { lat: 40.9117, lon: -90.6481, name: 'Monmouth, IL' },
+  'avon':            { lat: 40.6594, lon: -90.4394, name: 'Avon, IL' },
+  'berwick':         { lat: 40.8153, lon: -90.3739, name: 'Berwick, IL' },
+  // McDonough County
+  'macomb':          { lat: 40.4592, lon: -90.6714, name: 'Macomb, IL' },
+  'blandinsville':   { lat: 40.5503, lon: -90.8636, name: 'Blandinsville, IL' },
+  'colchester':      { lat: 40.4228, lon: -90.7958, name: 'Colchester, IL' },
+  // Peoria area
+  'peoria':          { lat: 40.6936, lon: -89.5889, name: 'Peoria, IL' },
+  'east peoria':     { lat: 40.6683, lon: -89.5769, name: 'East Peoria, IL' },
+  'washington':      { lat: 40.7033, lon: -89.4083, name: 'Washington, IL' },
+  'morton':          { lat: 40.6119, lon: -89.4606, name: 'Morton, IL' },
+  'pekin':           { lat: 40.5672, lon: -89.6406, name: 'Pekin, IL' },
+  'metamora':        { lat: 40.7908, lon: -89.3628, name: 'Metamora, IL' },
+  'princeville':     { lat: 40.9328, lon: -89.7569, name: 'Princeville, IL' },
+  'dunlap':          { lat: 40.8658, lon: -89.6778, name: 'Dunlap, IL' },
+  'edwards':         { lat: 40.7711, lon: -89.6967, name: 'Edwards, IL' },
+  'farmington':      { lat: 40.6906, lon: -90.0008, name: 'Farmington, IL' },
+  'canton':          { lat: 40.5581, lon: -90.0339, name: 'Canton, IL' },
+  'lewistown':       { lat: 40.3981, lon: -90.1506, name: 'Lewistown, IL' },
+  // Bureau County
+  'princeton':       { lat: 41.3683, lon: -89.4647, name: 'Princeton, IL' },
+  'mendota':         { lat: 41.5503, lon: -89.1214, name: 'Mendota, IL' },
+  'sheffield':       { lat: 41.3503, lon: -89.7319, name: 'Sheffield, IL' },
+  'neponset':        { lat: 41.3681, lon: -89.7950, name: 'Neponset, IL' },
+  'walnut':          { lat: 41.5533, lon: -89.5939, name: 'Walnut, IL' },
+  'ohio':            { lat: 41.5503, lon: -89.4544, name: 'Ohio, IL' },
+  'tiskilwa':        { lat: 41.2928, lon: -89.5103, name: 'Tiskilwa, IL' },
+  'buda':            { lat: 41.3233, lon: -89.7439, name: 'Buda, IL' },
+  'tampico':         { lat: 41.6253, lon: -89.7883, name: 'Tampico, IL' },
+  'prophetstown':    { lat: 41.6706, lon: -89.9342, name: 'Prophetstown, IL' },
+  // Quad Cities / Rock Island County
+  'moline':          { lat: 41.5067, lon: -90.5151, name: 'Moline, IL' },
+  'rock island':     { lat: 41.4995, lon: -90.5740, name: 'Rock Island, IL' },
+  'milan':           { lat: 41.4514, lon: -90.5728, name: 'Milan, IL' },
+  'east moline':     { lat: 41.5197, lon: -90.4440, name: 'East Moline, IL' },
+};
+
+const ZIP_RE = /^\d{5}$/;
+
+async function geocode(query) {
+  const q = query.trim();
+
+  // 1. Exact ZIP lookup
+  if (ZIP_RE.test(q)) {
+    if (GEO_TABLE[q]) return GEO_TABLE[q];
+    // Unknown ZIP → try Open-Meteo
+    return geocodeViaOpenMeteo(q);
+  }
+
+  // 2. City name lookup (normalize: lowercase, collapse spaces, strip punctuation except spaces)
+  const normalized = q.toLowerCase()
+    .replace(/,\s*(il|illinois)\s*$/i, '') // strip ", IL" or ", Illinois" suffix
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (CITY_TABLE[normalized]) return CITY_TABLE[normalized];
+
+  // 3. Partial match — check if any key starts with the normalized query
+  const partial = Object.keys(CITY_TABLE).find(k => k.startsWith(normalized));
+  if (partial) return CITY_TABLE[partial];
+
+  // 4. Fallback: Open-Meteo (works for larger cities; may miss small IL towns)
+  return geocodeViaOpenMeteo(q);
+}
+
+async function geocodeViaOpenMeteo(query) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
+  const r = await fetch(url);
+  const d = await r.json();
+  const results = (d.results || []).filter(x => x.country_code === 'US');
+  if (results.length === 0) {
+    throw new Error(`Location not found: "${query}". Try the ZIP code instead (e.g. 61483 for Toulon).`);
+  }
+  const res = results[0];
+  return {
+    lat:  res.latitude,
+    lon:  res.longitude,
+    name: res.name + (res.admin1 ? ', ' + res.admin1 : ''),
+  };
+}
+
+// ─── WEATHER FETCH ────────────────────────────────────────────────────────────
+// Returns daily temps + precip from planting date to asOf.
+// Mirrors the rainfall tracker: archive for confirmed past data, forecast
+// (with past_days=2 buffer) to cover today + recent ERA5 lag days.
+async function fetchWeather(lat, lon, startDate, endDate) {
+  const todayD = new Date();
+  const today  = todayD.toISOString().slice(0,10);
+
+  // Compute yesterday cleanly (avoids DST/midnight edge cases)
+  const yestD = new Date(todayD);
+  yestD.setDate(yestD.getDate() - 1);
+  const yesterday = yestD.toISOString().slice(0,10);
+
+  // Archive covers planting → yesterday (or endDate if earlier)
+  const archiveEnd = endDate < yesterday ? endDate : yesterday;
+
+  const seen    = new Set(); // deduplicate dates between archive + forecast
+  const byDate  = {};        // date → { tmax, tmin, precip }
+
+  // ── 1. Archive API: ERA5-based, authoritative for past dates ──
+  if (startDate <= archiveEnd) {
+    try {
+      const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+        `&start_date=${startDate}&end_date=${archiveEnd}` +
+        `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+        `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto`;
+      const r = await fetch(url);
+      const d = await r.json();
+      if (d.daily && d.daily.time) {
+        d.daily.time.forEach((t, i) => {
+          byDate[t] = {
+            tmax:   d.daily.temperature_2m_max[i],
+            tmin:   d.daily.temperature_2m_min[i],
+            precip: d.daily.precipitation_sum[i],
+          };
+          seen.add(t);
+        });
+      }
+    } catch(e) {}
+  }
+
+  // ── 2. Forecast API: covers today + future + past_days=2 buffer for ERA5 lag ──
+  // Archive can lag ~1-2 days behind real-time; forecast fills those gaps.
+  // Archive takes priority — forecast only fills dates not already seen.
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+      `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto` +
+      `&past_days=2&forecast_days=16`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.daily && d.daily.time) {
+      d.daily.time.forEach((t, i) => {
+        if (t >= startDate && t <= endDate && !seen.has(t)) {
+          byDate[t] = {
+            tmax:   d.daily.temperature_2m_max[i],
+            tmin:   d.daily.temperature_2m_min[i],
+            precip: d.daily.precipitation_sum[i],
+          };
+        }
+      });
+    }
+  } catch(e) {}
+
+  // Assemble sorted results
+  const results = { dates: [], tmax: [], tmin: [], precip: [] };
+  Object.keys(byDate).sort().forEach(t => {
+    if (t >= startDate && t <= endDate) {
+      results.dates.push(t);
+      results.tmax.push(byDate[t].tmax);
+      results.tmin.push(byDate[t].tmin);
+      results.precip.push(byDate[t].precip);
+    }
+  });
+
+  return results;
+}
+
+// ─── CLIMATE NORMALS ──────────────────────────────────────────────────────────
+async function fetchNormals(lat, lon, startDate, endDate, nYears) {
+  const YEARS = nYears === 10
+    ? [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024]
+    : [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+
+  const byMMDD = {}; // { 'MM-DD': { gduSum, precipSum, cnt } }
+
+  const BATCH = 4;
+  for (let b = 0; b < YEARS.length; b += BATCH) {
+    const batch = YEARS.slice(b, b + BATCH);
+    await Promise.all(batch.map(async yr => {
+      // Shift the planting date to the historical year
+      const s = startDate.slice(5); // MM-DD
+      const e = endDate.slice(5);
+      const yrStart = `${yr}-${s}`;
+      // Handle year rollover (planting in Dec → harvest next year)
+      const eYr = e < s ? yr + 1 : yr;
+      const yrEnd = `${eYr}-${e}`;
+      try {
+        const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+          `&start_date=${yrStart}&end_date=${yrEnd}` +
+          `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+          `&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (!d.daily || !d.daily.time) return;
+        d.daily.time.forEach((t, i) => {
+          const mmdd = t.slice(5);
+          if (!byMMDD[mmdd]) byMMDD[mmdd] = { tmaxSum:0, tminSum:0, precipSum:0, cnt:0 };
+          const tx = d.daily.temperature_2m_max[i];
+          const tn = d.daily.temperature_2m_min[i];
+          const pr = d.daily.precipitation_sum[i];
+          if (tx != null && tn != null) {
+            byMMDD[mmdd].tmaxSum  += tx;
+            byMMDD[mmdd].tminSum  += tn;
+            byMMDD[mmdd].precipSum += (pr ?? 0);
+            byMMDD[mmdd].cnt++;
+          }
+        });
+      } catch(e) { /* silently skip failed year */ }
+    }));
+  }
+  return byMMDD;
+}
+
+// ─── GDU CALCULATION ─────────────────────────────────────────────────────────
+function calcGDU(tmax, tmin, capped) {
+  if (tmax == null || tmin == null) return null;
+  const hi = capped ? Math.min(tmax, 86) : tmax;
+  const lo = Math.max(tmin, 50);
+  const avg = (hi + lo) / 2;
+  return Math.max(0, avg - 50);
+}
+
+// ─── MAIN REPORT LOGIC ───────────────────────────────────────────────────────
+async function runReport() {
+  clearStatus();
+  setProgress(0);
+
+  // Validate inputs
+  const locs = locations.filter(l => (l.zip||'').trim());
+  if (locs.length === 0) { setStatus('Please enter at least one location.', 'error'); return; }
+  const dates = plantDates.filter(d => d.date);
+  if (dates.length === 0) { setStatus('Please enter at least one planting date.', 'error'); return; }
+
+  const asOf   = document.getElementById('asOfDate').value;
+  const gduOpt = document.getElementById('gduBase').value;
+  const capped = gduOpt === '50_86';
+  const nYears = parseInt(document.getElementById('histYears').value);
+
+  setStatus(`Geocoding ${locs.length} location(s)…`, 'info');
+  setProgress(5);
+
+  // Geocode all locations
+  const geoResults = [];
+  for (let i = 0; i < locs.length; i++) {
+    const loc = locs[i];
+    try {
+      const geo = await geocode((loc.zip || '').trim());
+      geoResults.push({ ...loc, ...geo, displayName: (loc.name||'').trim() || geo.name });
+    } catch(err) {
+      setStatus(`Could not find location: "${(loc.zip||'').trim()}" — ${err.message}`, 'error');
+      setProgress(null);
+      return;
+    }
+    setProgress(5 + (i+1)/locs.length * 15);
+  }
+
+  // For each location × planting date: fetch weather + normals
+  const results = []; // { locName, lat, lon, plantDate, plantLabel, gduActual, gduNormal, rainActual, rainNormal }
+  const total = geoResults.length * dates.length;
+  let done = 0;
+
+  for (const geo of geoResults) {
+    for (const pd of dates) {
+      setStatus(`Fetching data: ${geo.displayName} · planted ${pd.date}…`, 'info');
+
+      try {
+        // Actual weather from planting to asOf
+        const wx = await fetchWeather(geo.lat, geo.lon, pd.date, asOf);
+
+        // Compute actual GDU + rain
+        let gduActual = 0, rainActual = 0;
+        wx.dates.forEach((_, i) => {
+          const g = calcGDU(wx.tmax[i], wx.tmin[i], capped);
+          if (g !== null) gduActual += g;
+          if (wx.precip[i] != null) rainActual += wx.precip[i];
+        });
+
+        // Climate normals
+        const normals = await fetchNormals(geo.lat, geo.lon, pd.date, asOf, nYears);
+
+        // Compute normal GDU + rain (average per MMDD × number of years with data)
+        let gduNormal = 0, rainNormal = 0;
+        wx.dates.forEach(dt => {
+          const mmdd = dt.slice(5);
+          const n = normals[mmdd];
+          if (n && n.cnt > 0) {
+            const avgTmax = n.tmaxSum / n.cnt;
+            const avgTmin = n.tminSum / n.cnt;
+            const g = calcGDU(avgTmax, avgTmin, capped);
+            if (g !== null) gduNormal += g;
+            rainNormal += n.precipSum / n.cnt;
+          }
+        });
+
+        results.push({
+          locId:       geo.id,
+          locName:     geo.displayName,
+          lat:         geo.lat,
+          lon:         geo.lon,
+          plantDate:   pd.date,
+          plantLabel:  pd.label || pd.date,
+          gduActual:   Math.round(gduActual),
+          gduNormal:   Math.round(gduNormal),
+          rainActual:  +rainActual.toFixed(2),
+          rainNormal:  +rainNormal.toFixed(2),
+        });
+
+      } catch(err) {
+        console.warn('Data error:', geo.displayName, pd.date, err);
+        results.push({
+          locId:      geo.id,
+          locName:    geo.displayName,
+          lat:        geo.lat,
+          lon:        geo.lon,
+          plantDate:  pd.date,
+          plantLabel: pd.label || pd.date,
+          error:      err.message,
+        });
+      }
+
+      done++;
+      setProgress(20 + (done / total) * 78);
+    }
+  }
+
+  setProgress(100);
+  setTimeout(() => setProgress(null), 600);
+  clearStatus();
+
+  renderResults(results, geoResults, dates, asOf, nYears, capped);
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────────
+function renderResults(results, geoResults, dates, asOf, nYears, capped) {
+  // Report meta
+  const yLabel = nYears === 10 ? '10-yr (2015–2024)' : '15-yr (2010–2024)';
+  const gLabel = capped ? 'GDU base 50°/86°F' : 'GDU base 50°F';
+  document.getElementById('reportMeta').innerHTML = `
+    <span>As of: <strong>${asOf}</strong></span>
+    <span>Locations: <strong>${geoResults.length}</strong></span>
+    <span>Planting dates: <strong>${dates.length}</strong></span>
+    <span>Normal: <strong>${yLabel}</strong></span>
+    <span>Method: <strong>${gLabel}</strong></span>
+    <span>Data: <strong>Open-Meteo ERA5 + Forecast</strong></span>
+  `;
+
+  // ── CARDS ──
+  const cardsGrid = document.getElementById('cardsGrid');
+  cardsGrid.innerHTML = '';
+
+  geoResults.forEach(geo => {
+    const locResults = results.filter(r => r.locId === geo.id);
+    const card = document.createElement('div');
+    card.className = 'loc-card';
+
+    // Aggregate totals across all dates for top-level summary
+    const validResults = locResults.filter(r => !r.error);
+
+    // Header
+    card.innerHTML = `
+      <div class="loc-card-head">
+        <span class="loc-badge">${geo.id || '?'}</span>
+        <span class="loc-name-card">${geo.displayName}</span>
+        <span class="loc-coord">${geo.lat.toFixed(2)}°N ${Math.abs(geo.lon).toFixed(2)}°W</span>
+      </div>
+    `;
+
+    // Planting date rows
+    const datesDiv = document.createElement('div');
+    datesDiv.className = 'card-dates';
+    datesDiv.style.paddingTop = '8px';
+
+    locResults.forEach(r => {
+      if (r.error) {
+        datesDiv.innerHTML += `<div class="card-date-row" style="color:var(--red2);font-size:9px;">
+          ${r.plantLabel} — Error: ${r.error}</div>`;
+        return;
+      }
+      const gduDiff   = r.gduActual  - r.gduNormal;
+      const rainDiff  = r.rainActual - r.rainNormal;
+      const gduCls    = gduDiff  > 0 ? 'pos' : gduDiff  < 0 ? 'neg' : 'neu';
+      const rainCls   = rainDiff > 0 ? 'pos' : rainDiff < 0 ? 'neg' : 'neu';
+      const gduSign   = gduDiff  >= 0 ? '+' : '';
+      const rainSign  = rainDiff >= 0 ? '+' : '';
+
+      datesDiv.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-bottom:5px;padding-left:2px;">
+            🌱 Planted ${r.plantDate}${r.plantLabel !== r.plantDate ? ' — ' + r.plantLabel : ''}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div class="metric-block">
+              <div class="metric-icon">🌡️</div>
+              <div class="metric-label">GDU Accum.</div>
+              <div class="metric-val gdu">${r.gduActual.toLocaleString()}</div>
+              <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-top:1px;">Normal: ${r.gduNormal.toLocaleString()}</div>
+              <div class="metric-diff ${gduCls}">${gduSign}${gduDiff} GDU</div>
+            </div>
+            <div class="metric-block">
+              <div class="metric-icon">🌧️</div>
+              <div class="metric-label">Rainfall</div>
+              <div class="metric-val rain">${r.rainActual.toFixed(2)}"</div>
+              <div style="font-family:'Titillium Web',sans-serif;font-size:9px;color:var(--muted);margin-top:1px;">Normal: ${r.rainNormal.toFixed(2)}"</div>
+              <div class="metric-diff ${rainCls}">${rainSign}${rainDiff.toFixed(2)}"</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    card.appendChild(datesDiv);
+    cardsGrid.appendChild(card);
+  });
+
+  // ── TABLE ──
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  tableData = [];
+
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.error) {
+      tr.innerHTML = `<td class="cell-loc">${r.locName}</td><td class="cell-date">${r.plantDate}</td>
+        <td colspan="6" style="color:var(--red2);font-size:10px;">Error: ${r.error}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    const gduDiff  = r.gduActual  - r.gduNormal;
+    const rainDiff = r.rainActual - r.rainNormal;
+    const gSign    = gduDiff  >= 0 ? '+' : '';
+    const rSign    = rainDiff >= 0 ? '+' : '';
+    const gCls     = gduDiff  > 0 ? 'cell-diff-pos' : gduDiff  < 0 ? 'cell-diff-neg' : 'cell-diff-neu';
+    const rCls     = rainDiff > 0 ? 'cell-diff-pos' : rainDiff < 0 ? 'cell-diff-neg' : 'cell-diff-neu';
+
+    tr.innerHTML = `
+      <td class="cell-loc">${r.locName}</td>
+      <td class="cell-date">${r.plantDate}${r.plantLabel && r.plantLabel !== r.plantDate ? ' <span style="color:var(--muted);font-size:9px;">'+r.plantLabel+'</span>' : ''}</td>
+      <td class="num cell-gdu">${r.gduActual.toLocaleString()}</td>
+      <td class="num" style="color:var(--muted)">${r.gduNormal.toLocaleString()}</td>
+      <td class="num ${gCls}">${gSign}${gduDiff}</td>
+      <td class="num cell-rain">${r.rainActual.toFixed(2)}"</td>
+      <td class="num" style="color:var(--muted)">${r.rainNormal.toFixed(2)}"</td>
+      <td class="num ${rCls}">${rSign}${rainDiff.toFixed(2)}"</td>
+    `;
+    tbody.appendChild(tr);
+
+    tableData.push([r.locName, r.plantDate, r.gduActual, r.gduNormal, gduDiff, r.rainActual.toFixed(2), r.rainNormal.toFixed(2), rainDiff.toFixed(2)]);
+  });
+
+  document.getElementById('tableFootnote').innerHTML =
+    `GDUs: ${capped ? 'Corn base 50°F / ceiling 86°F' : 'Corn base 50°F'} · Rainfall in inches · ` +
+    `Normal: ${nYears}-year ERA5 archive average · ` +
+    `Source: Open-Meteo · As of ${asOf} · AgronomyINFO`;
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── COPY TABLE AS TSV ────────────────────────────────────────────────────────
+function copyTable() {
+  const header = ['Location','Planting Date','GDU Actual','GDU Normal','GDU Diff','Rain Actual (in)','Rain Normal (in)','Rain Diff (in)'];
+  const rows = [header, ...tableData];
+  const tsv = rows.map(r => r.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(() => {
+    const btn = document.querySelector('.copy-hint button');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy as TSV', 1800);
+  });
+}
+</script>
+</body>
+</html>
