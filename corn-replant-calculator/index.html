@@ -196,19 +196,56 @@
       { label: 'June 1-5', start: [6,1], end: [6,5] },
     ];
 
+    // Convert a date range midpoint to day-of-year for interpolation
+    function rangeMidDOY(r) {
+      const midM = r.start[0], midD = Math.round((r.start[1] + r.end[1]) / 2);
+      return new Date(2026, midM - 1, midD).getTime();
+    }
+    const dateMidpoints = dateRanges.map(rangeMidDOY);
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
     function getYieldPercent(plantingDate, stand) {
-      // plantingDate: Date object, stand: integer (plants/acre)
-      // Find the closest date range
-      const m = plantingDate.getMonth() + 1;
-      const d = plantingDate.getDate();
-      let idx = dateRanges.findIndex(r => (
-        (m > r.start[0] || (m === r.start[0] && d >= r.start[1])) &&
-        (m < r.end[0] || (m === r.end[0] && d <= r.end[1]))
-      ));
-      if (idx === -1) idx = dateRanges.length - 1; // fallback to last
-      // Find closest stand
-      let standIdx = standValues.reduce((prev, curr, i) => Math.abs(curr-stand) < Math.abs(standValues[prev]-stand) ? i : prev, 0);
-      return yieldTable[idx].stands[standIdx];
+      // Bilinear interpolation across date and stand count
+      const dateVal = plantingDate.getTime();
+
+      // --- Interpolate along the date axis ---
+      let dLow = 0, dHigh = 1;
+      if (dateVal <= dateMidpoints[0]) {
+        dLow = 0; dHigh = 0;
+      } else if (dateVal >= dateMidpoints[dateMidpoints.length - 1]) {
+        dLow = dateMidpoints.length - 1; dHigh = dateMidpoints.length - 1;
+      } else {
+        for (let i = 0; i < dateMidpoints.length - 1; i++) {
+          if (dateVal >= dateMidpoints[i] && dateVal <= dateMidpoints[i + 1]) {
+            dLow = i; dHigh = i + 1; break;
+          }
+        }
+      }
+      const dT = (dLow === dHigh) ? 0 : (dateVal - dateMidpoints[dLow]) / (dateMidpoints[dHigh] - dateMidpoints[dLow]);
+
+      // --- Interpolate along the stand axis ---
+      let sLow = 0, sHigh = 1;
+      if (stand <= standValues[0]) {
+        sLow = 0; sHigh = 0;
+      } else if (stand >= standValues[standValues.length - 1]) {
+        sLow = standValues.length - 1; sHigh = standValues.length - 1;
+      } else {
+        for (let i = 0; i < standValues.length - 1; i++) {
+          if (stand >= standValues[i] && stand <= standValues[i + 1]) {
+            sLow = i; sHigh = i + 1; break;
+          }
+        }
+      }
+      const sT = (sLow === sHigh) ? 0 : (stand - standValues[sLow]) / (standValues[sHigh] - standValues[sLow]);
+
+      // Bilinear: get four corner values and interpolate
+      const v00 = yieldTable[dLow].stands[sLow];
+      const v01 = yieldTable[dLow].stands[sHigh];
+      const v10 = yieldTable[dHigh].stands[sLow];
+      const v11 = yieldTable[dHigh].stands[sHigh];
+      const result = lerp(lerp(v00, v01, sT), lerp(v10, v11, sT), dT);
+      return Math.round(result * 10) / 10;
     }
 
     document.getElementById('replant-form').addEventListener('submit', function(e) {
